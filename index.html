@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tienda de accesorios elegantes. Envíos a todo México.">
+    <title>Accesorios Elegantes | Tienda Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Barra de navegación -->
+    <header>
+        <div class="logo">
+            <a href="/"><img src="logo.png" alt="Accesorios Elegantes"></a>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class="carrito-icono">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="contador-carrito">0</span>
+        </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <section id="inicio" class="hero">
+        <div class="hero-texto">
+            <a href="#productos" class=""></a>
+        </div>
+    </section>
+
+    <!-- Productos -->
+    <section id="productos" class="productos">
+        <div class="grid-productos" id="grid-productos">
+            <!-- Los productos se cargarán con JavaScript -->
+        </div>
+    </section>
+  <!-- Modal del Producto -->
+  <div class="modal-producto" id="modal-producto">
+    <div class="modal-contenido">
+        <span class="cerrar-modal-producto">&times;</span>
+        
+        <div class="modal-grid">
+            <!-- Columna izquierda - Visualización del producto -->
+            <div class="columna-visualizacion">
+                <div class="visor-principal" id="visor-principal">
+                    <!-- Aquí va el 3D o la imagen activa -->
+                </div>
+
+                <div class="selector-vistas" id="selector-vistas">
+                    <!-- Miniaturas de imágenes y botón "Ver en 3D" -->
+                </div>
+            </div>
+
+            <!-- Columna derecha - Información del producto -->
+            <div class="columna-informacion">
+                <div class="info-producto">
+                    <h2 id="modal-nombre">Nombre del Producto</h2>
+                    <div class="precio" id="modal-precio">$0.00</div>
+                    <div class="descripcion" id="modal-descripcion">Descripción del producto...</div>
+                    <button class="btn btn-agregar" id="btn-agregar-carrito">
+                        <i class="fas fa-shopping-cart"></i> Añadir al carrito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Carrito de compras (modal) -->
+    <div class="modal-carrito" id="modal-carrito">
+        <div class="modal-contenido">
+            <span class="cerrar-modal-carrito">&times;</span>
+            <h2>Tu Carrito</h2>
+            <div class="items-carrito" id="items-carrito">
+                <!-- Los productos del carrito aparecerán aquí -->
+            </div>
+            <div class="total-carrito">
+                <p>Total: <span id="total">$0.00</span></p>
+                <button class="btn-pagar">Pagar con PayPal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contacto">
+        <div class="redes-sociales">
+            <a href="#"><i class="fab fa-facebook"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-whatsapp"></i></a>
+        </div>
+        <p>&copy; 2025 Accesorios Elegantes. Todos los derechos reservados.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
