@@ -10,63 +10,62 @@ const productos = [
     },
     {
         id: 2,
-        nombre: "Aretes de Oro",
+        nombre: "Aretes de Oro 2",
         precio: 499,
-        imagenes: ["productos/prod1.jpg"],
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
         tiene3D: false // Este producto no tiene 3D
     },{
-        id: 1,
-        nombre: "Collar de Plata",
+        id: 3,
+        nombre: "Collar de Plata 2",
         precio: 299,
         imagenes: ["productos/prod2.png", "productos/prod1.jpg"],
         tiene3D: true,
         iframe3D: '<iframe src="https://pacdora.com/embed/3d/ID-DEL-PRODUCTO" width="100%" height="400px"></iframe>'
     },
     {
-        id: 2,
-        nombre: "Aretes de Oro",
+        id: 4,
+        nombre: "Aretes de Oro 3",
         precio: 499,
-        imagenes: ["productos/prod1.jpg"],
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
         tiene3D: false // Este producto no tiene 3D
     },{
-        id: 1,
-        nombre: "Collar de Plata",
+        id: 5,
+        nombre: "Collar de Plata 3",
         precio: 299,
         imagenes: ["productos/prod2.png", "productos/prod1.jpg"],
         tiene3D: true,
         iframe3D: '<iframe src="https://pacdora.com/embed/3d/ID-DEL-PRODUCTO" width="100%" height="400px"></iframe>'
     },
     {
-        id: 2,
-        nombre: "Aretes de Oro",
+        id: 6,
+        nombre: "Aretes de Oro 4",
         precio: 499,
-        imagenes: ["productos/prod1.jpg"],
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
         tiene3D: false // Este producto no tiene 3D
     },{
-        id: 1,
-        nombre: "Collar de Plata",
+        id: 7,
+        nombre: "Collar de Plata 4",
         precio: 299,
         imagenes: ["productos/prod1.jpg", "productos/prod1.jpg"],
         tiene3D: true,
         iframe3D: '<iframe src="https://pacdora.com/embed/3d/ID-DEL-PRODUCTO" width="100%" height="400px"></iframe>'
     },
     {
-        id: 2,
-        nombre: "Aretes de Oro",
+        id: 8,
+        nombre: "Aretes de Oro 5",
         precio: 499,
-        imagenes: ["productos/prod1.jpg"],
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
         tiene3D: false // Este producto no tiene 3D
     },{
-        id: 2,
-        nombre: "Aretes de Oro",
+        id: 9,
+        nombre: "Aretes de Oro 6",
         precio: 499,
-        imagenes: ["productos/prod1.jpg"],
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
         tiene3D: false // Este producto no tiene 3D
     }
 ];
 // Variable global para guardar el ID del producto abierto
 let currentProductId = null;
-// Variables globales
 let carrito = [];
 const contadorCarrito = document.querySelector('.contador-carrito');
 const gridProductos = document.getElementById('grid-productos');
@@ -75,6 +74,34 @@ const itemsCarrito = document.getElementById('items-carrito');
 const totalCarrito = document.getElementById('total');
 const btnPagar = document.querySelector('.btn-pagar');
 
+
+// Cargar productos en la página
+// Modificar la función cargarProductos() para incluir el modal
+function cargarProductos() {
+    gridProductos.innerHTML = productos.map(producto => `
+        <div class="producto" data-id="${producto.id}" onclick="abrirModalProducto(${producto.id})">
+            ${producto.tiene3D ? `<div class="badge-3d">3D</div>` : ''}
+            <div class="contenedor-imagen">
+                <img src="${producto.imagenes[0]}" class="imagen-principal" alt="${producto.nombre}">
+                ${producto.imagenes[1] ? 
+                    `<img src="${producto.imagenes[1]}" class="imagen-hover" alt="${producto.nombre} - Vista alternativa">` : 
+                    `<img src="${producto.imagenes[0]}" class="imagen-hover" alt="${producto.nombre}">`
+                }
+                <div class="accion-rapida">
+                    <button class="btn-compra-rapida" title="Compra rápida">
+                        <i class="fas fa-cart-plus"></i> Comprar ahora
+                    </button>
+                </div>
+            </div>
+            <div class="producto-info">
+                <h3>${producto.nombre}</h3>
+                <p>$${producto.precio.toFixed(2)}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    configurarEventosCompraRapida();
+}
 // Función para abrir el modal del producto
 function abrirModalProducto(id) {
     const producto = productos.find(p => p.id === id);
@@ -150,46 +177,42 @@ function cambiarImagen(srcImagen) {
         if (img.src === srcImagen) img.classList.add("miniatura-activa");
     });
 }
-// Cargar productos en la página
-// Modificar la función cargarProductos() para incluir el modal
-function cargarProductos() {
-    gridProductos.innerHTML = productos.map(producto => `
-        <div class="producto" onclick="abrirModalProducto(${producto.id})">
-            ${producto.tiene3D ? 
-                `<div class="badge-3d">3D</div>` : 
-                ''
-            }
-            <img src="${producto.imagenes[0]}" alt="${producto.nombre}">
-            <div class="producto-info">
-                <a>${producto.nombre}</a>
-                <p>$${producto.precio.toFixed(2)}</p>
-            </div>
-        </div>
-    `).join('');
-}
 
 // Agregar producto al carrito
 function agregarAlCarrito(id) {
     const producto = productos.find(p => p.id === id);
+    // Buscar si el producto ya está en el carrito
+    const productoEnCarrito = carrito.find(item => item.id === id);
+
+    if (productoEnCarrito) {
+        // Si ya existe, incrementar la cantidad
+        productoEnCarrito.cantidad += 1;
+    } else {
+        // Si no existe, agregarlo al carrito con cantidad 1
+        producto.cantidad = 1; // Asegurarse de que el producto tenga la propiedad cantidad
         carrito.push(producto);
-        actualizarCarrito();
+    }
+
+    actualizarCarrito();
 }
 
 // Actualizar carrito
 function actualizarCarrito() {
+    debugger
     contadorCarrito.textContent = carrito.length;
     itemsCarrito.innerHTML = carrito.map(item => `
         <div class="item-carrito">
-            <img src="${item.imagen}" alt="${item.nombre}">
+            <img src="${item.imagenes[1]}" alt="${item.nombre}">
             <div>
                 <h4>${item.nombre}</h4>
                 <p>$${item.precio.toFixed(2)}</p>
+                <p>${item.cantidad}</p>
             </div>
             <i class="fas fa-trash" onclick="eliminarDelCarrito(${item.id})"></i>
         </div>
     `).join('');
 
-    const total = carrito.reduce((sum, item) => sum + item.precio, 0);
+    const total = carrito.reduce((sum, item) => sum + item.precio*item.cantidad, 0);
     totalCarrito.textContent = `$${total.toFixed(2)}`;
 }
 
@@ -241,7 +264,61 @@ btnPagar.addEventListener('click', () => {
     modalCarrito.style.display = 'none';
 });
 
-let productoSeleccionado = null;
+// Configuración de eventos para compra rápida
+document.querySelectorAll('.producto').forEach(producto => {
+    const productId = producto.dataset.id;
+    const btnCompraRapida = producto.querySelector('.btn-compra-rapida');
+    
+    // Evento para compra rápida
+    btnCompraRapida.addEventListener('click', (e) => {
+        e.stopPropagation(); // Evita que se active el click del producto
+        agregarAlCarrito(parseInt(productId));
+        
+        // Efecto visual de confirmación
+        btnCompraRapida.innerHTML = '<i class="fas fa-check"></i> ¡Agregado!';
+        btnCompraRapida.style.background = '#4CAF50';
+        
+        setTimeout(() => {
+            btnCompraRapida.innerHTML = '<i class="fas fa-cart-plus"></i> Comprar ahora';
+            btnCompraRapida.style.background = 'rgba(255, 107, 107, 0.9)';
+        }, 2000);
+    });
+    
+    // Asegurar que vuelve a la imagen original al salir del hover
+    producto.addEventListener('mouseleave', () => {
+        producto.querySelector('.imagen-principal').style.opacity = 1;
+        producto.querySelector('.imagen-hover').style.opacity = 0;
+    });
+});
 
+// Función para configurar los eventos de compra rápida
+function configurarEventosCompraRapida() {
+    debugger
+    document.querySelectorAll('.btn-compra-rapida').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const productId = parseInt(this.closest('.producto').dataset.id);
+            const producto = productos.find(p => p.id === productId);
+            
+            // Agregar al carrito
+            debugger
+            agregarAlCarrito(producto.id);
+            
+            // Mostrar confirmación visual
+            this.innerHTML = '<i class="fas fa-check"></i> ¡Agregado!';
+            this.style.backgroundColor = '#4CAF50';
+            
+            // Abrir el carrito
+            abrirModal('modal-carrito');
+            
+            // Restaurar el botón después de 2 segundos
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-cart-plus"></i> Comprar ahora';
+                this.style.backgroundColor = 'rgba(255, 107, 107, 0.9)';
+            }, 2000);
+        });
+    });
+}
+let productoSeleccionado = null;
 // Inicializar la página
 cargarProductos();
