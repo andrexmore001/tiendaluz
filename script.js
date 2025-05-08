@@ -64,6 +64,26 @@ const productos = [
         tiene3D: false // Este producto no tiene 3D
     }
 ];
+// Base de datos de videos (puedes ampliarla)
+const videosRedes = [
+    {
+        plataforma: 'instagram',
+        url: 'https://www.instagram.com/p/CxYtF9YrRk9/embed'
+    },
+    {
+        plataforma: 'tiktok',
+        url: 'https://www.tiktok.com/embed/v2/7234567890123456789'
+    },
+    {
+        plataforma: 'instagram',
+        url: 'https://www.instagram.com/p/CxYtF9YrRk9/embed'
+    },
+    {
+        plataforma: 'tiktok',
+        url: 'https://www.tiktok.com/embed/v2/7234567890123456789'
+    },
+    // Agrega más videos según necesites
+];
 // Variable global para guardar el ID del producto abierto
 let currentProductId = null;
 let carrito = [];
@@ -320,5 +340,27 @@ function configurarEventosCompraRapida() {
     });
 }
 let productoSeleccionado = null;
+
+function cargarVideosSlider() {
+    const sliderTrack = document.querySelector('.slider-track');
+    
+    // Duplicamos los videos para efecto continuo infinito
+    const videosDuplicados = [...videosRedes, ...videosRedes];
+    
+    sliderTrack.innerHTML = videosDuplicados.map(video => `
+        <div class="video-container">
+            <iframe class="video-embed" 
+                    src="${video.url}" 
+                    frameborder="0" 
+                    allowfullscreen
+                    loading="lazy"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+            </iframe>
+        </div>
+    `).join('');
+}
+
+// Llamar la función al cargar la página
+window.addEventListener('DOMContentLoaded', cargarVideosSlider);
 // Inicializar la página
 cargarProductos();
