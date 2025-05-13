@@ -4,64 +4,55 @@ const productos = [
         id: 1,
         nombre: "Collar de Plata",
         precio: 299,
-        imagenes: ["productos/prod1.jpg", "productos/prod2.png"],
-        tiene3D: true,
-        iframe3D: '<iframe src="https://pacdora.com/embed/3d/ID-DEL-PRODUCTO" width="100%" height="400px"></iframe>'
+        imagenes: ["productos/prod1.jpg", "productos/prod2.png"]
     },
     {
         id: 2,
         nombre: "Aretes de Oro 2",
         precio: 499,
-        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
-        tiene3D: false // Este producto no tiene 3D
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"]
+        
     },{
         id: 3,
         nombre: "Collar de Plata 2",
         precio: 299,
-        imagenes: ["productos/prod2.png", "productos/prod1.jpg"],
-        tiene3D: true,
-        iframe3D: '<iframe src="https://pacdora.com/embed/3d/ID-DEL-PRODUCTO" width="100%" height="400px"></iframe>'
+        imagenes: ["productos/prod2.png", "productos/prod1.jpg"]
     },
     {
         id: 4,
         nombre: "Aretes de Oro 3",
         precio: 499,
-        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
-        tiene3D: false // Este producto no tiene 3D
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"]
+        
     },{
         id: 5,
         nombre: "Collar de Plata 3",
         precio: 299,
-        imagenes: ["productos/prod2.png", "productos/prod1.jpg"],
-        tiene3D: true,
-        iframe3D: '<iframe src="https://pacdora.com/embed/3d/ID-DEL-PRODUCTO" width="100%" height="400px"></iframe>'
+        imagenes: ["productos/prod2.png", "productos/prod1.jpg"]
     },
     {
         id: 6,
         nombre: "Aretes de Oro 4",
         precio: 499,
-        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
-        tiene3D: false // Este producto no tiene 3D
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"]
+        
     },{
         id: 7,
         nombre: "Collar de Plata 4",
         precio: 299,
-        imagenes: ["productos/prod1.jpg", "productos/prod1.jpg"],
-        tiene3D: true,
-        iframe3D: '<iframe src="https://pacdora.com/embed/3d/ID-DEL-PRODUCTO" width="100%" height="400px"></iframe>'
+        imagenes: ["productos/prod1.jpg", "productos/prod1.jpg"]
     },
     {
         id: 8,
         nombre: "Aretes de Oro 5",
         precio: 499,
-        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
-        tiene3D: false // Este producto no tiene 3D
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"]
+        
     },{
         id: 9,
         nombre: "Aretes de Oro 6",
         precio: 499,
-        imagenes: ["productos/prod1.jpg","productos/prod2.png"],
-        tiene3D: false // Este producto no tiene 3D
+        imagenes: ["productos/prod1.jpg","productos/prod2.png"]
     }
 ];
 // Base de datos de videos (puedes ampliarla)
@@ -102,7 +93,6 @@ const btnPagar = document.querySelector('.btn-pagar');
 function cargarProductos() {
     gridProductos.innerHTML = productos.map(producto => `
         <div class="producto" data-id="${producto.id}" onclick="abrirModalProducto(${producto.id})">
-            ${producto.tiene3D ? `<div class="badge-3d">3D</div>` : ''}
             <div class="contenedor-imagen">
                 <img src="${producto.imagenes[0]}" class="imagen-principal" alt="${producto.nombre}">
                 ${producto.imagenes[1] ? 
@@ -116,8 +106,9 @@ function cargarProductos() {
                 </div>
             </div>
             <div class="producto-info">
-                <h3>${producto.nombre}</h3>
-                <p>$${producto.precio.toFixed(2)}</p>
+                <h3 class="producto-titulo">${producto.nombre}</h3>
+                <p class="producto-precio">$${producto.precio.toFixed(2)}</p>
+                <p class="producto-calificacion">★★★★★ (193)</p>
             </div>
         </div>
     `).join('');
@@ -226,8 +217,8 @@ function actualizarCarrito() {
         <div class="item-carrito">
             <img src="${item.imagenes[1]}" alt="${item.nombre}">
             <div>
-                <h4>${item.nombre}</h4>
-                <p>$${item.precio.toFixed(2)}</p>
+                <h3 class="producto-titulo">${item.nombre}</h3>
+                <p class="producto-precio">$${item.precio.toFixed(2)}</p>
                 <p>${item.cantidad}</p>
             </div>
             <i class="fas fa-trash" onclick="eliminarDelCarrito(${item.id})"></i>
@@ -355,7 +346,6 @@ function cargarVideosSlider() {
                 data-embed-type="curated"
                 data-video-id-list="7503224825788337414,7503256741954505989,7503179273289731383,7503039528018398469,7502806180385983749,7502677383619677445,7502667485682879750,7502425021659434295"
                 data-embed-from="embed_page"
-                style="max-width: 780px;min-width: 325px;">
             <section>
                 <a target="_blank" href="https://www.tiktok.com/@artesanaoficial?refer=embed">@artessanaoficial</a>
             </section>
