@@ -67,21 +67,23 @@ const productos = [
 // Base de datos de videos (puedes ampliarla)
 const videosRedes = [
     {
-        plataforma: 'instagram',
-        url: 'https://www.instagram.com/p/CxYtF9YrRk9/embed'
+        idVideo:7503224825788337414
     },
     {
-        plataforma: 'tiktok',
-        url: 'https://www.tiktok.com/embed/v2/7234567890123456789'
+        idVideo:7503256741954505989
     },
     {
-        plataforma: 'instagram',
-        url: 'https://www.instagram.com/p/CxYtF9YrRk9/embed'
+        idVideo:7503039528018398469
     },
     {
-        plataforma: 'tiktok',
-        url: 'https://www.tiktok.com/embed/v2/7234567890123456789'
-    },
+        idVideo:7502806180385983749
+    },{
+        idVideo:7502677383619677445
+    },{
+         idVideo:7502667485682879750
+    },{
+         idVideo:7502425021659434295
+    }
     // Agrega más videos según necesites
 ];
 // Variable global para guardar el ID del producto abierto
@@ -345,19 +347,19 @@ function cargarVideosSlider() {
     const sliderTrack = document.querySelector('.slider-track');
     
     // Duplicamos los videos para efecto continuo infinito
-    const videosDuplicados = [...videosRedes, ...videosRedes];
+    //const videosDuplicados = [...videosRedes];
     
-    sliderTrack.innerHTML = videosDuplicados.map(video => `
-        <div class="video-container">
-            <iframe class="video-embed" 
-                    src="${video.url}" 
-                    frameborder="0" 
-                    allowfullscreen
-                    loading="lazy"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
-            </iframe>
-        </div>
-    `).join('');
+    sliderTrack.innerHTML =`
+        <blockquote class="tiktok-embed"
+                cite="https://www.tiktok.com"
+                data-embed-type="curated"
+                data-video-id-list="7503224825788337414,7503256741954505989,7503179273289731383,7503039528018398469,7502806180385983749,7502677383619677445,7502667485682879750,7502425021659434295"
+                data-embed-from="embed_page"
+                style="max-width: 780px;min-width: 325px;">
+            <section>
+                <a target="_blank" href="https://www.tiktok.com/@artesanaoficial?refer=embed">@artessanaoficial</a>
+            </section>
+        </blockquote>`
 }
 
 // Llamar la función al cargar la página
