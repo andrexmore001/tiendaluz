@@ -88,6 +88,47 @@
             </div>
         </div>
     </div>
+    <!-- Modal Formulario de Cliente -->
+<div class="modal-formulario" id="modal-formulario">
+    <div class="modal-contenido">
+        <span class="cerrar-modal">&times;</span>
+        <h2>Información del Cliente</h2>
+        <p class="subtitulo-modal">Por favor completa tus datos para procesar el pedido</p>
+        
+        <form id="formulario-cliente">
+            <div class="form-group">
+                <label for="nombre-cliente">Nombre completo *</label>
+                <input type="text" id="nombre-cliente" required>
+                <span class="error-message" id="error-nombre">Este campo es obligatorio</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="telefono-cliente">WhatsApp/Teléfono *</label>
+                <input type="tel" id="telefono-cliente" required>
+                <span class="error-message" id="error-telefono">Este campo es obligatorio</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="email-cliente">Email</label>
+                <input type="email" id="email-cliente">
+            </div>
+            
+            <div class="form-group">
+                <label for="direccion-cliente">Dirección de envío</label>
+                <textarea id="direccion-cliente" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="notas-cliente">Notas adicionales</label>
+                <textarea id="notas-cliente" rows="2"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-enviar-formulario">
+                <i class="fab fa-whatsapp"></i> Enviar pedido por WhatsApp
+            </button>
+        </form>
+    </div>
+</div>
     <section class="seccion-videos">
         <h2>Lo último en nuestras redes</h2>
         <div class="slider-videos">

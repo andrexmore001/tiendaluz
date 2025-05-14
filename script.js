@@ -87,7 +87,6 @@ const itemsCarrito = document.getElementById('items-carrito');
 const totalCarrito = document.getElementById('total');
 const btnPagar = document.querySelector('.btn-pagar');
 
-
 // Cargar productos en la página
 // Modificar la función cargarProductos() para incluir el modal
 function cargarProductos() {
@@ -250,6 +249,9 @@ function abrirModal(modalId) {
 document.querySelector('.cerrar-modal-producto').addEventListener('click', () => {
     cerrarModal('modal-producto');
 });
+document.querySelector('.cerrar-modal').addEventListener('click', () => {
+    cerrarModal('modal-formulario');
+});
 
 document.querySelector('.cerrar-modal-carrito').addEventListener('click', () => {
     cerrarModal('modal-carrito');
@@ -263,6 +265,9 @@ window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('modal-carrito')) {
         cerrarModal('modal-carrito');
     }
+    if (e.target === document.getElementById('modal-formulario')) {
+        cerrarModal('modal-formulario');
+    }
 });
 
 // Abrir modal del carrito
@@ -271,12 +276,111 @@ document.querySelector('.carrito-icono').addEventListener('click', () => {
 });
 // Botón de pago (simulación)
 btnPagar.addEventListener('click', () => {
-    alert('Redirigiendo a PayPal...');
-    carrito = [];
-    actualizarCarrito();
-    modalCarrito.style.display = 'none';
+    // Verificar si hay productos en el carrito
+    if (carrito.length === 0) {
+        alert('Tu carrito está vacío');
+        return;
+    }
+    
+    // Mostrar formulario modal
+    abrirModal('modal-formulario');
+});
+// Manejar envío del formulario
+document.getElementById('formulario-cliente').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Validar campos obligatorios
+    const nombre = document.getElementById('nombre-cliente').value.trim();
+    const telefono = document.getElementById('telefono-cliente').value.trim();
+    let valido = true;
+    
+    // Validar nombre
+    if (nombre === '') {
+        document.getElementById('error-nombre').style.display = 'block';
+        valido = false;
+    } else {
+        document.getElementById('error-nombre').style.display = 'none';
+    }
+    
+    // Validar teléfono (mínimo 8 dígitos)
+    if (telefono === '' || telefono.replace(/\D/g, '').length < 8) {
+        document.getElementById('error-telefono').style.display = 'block';
+        document.getElementById('error-telefono').textContent = 
+            telefono === '' ? 'Este campo es obligatorio' : 'Teléfono no válido';
+        valido = false;
+    } else {
+        document.getElementById('error-telefono').style.display = 'none';
+    }
+    
+    if (!valido) return;
+    
+    // Obtener todos los datos
+    const email = document.getElementById('email-cliente').value.trim();
+    const direccion = document.getElementById('direccion-cliente').value.trim();
+    const notas = document.getElementById('notas-cliente').value.trim();
+    
+    // Enviar pedido a WhatsApp
+    enviarPedidoWhatsApp(nombre, telefono, email, direccion, notas);
+    
+    // Cerrar modal y limpiar formulario
+    cerrarModal('modal-formulario');
+    this.reset();
 });
 
+// Función mejorada para enviar a WhatsApp
+function enviarPedidoWhatsApp(nombre, telefono, email = '', direccion = '', notas = '') {
+    // Agrupar productos por ID con sus cantidades
+    const productosAgrupados = {};
+    carrito.forEach(item => {
+        if (!productosAgrupados[item.id]) {
+            productosAgrupados[item.id] = {
+                ...item,
+                cantidad: item.cantidad || 1
+            };
+        } else {
+            productosAgrupados[item.id].cantidad += item.cantidad || 1;
+        }
+    });
+    
+    // Crear mensaje estructurado
+    let mensaje = `*Nuevo Pedido - ${new Date().toLocaleDateString()}*\n\n`;
+    mensaje += `*Cliente:* ${nombre}\n`;
+    mensaje += `*Teléfono:* ${telefono}\n`;
+    if (email) mensaje += `*Email:* ${email}\n`;
+    if (direccion) mensaje += `*Dirección:* ${direccion}\n`;
+    if (notas) mensaje += `*Notas:* ${notas}\n\n`;
+    
+    mensaje += `*Detalle del Pedido:*\n`;
+    
+    // Añadir productos al mensaje
+    Object.values(productosAgrupados).forEach(item => {
+        const subtotal = item.precio * item.cantidad;
+        mensaje += `➡ *${item.nombre}*\n`;
+        mensaje += `   - Cantidad: ${item.cantidad}\n`;
+        mensaje += `   - Precio unitario: $${item.precio.toFixed(2)}\n`;
+        mensaje += `   - Subtotal: $${subtotal.toFixed(2)}\n\n`;
+    });
+    
+    // Calcular totales
+    const subtotal = carrito.reduce((sum, item) => sum + (item.precio * (item.cantidad || 1)), 0);
+    const iva = subtotal * 0.16; // Ajusta según tu país
+    const total = subtotal + iva;
+    
+    mensaje += `*Resumen de Pago:*\n`;
+    mensaje += `   - Subtotal: $${subtotal.toFixed(2)}\n`;
+    mensaje += `   - *TOTAL: $${total.toFixed(2)}*\n\n`;
+    mensaje += `*!Hola!, me puedes ayudar con estos productos?*`;
+    
+    // Codificar y enviar
+    const numeroWhatsApp = '573115659523'; // Reemplaza con tu número
+    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, '_blank');
+    
+    // Limpiar carrito
+    carrito = [];
+    actualizarCarrito();
+    cerrarModal('modal-carrito');
+}
 // Configuración de eventos para compra rápida
 document.querySelectorAll('.producto').forEach(producto => {
     const productId = producto.dataset.id;
@@ -317,12 +421,8 @@ function configurarEventosCompraRapida() {
             debugger
             agregarAlCarrito(producto.id);
             
-            // Mostrar confirmación visual
-            this.innerHTML = '<i class="fas fa-check"></i> ¡Agregado!';
-            this.style.backgroundColor = '#4CAF50';
-            
             // Abrir el carrito
-            abrirModal('modal-carrito');
+            abrirModal('modal-formulario');
             
             // Restaurar el botón después de 2 segundos
             setTimeout(() => {
