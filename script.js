@@ -86,6 +86,7 @@ const modalCarrito = document.getElementById('modal-carrito');
 const itemsCarrito = document.getElementById('items-carrito');
 const totalCarrito = document.getElementById('total');
 const btnPagar = document.querySelector('.btn-pagar');
+const btnAnadir = document.querySelector('.btn-anadir');
 
 // Cargar productos en la página
 // Modificar la función cargarProductos() para incluir el modal
@@ -192,6 +193,7 @@ function cambiarImagen(srcImagen) {
 
 // Agregar producto al carrito
 function agregarAlCarrito(id) {
+   cerrarModal('modal-producto');
     const producto = productos.find(p => p.id === id);
     // Buscar si el producto ya está en el carrito
     const productoEnCarrito = carrito.find(item => item.id === id);
@@ -204,13 +206,11 @@ function agregarAlCarrito(id) {
         producto.cantidad = 1; // Asegurarse de que el producto tenga la propiedad cantidad
         carrito.push(producto);
     }
-
-    actualizarCarrito();
+    actualizarCarrito()
 }
 
 // Actualizar carrito
 function actualizarCarrito() {
-    debugger
     contadorCarrito.textContent = carrito.length;
     itemsCarrito.innerHTML = carrito.map(item => `
         <div class="item-carrito">
@@ -226,6 +226,7 @@ function actualizarCarrito() {
 
     const total = carrito.reduce((sum, item) => sum + item.precio*item.cantidad, 0);
     totalCarrito.textContent = `$${total.toFixed(2)}`;
+    abrirModal('modal-carrito');
 }
 
 // Eliminar producto del carrito
@@ -281,9 +282,13 @@ btnPagar.addEventListener('click', () => {
         alert('Tu carrito está vacío');
         return;
     }
-    
     // Mostrar formulario modal
     abrirModal('modal-formulario');
+});
+
+btnAnadir.addEventListener('click', () => {
+    //logica de carrito page
+    cerrarModal('modal-carrito');
 });
 // Manejar envío del formulario
 document.getElementById('formulario-cliente').addEventListener('submit', function(e) {
@@ -416,19 +421,8 @@ function configurarEventosCompraRapida() {
             e.stopPropagation();
             const productId = parseInt(this.closest('.producto').dataset.id);
             const producto = productos.find(p => p.id === productId);
-            
             // Agregar al carrito
-            debugger
             agregarAlCarrito(producto.id);
-            
-            // Abrir el carrito
-            abrirModal('modal-formulario');
-            
-            // Restaurar el botón después de 2 segundos
-            setTimeout(() => {
-                this.innerHTML = '<i class="fas fa-cart-plus"></i> Comprar ahora';
-                this.style.backgroundColor = 'rgba(255, 107, 107, 0.9)';
-            }, 2000);
         });
     });
 }

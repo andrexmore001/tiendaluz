@@ -78,14 +78,27 @@
     <div class="modal-carrito" id="modal-carrito">
         <div class="modal-contenido">
             <span class="cerrar-modal-carrito">&times;</span>
-            <h2>Tu Carrito</h2>
+            <h2 id="Titulocarrito">Tu Carrito</h2>
             <div class="items-carrito" id="items-carrito">
                 <!-- Los productos del carrito aparecerán aquí -->
             </div>
-            <div class="total-carrito">
-                <p>Total: <span id="total">$0.00</span></p>
-                <button class="btn-pagar">Pagar con PayPal</button>
-            </div>
+          <div class="resumen-carrito">
+      <p class="total-carrito">
+        Total: <span id="total">$0.00</span>
+      </p>
+
+      <div class="botones-acciones">
+        <button class="btn-anadir">
+          <span class="texto-boton"><i class="fas fa-cart-plus"></i> Añadir producto</span>
+          <span class="icono-mas"><i class="fas fa-plus"></i></span>
+        </button>
+
+        <button class="btn-pagar">
+          <span class="texto-boton"><i class="fas fa-credit-card"></i> Pagar</span>
+          <span class="icono-mas"><i class="fas fa-check"></i></span>
+        </button>
+      </div>
+    </div>
         </div>
     </div>
     <!-- Modal Formulario de Cliente -->
