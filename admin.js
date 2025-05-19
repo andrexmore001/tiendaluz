@@ -8,7 +8,7 @@ async function cargarProductos() {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key':''
+                'x-api-key':'YWVPCQT7M46v021tKjUHw8fRzp0hfWC38V7rrpho'
             }
         });
         
@@ -61,7 +61,7 @@ async function eliminarProducto(id) {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key':''
+                'x-api-key':'YWVPCQT7M46v021tKjUHw8fRzp0hfWC38V7rrpho'
             }
         });
         
@@ -90,7 +90,7 @@ async function guardarCambios(producto) {
             method: method,
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key':''
+                'x-api-key':'YWVPCQT7M46v021tKjUHw8fRzp0hfWC38V7rrpho'
             },
             body: JSON.stringify(producto)
         });

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tienda de Artesana. Envíos a todo Colombia.">
+    <meta name="author" content="Artesana">
+    <meta name="keywords" content="Regalos personalizados con amor">
+
+    <title>Artesana | Tienda Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Stoke:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="../filters.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="Filters">
+    <header>
+        <div class="logo">
+            <a href="/"><img src="../imagenes/logo.png" alt="Artesana" class="profile-pic"></a>
+        </div>
+
+        <!-- Menú Hamburguesa para móvil -->
+        <div class="menu-hamburguesa">
+            <i class="fas fa-bars"></i>
+        </div>
+
+        <nav class="nav-menu">
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#productos">Productos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+
+        <div class="carrito-icono">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="contador-carrito">0</span>
+        </div>
+    </header>
+    <div class="contenedor-principal">
+        <!-- Filtros -->
+<aside class="filtros">
+  <section>
+    <h3>Categorías</h3>
+    <label><input type="checkbox" name="categoria" value="ParaEllos"> Para ellos</label>
+    <label><input type="checkbox" name="categoria" value="ParaEllas"> Para ellas</label>
+  </section>
+  <section>
+    <h3>Fechas</h3>
+    <label><input type="checkbox" name="categoria" value="madre"> Día de la madre</label>
+    <label><input type="checkbox" name="categoria" value="padre"> Día del padre</label>
+    <label><input type="checkbox" name="categoria" value="aniversario"> Aniversario</label>
+    <label><input type="checkbox" name="categoria" value="cumple"> Cumples</label>
+    <label><input type="checkbox" name="categoria" value="porquesi"> Porque si</label>
+  </section>
+
+  <section>
+    <h3>Rango de precio</h3>
+    <input type="range" id="precioRango" min="0" max="500000" step="1000" value="500000" oninput="actualizarPrecio(this.value)">
+    <p>Precio: $<span id="precioValor">500,000</span></p>
+  </section>
+</aside>
+        <!-- Productos -->
+        <section id="productos" class="productos">
+            <div class="grid-productos" id="grid-productos">
+                <!-- Los productos se cargarán con JavaScript -->
+            </div>
+        </section>
+    </div>
+    <!-- Modal del Producto -->
+    <div class="modal-producto" id="modal-producto">
+        <div class="modal-contenido">
+            <span class="cerrar-modal-producto">&times;</span>
+
+            <div class="modal-grid">
+                <!-- Columna izquierda - Visualización del producto -->
+                <div class="columna-visualizacion">
+                    <div class="visor-principal" id="visor-principal">
+                        <!-- Aquí va el 3D o la imagen activa -->
+                    </div>
+
+                    <div class="selector-vistas" id="selector-vistas">
+                        <!-- Miniaturas de imágenes y botón "Ver en 3D" -->
+                    </div>
+                </div>
+
+                <!-- Columna derecha - Información del producto -->
+                <div class="columna-informacion">
+                    <div class="info-producto">
+                        <h2 id="modal-nombre">Nombre del Producto</h2>
+                        <div class="precio" id="modal-precio">$0.00</div>
+                        <div class="descripcion" id="modal-descripcion">Descripción del producto...</div>
+                        <button class="btn btn-agregar" id="btn-agregar-carrito">
+                            <i class="fas fa-shopping-cart"></i> Añadir al carrito
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Carrito de compras (modal) -->
+    <div class="modal-carrito" id="modal-carrito">
+        <div class="modal-contenido">
+            <span class="cerrar-modal-carrito">&times;</span>
+            <h2 id="Titulocarrito">Tu Carrito</h2>
+            <div class="items-carrito" id="items-carrito">
+                <!-- Los productos del carrito aparecerán aquí -->
+            </div>
+            <div class="resumen-carrito">
+                <p class="total-carrito">
+                    Total: <span id="total">$0.00</span>
+                </p>
+
+                <div class="botones-acciones">
+                    <button class="btn-anadir">
+                        <span class="texto-boton"><i class="fas fa-cart-plus"></i> Añadir Mas productos</span>
+                        <span class="icono-mas"><i class="fas fa-plus"></i></span>
+                    </button>
+
+                    <button class="btn-pagar">
+                        <span class="texto-boton"><i class="fas fa-credit-card"></i> Confirmar Pedido</span>
+                        <span class="icono-mas"><i class="fas fa-check"></i></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Formulario de Cliente -->
+    <div class="modal-formulario" id="modal-formulario">
+        <div class="modal-contenido">
+            <span class="cerrar-modal">&times;</span>
+            <h2>Información del Cliente</h2>
+            <p class="subtitulo-modal">Por favor completa tus datos para procesar el pedido</p>
+
+            <form id="formulario-cliente">
+                <div class="form-group">
+                    <label for="nombre-cliente">Nombre completo *</label>
+                    <input type="text" id="nombre-cliente" required>
+                    <span class="error-message" id="error-nombre">Este campo es obligatorio</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefono-cliente">WhatsApp/Teléfono *</label>
+                    <input type="tel" id="telefono-cliente" required>
+                    <span class="error-message" id="error-telefono">Este campo es obligatorio</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email-cliente">Email</label>
+                    <input type="email" id="email-cliente">
+                </div>
+
+                <div class="form-group">
+                    <label for="direccion-cliente">Dirección de envío</label>
+                    <textarea id="direccion-cliente" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="notas-cliente">Notas adicionales</label>
+                    <textarea id="notas-cliente" rows="2"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-enviar-formulario">
+                    <i class="fab fa-whatsapp"></i> Enviar pedido por WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
+    <footer id="contacto">
+        <div class="footer-container">
+            <!-- Primera sección: Servicio al cliente -->
+            <div class="footer-section">
+                <h3>Servicio al cliente</h3>
+                <ul>
+                    <!-- <li><a href="#">Servicio al cliente y contacto</a></li> -->
+                    <!-- <li><a href="#">Despachos y Envíos</a></li> -->
+                    <li><a href="#">Términos y Condiciones</a></li>
+                    <li><a href="#">Tratamiento de datos</a></li>
+                    <!-- <li><a href="#">Rastrea tu pedido</a></li> -->
+                    <li><a href="#">Promociones vigentes</a></li>
+                    <!-- <li><a href="#">Comunícate con nosotros</a></li> -->
+                </ul>
+            </div>
+
+            <!-- Segunda sección: Acerca de nosotros -->
+            <div class="footer-section">
+                <h3>Acerca de nosotros</h3>
+                <ul>
+                    <li><a href="https://links.artessana.com.co/" target="_blank">Conoce artessana_oficial</a></li>
+                </ul>
+            </div>
+
+            <!-- Tercera sección: Suscripción -->
+            <div class="footer-section newsletter">
+                <h3>Suscríbete a artessana_oficial</h3>
+                <p>Prometemos Enviarte energia bonita. Recibe 10-% off!</p>
+                <form class="subscribe-form">
+                    <input type="email" placeholder="Su dirección de correo electrónico" required>
+                    <button type="submit">Suscribirse</button>
+                </form>
+                <!-- <div class="payment-methods">
+                    <span class="payment-icon">Add</span>
+                    <span class="payment-icon">VISA</span>
+                    <span class="payment-icon">1</span>
+                    <span class="payment-icon">2</span>
+                    <span class="payment-icon">3</span>
+                </div> -->
+            </div>
+        </div>
+        <!-- Botón flotante de WhatsApp -->
+        <a href="https://wa.link/rzcs8p" class="whatsapp-float" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-whatsapp flotante"></i>
+            <span>Compra ahora</span>
+        </a>
+        <!-- Redes sociales y copyright -->
+        <div class="footer-bottom">
+            <div class="redes-sociales">
+                <a href="https://www.tiktok.com/@artesanaoficial?_t=ZS-8wKDMMxJXXk&_r=1"><i
+                        class="fab fa-tiktok"></i></a>
+                <a href="https://www.instagram.com/artessana_oficial/profilecard/?igsh=d2E5NGM2NDI5bjZo"><i
+                        class="fab fa-instagram"></i></a>
+                <a href="https://wa.link/rzcs8p"><i class="fab fa-whatsapp"></i></a>
+            </div>
+            <div class="copyright">
+                <p>Detalles Artesana © 2025</p>
+                <p>Haz tus momentos memorables</p>
+            </div>
+        </div>
+    </footer>
+    <script src="../script.js"></script>
+</body>
+
+</html>
