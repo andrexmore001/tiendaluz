@@ -657,7 +657,7 @@ function actualizarPrecio(valor) {
   filtrarProductos(); // Aplicamos filtro dinámico al mover el slider
 }
 
-function filtrarProductos() {r
+function filtrarProductos() {
   const precioMaximo = parseInt(document.getElementById("precioRango").value);
 
   // Obtener todos los productos en pantalla

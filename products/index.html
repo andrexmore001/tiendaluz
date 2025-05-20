@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Stoke:wght@300;400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css">
-    <link rel="stylesheet" href="../filters.css">
+    <link rel="stylesheet" href="./filters.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -30,8 +30,8 @@
 
         <nav class="nav-menu">
             <ul>
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#productos">Productos</a></li>
+                <li><a href="/">Inicio</a></li>
+                <li><a href="/products">Productos</a></li>
                 <li><a href="#contacto">Contacto</a></li>
             </ul>
         </nav>
@@ -40,30 +40,39 @@
             <i class="fas fa-shopping-cart"></i>
             <span class="contador-carrito">0</span>
         </div>
+        <!-- Botón para mostrar/ocultar filtros en móvil -->
+        <div class="filtros-toggle">
+            <i class="fas fa-sliders-h"></i>
+            <span>Filtros</span>
+        </div>
     </header>
     <div class="contenedor-principal">
         <!-- Filtros -->
-<aside class="filtros">
-  <section>
-    <h3>Categorías</h3>
-    <label><input type="checkbox" name="categoria" value="ParaEllos"> Para ellos</label>
-    <label><input type="checkbox" name="categoria" value="ParaEllas"> Para ellas</label>
-  </section>
-  <section>
-    <h3>Fechas</h3>
-    <label><input type="checkbox" name="categoria" value="madre"> Día de la madre</label>
-    <label><input type="checkbox" name="categoria" value="padre"> Día del padre</label>
-    <label><input type="checkbox" name="categoria" value="aniversario"> Aniversario</label>
-    <label><input type="checkbox" name="categoria" value="cumple"> Cumples</label>
-    <label><input type="checkbox" name="categoria" value="porquesi"> Porque si</label>
-  </section>
+        <aside class="filtros">
+            <button class="cerrar-filtros cerrar-filtros-desktop">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <section>
+                <h3>Categorías</h3>
+                <label><input type="checkbox" name="categoria" value="ParaEllos"> Para ellos</label>
+                <label><input type="checkbox" name="categoria" value="ParaEllas"> Para ellas</label>
+            </section>
+            <section>
+                <h3>Fechas</h3>
+                <label><input type="checkbox" name="categoria" value="madre"> Día de la madre</label>
+                <label><input type="checkbox" name="categoria" value="padre"> Día del padre</label>
+                <label><input type="checkbox" name="categoria" value="aniversario"> Aniversario</label>
+                <label><input type="checkbox" name="categoria" value="cumple"> Cumples</label>
+                <label><input type="checkbox" name="categoria" value="porquesi"> Porque si</label>
+            </section>
 
-  <section>
-    <h3>Rango de precio</h3>
-    <input type="range" id="precioRango" min="0" max="500000" step="1000" value="500000" oninput="actualizarPrecio(this.value)">
-    <p>Precio: $<span id="precioValor">500,000</span></p>
-  </section>
-</aside>
+            <section>
+                <h3>Rango de precio</h3>
+                <input type="range" id="precioRango" min="0" max="500000" step="1000" value="500000"
+                    oninput="actualizarPrecio(this.value)">
+                <p>Precio: $<span id="precioValor">500,000</span></p>
+            </section>
+        </aside>
         <!-- Productos -->
         <section id="productos" class="productos">
             <div class="grid-productos" id="grid-productos">
@@ -232,6 +241,7 @@
         </div>
     </footer>
     <script src="../script.js"></script>
+    <script src="./filters.js"></script>
 </body>
 
 </html>

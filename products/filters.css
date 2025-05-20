@@ -1,0 +1,190 @@
+/* Estilos para el contenedor principal y filtros */
+.contenedor-principal {
+    display: flex;
+    padding: 2rem;
+    gap: 2rem;
+    position: relative;
+}
+
+/* aside.filtros {
+    width: 250px;
+    border-right: 1px solid #ccc;
+    padding-right: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    position: sticky;
+    top: 120px;
+    height: fit-content;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+} */
+
+aside.filtros h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #000;
+    padding-bottom: 4px;
+}
+
+aside.filtros label {
+    display: block;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.subcategorias {
+    padding-left: 20px;
+    margin-top: 8px;
+}
+
+/* Estilos para móvil */
+@media (max-width: 768px) {
+    .contenedor-principal {
+        flex-direction: column;
+        padding: 1rem;
+    }
+    
+    aside.filtros {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        z-index: 1000;
+        padding: 1.5rem;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        border-right: none;
+        overflow-y: auto;
+        background: white;
+    }
+    
+    aside.filtros.visible {
+        left: 0;
+    }
+    
+    .filtros-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px;
+        background: #f8f8f8;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: auto;
+        margin-right: 15px;
+    }
+    
+    .filtros-toggle i {
+        font-size: 18px;
+    }
+    
+    /* Overlay cuando los filtros están abiertos */
+    .filtros-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    
+    .filtros-overlay.visible {
+        opacity: 1;
+        pointer-events: all;
+    }
+    
+    /* Botón para cerrar filtros */
+    .cerrar-filtros {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: none;
+        border: none;
+        font-size: 30px;
+        cursor: pointer;
+    }
+}
+
+/* Estilos para desktop */
+@media (min-width: 769px) {
+    .filtros-toggle, .filtros-overlay {
+        display: none;
+    }
+}
+
+/* Estilos generales para el aside */
+aside.filtros {
+  width: 250px;
+  border-right: 1px solid #ccc;
+  padding: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  position: sticky;
+  top: 120px;
+  height: fit-content;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  transform: translateX(0);
+}
+
+/* Botón cerrar en desktop */
+.cerrar-filtros-desktop {
+  display: none; /* Oculto por defecto */
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #555;
+}
+
+/* Cuando los filtros están colapsados */
+aside.filtros.colapsado {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+  transform: translateX(-100%);
+  border-right: none;
+}
+
+/* Mostrar botón cerrar solo cuando está expandido */
+aside.filtros:not(.colapsado) .cerrar-filtros-desktop {
+  display: block;
+}
+
+/* Ajustar el contenedor principal cuando los filtros están colapsados */
+.contenedor-principal.filtros-colapsados {
+  padding-left: 0;
+}
+
+/* Estilos para móvil (se mantienen iguales) */
+@media (max-width: 768px) {
+  /* ... tus estilos móviles existentes ... */
+}
+
+/* Botón para expandir filtros cuando están colapsados */
+.boton-expandir-filtros {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: 1px solid #ccc;
+  border-left: none;
+  border-radius: 0 5px 5px 0;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 999;
+  display: none; /* Oculto por defecto */
+}
+
+aside.filtros.colapsado + .boton-expandir-filtros {
+  display: block;
+}
