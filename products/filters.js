@@ -30,34 +30,34 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   
   // Resto del código para móvil (se mantiene igual)
-  overlay.className = 'filtros-overlay';
-  document.body.appendChild(overlay);
+//   overlay.className = 'filtros-overlay';
+//   document.body.appendChild(overlay);
    
-    // Eventos para mostrar/ocultar
-    filtrosToggle?.addEventListener('click', function() {
-        asideFiltros.classList.add('visible');
-        overlay.classList.add('visible');
-        document.body.style.overflow = 'hidden';
-    });
+//     // Eventos para mostrar/ocultar
+//     filtrosToggle?.addEventListener('click', function() {
+//         asideFiltros.classList.add('visible');
+//         overlay.classList.add('visible');
+//         document.body.style.overflow = 'hidden';
+//     });
     
-    overlay.addEventListener('click', function() {
-        asideFiltros.classList.remove('visible');
-        overlay.classList.remove('visible');
-        document.body.style.overflow = '';
-    });
+//     overlay.addEventListener('click', function() {
+//         asideFiltros.classList.remove('visible');
+//         overlay.classList.remove('visible');
+//         document.body.style.overflow = '';
+//     });
     
-    cerrarBtn.addEventListener('click', function() {
-        asideFiltros.classList.remove('visible');
-        overlay.classList.remove('visible');
-        document.body.style.overflow = '';
-    });
+//     cerrarBtn.addEventListener('click', function() {
+//         asideFiltros.classList.remove('visible');
+//         overlay.classList.remove('visible');
+//         document.body.style.overflow = '';
+//     });
     
-    // Cerrar al hacer clic en un enlace (opcional)
-    asideFiltros.querySelectorAll('a').forEach(link => {
-        link.addEventListener('click', function() {
-            asideFiltros.classList.remove('visible');
-            overlay.classList.remove('visible');
-            document.body.style.overflow = '';
-        });
-    });
+//     // Cerrar al hacer clic en un enlace (opcional)
+//     asideFiltros.querySelectorAll('a').forEach(link => {
+//         link.addEventListener('click', function() {
+//             asideFiltros.classList.remove('visible');
+//             overlay.classList.remove('visible');
+//             document.body.style.overflow = '';
+//         });
+//     });
 });
