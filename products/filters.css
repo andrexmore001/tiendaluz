@@ -74,10 +74,10 @@ aside.filtros:not(.colapsado) .cerrar-filtros-desktop {
 .boton-expandir-filtros {
     position: fixed;
     left: 0;
-    top: 50%;
+    top: 30%;
     transform: translateY(-50%);
-    background: #fff;
-    border: 1px solid #ccc;
+    background: #88f5ac;
+    border: 1px solid #f5f3eb;
     border-left: none;
     border-radius: 0 5px 5px 0;
     padding: 10px;
