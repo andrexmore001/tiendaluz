@@ -1,101 +1,91 @@
-/* Estilos para el contenedor principal y filtros */
 .contenedor-principal {
     display: flex;
     padding: 2rem;
     gap: 2rem;
-    position: relative;
+    position: relative
 }
-
 
 aside.filtros h3 {
     font-size: 16px;
     margin-bottom: 10px;
     border-bottom: 1px solid #000;
-    padding-bottom: 4px;
+    padding-bottom: 4px
 }
 
 aside.filtros label {
     display: block;
     margin-bottom: 8px;
-    cursor: pointer;
+    cursor: pointer
 }
 
 .subcategorias {
     padding-left: 20px;
-    margin-top: 8px;
+    margin-top: 8px
 }
 
+.filtros-overlay,
+.filtros-toggle {
+    display: none
+}
 
-    .filtros-toggle, .filtros-overlay {
-        display: none;
-    }
-
-
-/* Estilos generales para el aside */
 aside.filtros {
-  width: 250px;
-  border-right: 1px solid #ccc;
-  padding: 1rem;
-  transition: all 0.3s ease;
-  background: white;
-  position: sticky;
-  top: 120px;
-  height: fit-content;
-  max-height: calc(100vh - 140px);
-  overflow-y: auto;
-  transform: translateX(0);
+    width: 250px;
+    border-right: 1px solid #ccc;
+    padding: 1rem;
+    transition: all .3s ease;
+    background: #fff;
+    position:fixed;
+    top: 120px;
+    height: fit-content;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    transform: translateX(0);
+    z-index: 200
 }
 
-/* Botón cerrar en desktop */
 .cerrar-filtros-desktop {
-  display: none; /* Oculto por defecto */
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-  color: #555;
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: 0 0;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #555
 }
 
-/* Cuando los filtros están colapsados */
 aside.filtros.colapsado {
-  width: 0;
-  padding: 0;
-  overflow: hidden;
-  transform: translateX(-100%);
-  border-right: none;
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    transform: translateX(-100%);
+    border-right: none
 }
 
-/* Mostrar botón cerrar solo cuando está expandido */
 aside.filtros:not(.colapsado) .cerrar-filtros-desktop {
-  display: block;
+    display: block
 }
 
-/* Ajustar el contenedor principal cuando los filtros están colapsados */
 .contenedor-principal.filtros-colapsados {
-  padding-left: 0;
+    padding-left: 0
 }
 
-
-
-/* Botón para expandir filtros cuando están colapsados */
 .boton-expandir-filtros {
-  position: fixed;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: white;
-  border: 1px solid #ccc;
-  border-left: none;
-  border-radius: 0 5px 5px 0;
-  padding: 10px;
-  cursor: pointer;
-  z-index: 999;
-  display: none; /* Oculto por defecto */
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #fff;
+    border: 1px solid #ccc;
+    border-left: none;
+    border-radius: 0 5px 5px 0;
+    padding: 10px;
+    cursor: pointer;
+    z-index: 999;
+    display: none
 }
 
-aside.filtros.colapsado + .boton-expandir-filtros {
-  display: block;
+aside.filtros.colapsado+.boton-expandir-filtros {
+    display: block
 }
