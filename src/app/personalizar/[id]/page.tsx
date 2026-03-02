@@ -53,6 +53,9 @@ Total: $${(product.price * quantity).toLocaleString()}
                         baseColor={product.baseColor}
                         hingeEdge={product.hingeEdge as any}
                         flapsLocation={product.flapsLocation as any}
+                        flapHeightPercent={product.flapHeightPercent}
+                        flapWidthOffset={product.flapWidthOffset}
+                        flapType={product.flapType as any}
                     />
                     <button
                         className={styles.toggleOpen}

@@ -56,41 +56,54 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     // Initial load from localStorage
     useEffect(() => {
-        const savedSettings = localStorage.getItem('artesana_settings');
-        const savedProducts = localStorage.getItem('artesana_products');
-        const savedCollections = localStorage.getItem('artesana_collections');
-        const savedBoxShapes = localStorage.getItem('artesana_box_shapes');
-        const savedMaterials = localStorage.getItem('artesana_materials');
-        const savedAuth = localStorage.getItem('is_admin_auth');
+        try {
+            const savedSettings = localStorage.getItem('artesana_settings');
+            const savedProducts = localStorage.getItem('artesana_products');
+            const savedCollections = localStorage.getItem('artesana_collections');
+            const savedBoxShapes = localStorage.getItem('artesana_box_shapes');
+            const savedMaterials = localStorage.getItem('artesana_materials');
+            const savedAuth = localStorage.getItem('is_admin_auth');
 
-        if (savedSettings) setSettings(JSON.parse(savedSettings));
-        if (savedProducts) {
-            setProducts(JSON.parse(savedProducts));
-        } else {
-            setProducts(initialProducts);
+            if (savedSettings) setSettings(JSON.parse(savedSettings));
+
+            if (savedProducts) {
+                const parsed: Product[] = JSON.parse(savedProducts);
+                // Basic migration: Ensure all products have all current fields
+                const migrated = parsed.map(p => {
+                    const defaultP = initialProducts.find(ip => ip.id === p.id);
+                    return {
+                        ...defaultP, // Start with defaults if it exists in code
+                        ...p,         // Overwrite with saved data
+                        dimensions: { ...defaultP?.dimensions, ...p.dimensions }
+                    };
+                });
+                setProducts(migrated as Product[]);
+            }
+
+            if (savedCollections) setCollections(JSON.parse(savedCollections));
+
+            if (savedBoxShapes) {
+                const parsed: BoxShape[] = JSON.parse(savedBoxShapes);
+                const migrated = parsed.map(s => {
+                    const defaultS = initialBoxShapes.find(ds => ds.id === s.id);
+                    return { ...defaultS, ...s };
+                });
+                setBoxShapes(migrated);
+            }
+
+            if (savedMaterials) setMaterials(JSON.parse(savedMaterials));
+            if (savedAuth === 'true') setIsAuthenticated(true);
+        } catch (e) {
+            console.error("Error loading from storage", e);
         }
-        if (savedCollections) setCollections(JSON.parse(savedCollections));
-        if (savedBoxShapes) setBoxShapes(JSON.parse(savedBoxShapes));
-        if (savedMaterials) setMaterials(JSON.parse(savedMaterials));
-        if (savedAuth === 'true') setIsAuthenticated(true);
 
         // SYNC ACROSS TABS
         const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'artesana_products' && e.newValue) {
-                setProducts(JSON.parse(e.newValue));
-            }
-            if (e.key === 'artesana_settings' && e.newValue) {
-                setSettings(JSON.parse(e.newValue));
-            }
-            if (e.key === 'artesana_collections' && e.newValue) {
-                setCollections(JSON.parse(e.newValue));
-            }
-            if (e.key === 'artesana_box_shapes' && e.newValue) {
-                setBoxShapes(JSON.parse(e.newValue));
-            }
-            if (e.key === 'artesana_materials' && e.newValue) {
-                setMaterials(JSON.parse(e.newValue));
-            }
+            if (e.key === 'artesana_products' && e.newValue) setProducts(JSON.parse(e.newValue));
+            if (e.key === 'artesana_settings' && e.newValue) setSettings(JSON.parse(e.newValue));
+            if (e.key === 'artesana_collections' && e.newValue) setCollections(JSON.parse(e.newValue));
+            if (e.key === 'artesana_box_shapes' && e.newValue) setBoxShapes(JSON.parse(e.newValue));
+            if (e.key === 'artesana_materials' && e.newValue) setMaterials(JSON.parse(e.newValue));
         };
 
         window.addEventListener('storage', handleStorageChange);
@@ -99,22 +112,22 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
-    // Save to localStorage whenever state changes
+    // Separate saving to avoid clobbering states across tabs
+    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_settings', JSON.stringify(settings)); }, [settings, isLoaded]);
     useEffect(() => {
-        if (!isLoaded) return;
-        try {
-            localStorage.setItem('artesana_settings', JSON.stringify(settings));
-            localStorage.setItem('artesana_products', JSON.stringify(products));
-            localStorage.setItem('artesana_collections', JSON.stringify(collections));
-            localStorage.setItem('artesana_box_shapes', JSON.stringify(boxShapes));
-            localStorage.setItem('artesana_materials', JSON.stringify(materials));
-            localStorage.setItem('is_admin_auth', isAuthenticated.toString());
-            setStorageError(null);
-        } catch (e) {
-            console.error("Storage limit reached", e);
-            setStorageError("El espacio de almacenamiento está lleno. Borra productos o usa fotos más ligeras.");
+        if (isLoaded) {
+            try {
+                localStorage.setItem('artesana_products', JSON.stringify(products));
+                setStorageError(null);
+            } catch (e) {
+                setStorageError("Espacio lleno. Reduce el tamaño de las fotos.");
+            }
         }
-    }, [settings, products, collections, boxShapes, materials, isAuthenticated, isLoaded]);
+    }, [products, isLoaded]);
+    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_collections', JSON.stringify(collections)); }, [collections, isLoaded]);
+    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_box_shapes', JSON.stringify(boxShapes)); }, [boxShapes, isLoaded]);
+    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_materials', JSON.stringify(materials)); }, [materials, isLoaded]);
+    useEffect(() => { if (isLoaded) localStorage.setItem('is_admin_auth', isAuthenticated.toString()); }, [isAuthenticated, isLoaded]);
 
     // Apply CSS variables to the document root whenever settings change
     useEffect(() => {
