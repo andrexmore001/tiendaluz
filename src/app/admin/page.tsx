@@ -562,7 +562,29 @@ export default function AdminPage() {
                         <div className={styles.settingsGrid}>
                             {/* Colors */}
                             <section className={styles.settingsSection}>
-                                <h3><Palette size={20} /> Identidad Visual (Colores)</h3>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
+                                    <h3 style={{ margin: 0, border: 'none', padding: 0 }}><Palette size={20} /> Identidad Visual (Colores)</h3>
+                                    <button
+                                        className="btn-secondary"
+                                        style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                                        onClick={() => {
+                                            if (confirm('¿Restablecer los colores a la paleta original de Artesana?')) {
+                                                setLocalSettings((prev: SiteSettings) => ({
+                                                    ...prev,
+                                                    colors: {
+                                                        primary: '#E8A2A2',
+                                                        secondary: '#F9F1E7',
+                                                        accent: '#D4AF37',
+                                                        background: '#FFFFFF'
+                                                    }
+                                                }));
+                                                showToast("Colores restablecidos");
+                                            }
+                                        }}
+                                    >
+                                        Restablecer Artesana
+                                    </button>
+                                </div>
                                 <div className={styles.formRow}>
                                     <div className={styles.inputGroup}>
                                         <label>Color Primario (Mora)</label>
@@ -572,7 +594,12 @@ export default function AdminPage() {
                                                 value={localSettings.colors.primary}
                                                 onChange={(e) => handleSettingChange('colors.primary', e.target.value)}
                                             />
-                                            <input type="text" value={localSettings.colors.primary} readOnly />
+                                            <input
+                                                type="text"
+                                                value={localSettings.colors.primary}
+                                                onChange={(e) => handleSettingChange('colors.primary', e.target.value)}
+                                                placeholder="#000000"
+                                            />
                                         </div>
                                     </div>
                                     <div className={styles.inputGroup}>
@@ -583,7 +610,46 @@ export default function AdminPage() {
                                                 value={localSettings.colors.secondary}
                                                 onChange={(e) => handleSettingChange('colors.secondary', e.target.value)}
                                             />
-                                            <input type="text" value={localSettings.colors.secondary} readOnly />
+                                            <input
+                                                type="text"
+                                                value={localSettings.colors.secondary}
+                                                onChange={(e) => handleSettingChange('colors.secondary', e.target.value)}
+                                                placeholder="#000000"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.formRow} style={{ marginTop: '1.5rem' }}>
+                                    <div className={styles.inputGroup}>
+                                        <label>Color de Acento (Dorado)</label>
+                                        <div className={styles.colorWrapper}>
+                                            <input
+                                                type="color"
+                                                value={localSettings.colors.accent || '#D4AF37'}
+                                                onChange={(e) => handleSettingChange('colors.accent', e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                value={localSettings.colors.accent || '#D4AF37'}
+                                                onChange={(e) => handleSettingChange('colors.accent', e.target.value)}
+                                                placeholder="#000000"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label>Color de Fondo</label>
+                                        <div className={styles.colorWrapper}>
+                                            <input
+                                                type="color"
+                                                value={localSettings.colors.background || '#FFFFFF'}
+                                                onChange={(e) => handleSettingChange('colors.background', e.target.value)}
+                                            />
+                                            <input
+                                                type="text"
+                                                value={localSettings.colors.background || '#FFFFFF'}
+                                                onChange={(e) => handleSettingChange('colors.background', e.target.value)}
+                                                placeholder="#000000"
+                                            />
                                         </div>
                                     </div>
                                 </div>
@@ -1224,7 +1290,12 @@ export default function AdminPage() {
                                                 value={materialFormData.baseColor || '#FFFFFF'}
                                                 onChange={(e) => setMaterialFormData({ ...materialFormData, baseColor: e.target.value })}
                                             />
-                                            <input type="text" value={materialFormData.baseColor || '#FFFFFF'} readOnly />
+                                            <input
+                                                type="text"
+                                                value={materialFormData.baseColor || '#FFFFFF'}
+                                                onChange={(e) => setMaterialFormData({ ...materialFormData, baseColor: e.target.value })}
+                                                placeholder="#000000"
+                                            />
                                         </div>
                                     </div>
                                     <div className={styles.inputGroup}>

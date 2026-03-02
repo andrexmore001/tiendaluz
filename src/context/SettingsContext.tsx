@@ -156,6 +156,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const root = document.documentElement;
         root.style.setProperty('--primary', settings.colors.primary);
         root.style.setProperty('--primary-light', `${settings.colors.primary}15`);
+        root.style.setProperty('--primary-shadow', `${settings.colors.primary}40`);
         root.style.setProperty('--secondary', settings.colors.secondary);
         root.style.setProperty('--accent', settings.colors.accent);
         root.style.setProperty('--background', settings.colors.background);
