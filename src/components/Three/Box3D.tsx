@@ -327,13 +327,17 @@ function BoxModel({
         loader.setCrossOrigin('anonymous');
 
         if (topTexture) {
-            loader.load(topTexture, (tex) => setBaseTexture(tex));
+            loader.load(topTexture, (tex) => {
+                tex.colorSpace = THREE.SRGBColorSpace;
+                setBaseTexture(tex);
+            });
         } else {
             setBaseTexture(null);
         }
 
         if (materialTexture) {
             loader.load(materialTexture, (tex) => {
+                tex.colorSpace = THREE.SRGBColorSpace;
                 tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
                 const repeatX = Math.max(1, Math.floor(width / 3));
                 const repeatY = Math.max(1, Math.floor(depth / 3));
@@ -372,6 +376,7 @@ function BoxModel({
             }
 
             const newTexture = new THREE.CanvasTexture(canvas);
+            newTexture.colorSpace = THREE.SRGBColorSpace;
             newTexture.needsUpdate = true;
             setDynamicTexture(newTexture);
         }
@@ -382,8 +387,8 @@ function BoxModel({
             color: sideColor || baseColor || "#FFFFFF",
             map: materialMap,
             side: THREE.DoubleSide,
-            roughness: 0.7,
-            metalness: 0.1
+            roughness: 0.45,
+            metalness: 0.15
         };
 
         return [
