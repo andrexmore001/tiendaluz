@@ -145,7 +145,7 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 {/* Tuck Flap (Front of the lid) */}
                 <group
                     position={hingeOnWidth ? [0, 0, depth] : [width, 0, 0]}
-                    rotation={hingeOnWidth ? [isOpen ? -0.6 : -1.57, 0, 0] : [0, 0, isOpen ? 0.6 : 1.57]}
+                    rotation={hingeOnWidth ? [isOpen ? 0.6 : -1.57, 0, 0] : [0, 0, isOpen ? -0.6 : 1.57]}
                 >
                     <mesh material={materials} position={hingeOnWidth ? [0, 0.025, 0] : [0.025, 0, 0]}>
                         <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.01, 0.05, hingeOnWidth ? 0.01 : depth * 0.92]} />
@@ -444,7 +444,7 @@ export default function Box3D({
                 <pointLight position={[-10, -5, -10]} intensity={0.5} />
 
                 <Suspense fallback={null}>
-                    <Stage adjustCamera={true} intensity={1} environment="city" shadows={false} center={{}}>
+                    <Stage adjustCamera={true} intensity={1} shadows={false} center={{}}>
                         <BoxModel
                             width={width}
                             height={height}
