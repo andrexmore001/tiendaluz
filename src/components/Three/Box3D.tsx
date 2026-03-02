@@ -173,7 +173,7 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 {/* Tuck Flap (Front of the lid) */}
                 <group
                     position={hingeOnWidth ? [0, 0, depth] : [width, 0, 0]}
-                    rotation={hingeOnWidth ? [isOpen ? 0.6 : 0, 0, 0] : [0, 0, isOpen ? -0.6 : 0]}
+                    rotation={hingeOnWidth ? [isOpen ? -Math.PI / 2 : 0, 0, 0] : [0, 0, isOpen ? Math.PI / 2 : 0]}
                 >
                     <mesh material={materials} position={hingeOnWidth ? [0, -(height * tuckFlapHeightPercent) / 2, -0.005] : [-0.005, -(height * tuckFlapHeightPercent) / 2, 0]}>
                         <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.01, height * tuckFlapHeightPercent, hingeOnWidth ? 0.01 : depth * 0.92]} />
