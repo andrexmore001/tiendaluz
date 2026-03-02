@@ -65,24 +65,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
         if (savedSettings) setSettings(JSON.parse(savedSettings));
         if (savedProducts) {
-            const parsedProducts: Product[] = JSON.parse(savedProducts);
-
-            // 1. Start with initial products from code
-            const finalProducts = [...initialProducts];
-
-            // 2. Overwrite or add products from localStorage
-            parsedProducts.forEach(savedP => {
-                const index = finalProducts.findIndex(p => p.id === savedP.id);
-                if (index !== -1) {
-                    // Update existing product with saved state, but keep new defaults for missing fields
-                    finalProducts[index] = { ...finalProducts[index], ...savedP };
-                } else {
-                    // Add new product created by user
-                    finalProducts.push(savedP);
-                }
-            });
-
-            setProducts(finalProducts);
+            setProducts(JSON.parse(savedProducts));
+        } else {
+            setProducts(initialProducts);
         }
         if (savedCollections) setCollections(JSON.parse(savedCollections));
         if (savedBoxShapes) setBoxShapes(JSON.parse(savedBoxShapes));

@@ -19,9 +19,12 @@ interface Box3DProps {
     baseColor?: string;
     hingeEdge?: 'long' | 'short';
     flapsLocation?: 'lid' | 'base';
+    flapHeightPercent?: number;
+    flapWidthOffset?: number;
+    flapType?: 'rectangular' | 'trapezoidal';
 }
 
-function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'long', flapsLocation = 'base' }: any) {
+function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'long', flapsLocation = 'base', flapHeightPercent = 0.25, flapWidthOffset = -0.2, flapType = 'rectangular' }: any) {
     const hingeRef = useRef<THREE.Group>(null);
 
     // Determine if we hinge on the Width side or Depth side
@@ -47,24 +50,46 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
         ? [0, height / 2, -depth / 2]
         : [-width / 2, height / 2, 0];
 
-    // Side Flaps Component - Now centered at [0,0,0]
+    // Side Flaps Component
     const SideFlaps = () => {
-        const flapSize = (hingeOnWidth ? depth : width) * 0.25;
-        const flapWidth = (hingeOnWidth ? depth : width) * 0.8;
+        const flapSize = (hingeOnWidth ? depth : width) * flapHeightPercent;
+        const flapWidth = Math.max(0.1, (hingeOnWidth ? depth : width) + flapWidthOffset);
+
+        const FlapGeometry = ({ w, h, t }: { w: number, h: number, t: number }) => {
+            if (flapType === 'trapezoidal') {
+                const shape = useMemo(() => {
+                    const s = new THREE.Shape();
+                    const inset = Math.min(h * 0.2, w * 0.1);
+                    s.moveTo(-w / 2, -h / 2);
+                    s.lineTo(w / 2, -h / 2);
+                    s.lineTo(w / 2 - inset, h / 2);
+                    s.lineTo(-w / 2 + inset, h / 2);
+                    s.closePath();
+                    return s;
+                }, [w, h]);
+
+                return (
+                    <mesh position={[0, 0, -t / 2]}>
+                        <extrudeGeometry args={[shape, { depth: t, bevelEnabled: false }]} />
+                    </mesh>
+                );
+            }
+            return <boxGeometry args={[w, h, t]} />; // Width, Height, Thickness
+        };
 
         if (hingeOnWidth) {
             return (
                 <>
                     {/* Left inner flap */}
                     <group position={[-width / 2 + 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? 0.5 : -0.5) : (flapsLocation === 'lid' ? 1.57 : -1.57)]}>
-                        <mesh position={[0.01, flapSize / 2, 0]} material={materials[1]}>
-                            <boxGeometry args={[0.01, flapSize, flapWidth]} />
+                        <mesh position={[0.005, flapSize / 2, 0]} material={materials[1]} rotation={[0, Math.PI / 2, 0]}>
+                            <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Right inner flap */}
                     <group position={[width / 2 - 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? -0.5 : 0.5) : (flapsLocation === 'lid' ? -1.57 : 1.57)]}>
-                        <mesh position={[-0.01, flapSize / 2, 0]} material={materials[0]}>
-                            <boxGeometry args={[0.01, flapSize, flapWidth]} />
+                        <mesh position={[-0.005, flapSize / 2, 0]} material={materials[0]} rotation={[0, Math.PI / 2, 0]}>
+                            <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                 </>
@@ -74,14 +99,14 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 <>
                     {/* Back inner flap */}
                     <group position={[0, 0, -depth / 2 + 0.002]} rotation={[isOpen ? 0.5 : 1.57, 0, 0]}>
-                        <mesh position={[0, flapSize / 2, 0.01]} material={materials[5]}>
-                            <boxGeometry args={[flapWidth, flapSize, 0.01]} />
+                        <mesh position={[0, flapSize / 2, 0.005]} material={materials[5]}>
+                            <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Front inner flap */}
                     <group position={[0, 0, depth / 2 - 0.002]} rotation={[isOpen ? -0.5 : -1.57, 0, 0]}>
-                        <mesh position={[0, flapSize / 2, -0.01]} material={materials[4]}>
-                            <boxGeometry args={[flapWidth, flapSize, 0.01]} />
+                        <mesh position={[0, flapSize / 2, -0.005]} material={materials[4]}>
+                            <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                 </>
@@ -277,7 +302,10 @@ function BoxModel({
     materialTexture,
     baseColor,
     hingeEdge,
-    flapsLocation
+    flapsLocation,
+    flapHeightPercent,
+    flapWidthOffset,
+    flapType
 }: any) {
     const groupRef = useRef<THREE.Group>(null);
     const [dynamicTexture, setDynamicTexture] = useState<THREE.Texture | null>(null);
@@ -388,6 +416,9 @@ function BoxModel({
                     isOpen={isOpen}
                     hingeEdge={hingeEdge}
                     flapsLocation={flapsLocation || 'base'}
+                    flapHeightPercent={flapHeightPercent}
+                    flapWidthOffset={flapWidthOffset ? flapWidthOffset / 10 : -0.02}
+                    flapType={flapType || 'rectangular'}
                 />
             )}
             {boxType === 'lid-base' && <LidBaseBox width={sW} height={sH} depth={sD} materials={materials} isOpen={isOpen} />}
@@ -420,7 +451,10 @@ export default function Box3D({
     materialTexture,
     baseColor,
     hingeEdge,
-    flapsLocation
+    flapsLocation,
+    flapHeightPercent,
+    flapWidthOffset,
+    flapType
 }: Box3DProps) {
     const [zoom, setZoom] = useState(1);
 
@@ -459,6 +493,9 @@ export default function Box3D({
                             baseColor={baseColor}
                             hingeEdge={hingeEdge}
                             flapsLocation={flapsLocation}
+                            flapHeightPercent={flapHeightPercent}
+                            flapWidthOffset={flapWidthOffset}
+                            flapType={flapType}
                         />
                     </Stage>
                 </Suspense>

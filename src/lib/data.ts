@@ -40,21 +40,30 @@ export const boxShapes: BoxShape[] = [
         name: 'Caja Estándar',
         type: 'standard',
         defaultDimensions: { width: 4, height: 2, depth: 4 },
-        flapsLocation: 'base'
+        flapsLocation: 'base',
+        flapHeightPercent: 0.25,
+        flapWidthOffset: -0.2,
+        flapType: 'rectangular'
     },
     {
         id: 'shape_lid_base',
         name: 'Caja Tapa y Base',
         type: 'lid-base',
         defaultDimensions: { width: 4, height: 2, depth: 4 },
-        flapsLocation: 'base'
+        flapsLocation: 'base',
+        flapHeightPercent: 0.25,
+        flapWidthOffset: -0.2,
+        flapType: 'rectangular'
     },
     {
         id: 'shape_drawer',
         name: 'Caja tipo Cajón',
         type: 'drawer',
         defaultDimensions: { width: 4, height: 2, depth: 4 },
-        flapsLocation: 'base'
+        flapsLocation: 'base',
+        flapHeightPercent: 0.25,
+        flapWidthOffset: -0.2,
+        flapType: 'rectangular'
     }
 ];
 

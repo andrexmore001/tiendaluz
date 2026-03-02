@@ -78,7 +78,10 @@ export default function AdminPage() {
         height: 2,
         depth: 4,
         hingeEdge: 'long',
-        flapsLocation: 'base'
+        flapsLocation: 'base',
+        flapHeightPercent: 0.25,
+        flapWidthOffset: -0.2,
+        flapType: 'rectangular'
     });
 
     // Material Form State
@@ -107,7 +110,10 @@ export default function AdminPage() {
         materialTexture: '',
         shapeId: '',
         hingeEdge: 'long',
-        flapsLocation: 'base'
+        flapsLocation: 'base',
+        flapHeightPercent: 0.25,
+        flapWidthOffset: -0.2,
+        flapType: 'rectangular'
     });
 
     const showToast = (msg: string) => {
@@ -161,7 +167,10 @@ export default function AdminPage() {
             materialTexture: p.customMaterialTexture || '',
             shapeId: p.shapeId || '',
             hingeEdge: p.hingeEdge || 'long',
-            flapsLocation: p.flapsLocation || 'base'
+            flapsLocation: p.flapsLocation || 'base',
+            flapHeightPercent: p.flapHeightPercent || 0.25,
+            flapWidthOffset: p.flapWidthOffset || -0.2,
+            flapType: p.flapType || 'rectangular'
         });
         setShowProductForm(true);
     };
@@ -177,7 +186,10 @@ export default function AdminPage() {
                 height: shape.defaultDimensions.height,
                 depth: shape.defaultDimensions.depth,
                 hingeEdge: shape.hingeEdge || 'long',
-                flapsLocation: shape.flapsLocation || 'base'
+                flapsLocation: shape.flapsLocation || 'base',
+                flapHeightPercent: shape.flapHeightPercent || 0.25,
+                flapWidthOffset: shape.flapWidthOffset || -0.2,
+                flapType: shape.flapType || 'rectangular'
             });
         } else {
             setFormData({ ...formData, shapeId: '' });
@@ -200,7 +212,10 @@ export default function AdminPage() {
             baseColor: formData.baseColor || selectedMaterial?.baseColor || '#F9F1E7',
             customMaterialTexture: formData.materialTexture,
             hingeEdge: formData.hingeEdge,
-            flapsLocation: formData.flapsLocation
+            flapsLocation: formData.flapsLocation,
+            flapHeightPercent: Number(formData.flapHeightPercent),
+            flapWidthOffset: Number(formData.flapWidthOffset),
+            flapType: formData.flapType
         };
 
         if (editingProduct) {
@@ -250,7 +265,10 @@ export default function AdminPage() {
             height: s.defaultDimensions.height,
             depth: s.defaultDimensions.depth,
             hingeEdge: s.hingeEdge || 'long',
-            flapsLocation: s.flapsLocation || 'base'
+            flapsLocation: s.flapsLocation || 'base',
+            flapHeightPercent: s.flapHeightPercent || 0.25,
+            flapWidthOffset: s.flapWidthOffset || -0.2,
+            flapType: s.flapType || 'rectangular'
         });
         setShowShapeForm(true);
     };
@@ -267,7 +285,10 @@ export default function AdminPage() {
                 depth: Number(shapeFormData.depth)
             },
             hingeEdge: shapeFormData.hingeEdge as any,
-            flapsLocation: shapeFormData.flapsLocation as any
+            flapsLocation: shapeFormData.flapsLocation as any,
+            flapHeightPercent: Number(shapeFormData.flapHeightPercent),
+            flapWidthOffset: Number(shapeFormData.flapWidthOffset),
+            flapType: shapeFormData.flapType as any
         };
 
         if (editingShape) {
@@ -595,7 +616,22 @@ export default function AdminPage() {
                     <div className={styles.tabContent}>
                         <header className={styles.header}>
                             <h1>Formas de Caja Corporativas</h1>
-                            <button className="btn-primary" onClick={() => { setEditingShape(null); setShapeFormData({ name: '', type: 'standard', width: 4, height: 2, depth: 4, hingeEdge: 'long', flapsLocation: 'base' }); setShowShapeForm(true); }}>
+                            <button className="btn-primary" onClick={() => {
+                                setEditingShape(null);
+                                setShapeFormData({
+                                    name: '',
+                                    type: 'standard',
+                                    width: 4,
+                                    height: 2,
+                                    depth: 4,
+                                    hingeEdge: 'long',
+                                    flapsLocation: 'base',
+                                    flapHeightPercent: 0.25,
+                                    flapWidthOffset: -0.2,
+                                    flapType: 'rectangular'
+                                });
+                                setShowShapeForm(true);
+                            }}>
                                 <Plus size={20} /> Nueva Forma
                             </button>
                         </header>
@@ -646,6 +682,9 @@ export default function AdminPage() {
                                             topTexture={formData.boxTexture}
                                             hingeEdge={formData.hingeEdge as any}
                                             flapsLocation={formData.flapsLocation as any}
+                                            flapHeightPercent={Number(formData.flapHeightPercent)}
+                                            flapWidthOffset={Number(formData.flapWidthOffset)}
+                                            flapType={formData.flapType as any}
                                             isOpen={isOpen}
                                         />
                                     </div>
@@ -803,6 +842,45 @@ export default function AdminPage() {
                                                             setIsOpen(true);
                                                         }}
                                                     >En la Tapa</button>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.dimensionsRow} style={{ marginTop: '1rem' }}>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Alto Aleta (% 0-1)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.05"
+                                                        min="0"
+                                                        max="1"
+                                                        value={formData.flapHeightPercent}
+                                                        onChange={(e) => setFormData({ ...formData, flapHeightPercent: parseFloat(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Ajuste Ancho (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.1"
+                                                        value={formData.flapWidthOffset}
+                                                        onChange={(e) => setFormData({ ...formData, flapWidthOffset: parseFloat(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.inputGroup} style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
+                                                <label>Forma de la Aleta</label>
+                                                <div className={styles.typeToggle}>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.flapType === 'rectangular' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setFormData({ ...formData, flapType: 'rectangular' })}
+                                                    >Rectangular</button>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.flapType === 'trapezoidal' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setFormData({ ...formData, flapType: 'trapezoidal' })}
+                                                    >Trapecio</button>
                                                 </div>
                                             </div>
                                         </>
@@ -963,6 +1041,43 @@ export default function AdminPage() {
                                                     <option value="base">En la Caja (Base)</option>
                                                     <option value="lid">En la Tapa</option>
                                                 </select>
+                                            </div>
+
+                                            <div className={styles.dimensionsRow}>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Alto Aleta (%)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.05"
+                                                        value={shapeFormData.flapHeightPercent}
+                                                        onChange={(e) => setShapeFormData({ ...shapeFormData, flapHeightPercent: parseFloat(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Offset Ancho (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.1"
+                                                        value={shapeFormData.flapWidthOffset}
+                                                        onChange={(e) => setShapeFormData({ ...shapeFormData, flapWidthOffset: parseFloat(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.inputGroup} style={{ marginBottom: '1rem' }}>
+                                                <label>Perfil de Aleta</label>
+                                                <div className={styles.typeToggle}>
+                                                    <button
+                                                        type="button"
+                                                        className={shapeFormData.flapType === 'rectangular' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setShapeFormData({ ...shapeFormData, flapType: 'rectangular' })}
+                                                    >Rectangular</button>
+                                                    <button
+                                                        type="button"
+                                                        className={shapeFormData.flapType === 'trapezoidal' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setShapeFormData({ ...shapeFormData, flapType: 'trapezoidal' })}
+                                                    >Trapecio</button>
+                                                </div>
                                             </div>
                                         </>
                                     )}
