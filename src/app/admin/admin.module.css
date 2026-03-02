@@ -531,6 +531,24 @@
     transform: translateY(-1px);
 }
 
+.colInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.colName {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.colDesc {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin: 0;
+}
+
 
 .typeToggle {
     display: flex;

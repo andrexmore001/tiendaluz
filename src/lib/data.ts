@@ -32,7 +32,13 @@ export let siteSettings: SiteSettings = {
     }
 };
 
-export const collections = ["Todas", "Floral", "Aniversario", "Cumpleaños", "Especiales"];
+export const collections: Collection[] = [
+    { id: '1', name: "Todas", description: "Todos los productos del catálogo" },
+    { id: '2', name: "Floral", description: "Diseños inspirados en la naturaleza y flores" },
+    { id: '3', name: "Aniversario", description: "Cajas especiales para celebrar el amor" },
+    { id: '4', name: "Cumpleaños", description: "Detalles vibrantes para un día inolvidable" },
+    { id: '5', name: "Especiales", description: "Ediciones limitadas y pedidos únicos" }
+];
 
 export const boxShapes: BoxShape[] = [
     {

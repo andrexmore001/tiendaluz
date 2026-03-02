@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections, boxShapes as initialBoxShapes } from '@/lib/data';
-import { Product, BoxShape } from '@/types/product';
+import { Product, BoxShape, Collection } from '@/types/product';
 
 export interface Material {
     id: string;
@@ -15,14 +15,15 @@ export interface Material {
 interface SettingsContextType {
     settings: SiteSettings;
     products: Product[];
-    collections: string[];
+    collections: Collection[];
     isAuthenticated: boolean;
     updateSettings: (newSettings: Partial<SiteSettings>) => void;
     addProduct: (product: Product) => void;
     updateProduct: (product: Product) => void;
     deleteProduct: (id: string) => void;
-    addCollection: (name: string) => void;
-    deleteCollection: (name: string) => void;
+    addCollection: (collection: Collection) => void;
+    updateCollection: (collection: Collection) => void;
+    deleteCollection: (id: string) => void;
     materials: Material[];
     boxShapes: BoxShape[];
     addBoxShape: (shape: BoxShape) => void;
@@ -42,7 +43,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SiteSettings>(initialSettings);
     const [products, setProducts] = useState<Product[]>(initialProducts);
-    const [collections, setCollections] = useState<string[]>(initialCollections);
+    const [collections, setCollections] = useState<Collection[]>(initialCollections);
     const [boxShapes, setBoxShapes] = useState<BoxShape[]>(initialBoxShapes);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
@@ -80,7 +81,19 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 setProducts(migrated as Product[]);
             }
 
-            if (savedCollections) setCollections(JSON.parse(savedCollections));
+            if (savedCollections) {
+                const parsed = JSON.parse(savedCollections);
+                // Migration from string[] to Collection[]
+                if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+                    const migrated: Collection[] = parsed.map((name, index) => {
+                        const existing = initialCollections.find(c => c.name === name);
+                        return existing || { id: `col_${Date.now()}_${index}`, name, description: '' };
+                    });
+                    setCollections(migrated);
+                } else {
+                    setCollections(parsed);
+                }
+            }
 
             if (savedBoxShapes) {
                 const parsed: BoxShape[] = JSON.parse(savedBoxShapes);
@@ -101,7 +114,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         const handleStorageChange = (e: StorageEvent) => {
             if (e.key === 'artesana_products' && e.newValue) setProducts(JSON.parse(e.newValue));
             if (e.key === 'artesana_settings' && e.newValue) setSettings(JSON.parse(e.newValue));
-            if (e.key === 'artesana_collections' && e.newValue) setCollections(JSON.parse(e.newValue));
+            if (e.key === 'artesana_collections' && e.newValue) {
+                const parsed = JSON.parse(e.newValue);
+                // Migration in sync
+                if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+                    const migrated: Collection[] = parsed.map((name, index) => ({ id: `col_${index}`, name, description: '' }));
+                    setCollections(migrated);
+                } else {
+                    setCollections(parsed);
+                }
+            }
             if (e.key === 'artesana_box_shapes' && e.newValue) setBoxShapes(JSON.parse(e.newValue));
             if (e.key === 'artesana_materials' && e.newValue) setMaterials(JSON.parse(e.newValue));
         };
@@ -160,14 +182,18 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setProducts(prev => prev.filter(p => p.id !== id));
     };
 
-    const addCollection = (name: string) => {
-        if (!collections.includes(name)) {
-            setCollections(prev => [...prev, name]);
+    const addCollection = (collection: Collection) => {
+        if (!collections.find(c => c.id === collection.id)) {
+            setCollections(prev => [...prev, collection]);
         }
     };
 
-    const deleteCollection = (name: string) => {
-        setCollections(prev => prev.filter(c => c !== name));
+    const updateCollection = (updatedCollection: Collection) => {
+        setCollections(prev => prev.map(c => c.id === updatedCollection.id ? updatedCollection : c));
+    };
+
+    const deleteCollection = (id: string) => {
+        setCollections(prev => prev.filter(c => c.id !== id));
     };
 
     const addBoxShape = (shape: BoxShape) => {
@@ -228,6 +254,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             updateProduct,
             deleteProduct,
             addCollection,
+            updateCollection,
             deleteCollection,
             materials,
             boxShapes,

@@ -42,3 +42,9 @@ export interface Product {
     flapType?: 'rectangular' | 'trapezoidal';
     tuckFlapHeightPercent?: number;
 }
+
+export interface Collection {
+    id: string;
+    name: string;
+    description: string;
+}

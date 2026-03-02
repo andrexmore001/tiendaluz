@@ -35,6 +35,7 @@ export default function AdminPage() {
         updateProduct,
         deleteProduct,
         addCollection,
+        updateCollection,
         deleteCollection,
         materials,
         storageError,
@@ -53,12 +54,18 @@ export default function AdminPage() {
     const [activeTab, setActiveTab] = useState('products');
     const [localSettings, setLocalSettings] = useState(settings);
 
-    // Route Protection
     useEffect(() => {
         if (!isAuthenticated) {
             router.push('/admin/login');
         }
     }, [isAuthenticated, router]);
+
+    // PREVENT STALE SETTINGS: Update localSettings when global settings load from localStorage
+    useEffect(() => {
+        if (settings) {
+            setLocalSettings(settings);
+        }
+    }, [settings]);
 
     if (!isAuthenticated) return null;
 
@@ -81,7 +88,8 @@ export default function AdminPage() {
         flapsLocation: 'base',
         flapHeightPercent: 0.25,
         flapWidthOffset: -0.2,
-        flapType: 'rectangular'
+        flapType: 'rectangular',
+        tuckFlapHeightPercent: 0.15
     });
 
     // Material Form State
@@ -93,11 +101,19 @@ export default function AdminPage() {
         baseColor: '#e3c5a8'
     });
 
+    // Collection Form State
+    const [showCollectionForm, setShowCollectionForm] = useState(false);
+    const [editingCollection, setEditingCollection] = useState<any>(null);
+    const [collectionFormData, setCollectionFormData] = useState({
+        name: '',
+        description: ''
+    });
+
     // Local form state
     const [formData, setFormData] = useState({
         name: '',
         price: 0,
-        category: collections[0] || 'Todas',
+        category: collections[0]?.name || 'Todas',
         description: '',
         image: '',
         boxTexture: '',
@@ -113,7 +129,8 @@ export default function AdminPage() {
         flapsLocation: 'base',
         flapHeightPercent: 0.25,
         flapWidthOffset: -0.2,
-        flapType: 'rectangular'
+        flapType: 'rectangular',
+        tuckFlapHeightPercent: 0.15
     });
 
     const showToast = (msg: string) => {
@@ -233,9 +250,10 @@ export default function AdminPage() {
         setEditingProduct(null);
     };
 
-    const handleDeleteCollection = (name: string) => {
-        if (confirm(`¿Estás seguro de eliminar la colección "${name}"?`)) {
-            deleteCollection(name);
+    const handleDeleteCollection = (id: string) => {
+        const col = collections.find(c => c.id === id);
+        if (col && confirm(`¿Estás seguro de eliminar la colección "${col.name}"?`)) {
+            deleteCollection(id);
             showToast("Colección eliminada");
         }
     };
@@ -252,11 +270,37 @@ export default function AdminPage() {
     };
 
     const handleAddCollection = () => {
-        const name = prompt('Nombre de la nueva colección:');
-        if (name) {
-            addCollection(name);
+        setEditingCollection(null);
+        setCollectionFormData({ name: '', description: '' });
+        setShowCollectionForm(true);
+    };
+
+    const handleEditCollection = (col: any) => {
+        setEditingCollection(col);
+        setCollectionFormData({
+            name: col.name,
+            description: col.description || ''
+        });
+        setShowCollectionForm(true);
+    };
+
+    const handleSubmitCollection = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newCol = {
+            id: editingCollection ? editingCollection.id : `col_${Date.now()}`,
+            name: collectionFormData.name,
+            description: collectionFormData.description
+        };
+
+        if (editingCollection) {
+            updateCollection(newCol);
+            showToast("Colección actualizada");
+        } else {
+            addCollection(newCol);
             showToast("Colección añadida");
         }
+        setShowCollectionForm(false);
+        setEditingCollection(null);
     };
 
     const handleEditShape = (s: any) => {
@@ -479,11 +523,15 @@ export default function AdminPage() {
                         </header>
 
                         <div className={styles.collectionsList}>
-                            {collections.length > 0 ? collections.map((col: string) => (
-                                <div key={col} className={styles.collectionItem}>
-                                    <span>{col}</span>
+                            {collections.length > 0 ? collections.map((col: any) => (
+                                <div key={col.id} className={styles.collectionItem}>
+                                    <div className={styles.colInfo}>
+                                        <span className={styles.colName}>{col.name}</span>
+                                        <p className={styles.colDesc}>{col.description}</p>
+                                    </div>
                                     <div className={styles.rowActions}>
-                                        {col !== "Todas" && <button className={styles.iconBtnDelete} onClick={() => handleDeleteCollection(col)}><Trash2 size={16} /></button>}
+                                        <button className={styles.iconBtn} onClick={() => handleEditCollection(col)}><Edit size={16} /></button>
+                                        {col.name !== "Todas" && <button className={styles.iconBtnDelete} onClick={() => handleDeleteCollection(col.id)}><Trash2 size={16} /></button>}
                                     </div>
                                 </div>
                             )) : (
@@ -773,7 +821,7 @@ export default function AdminPage() {
                                             value={formData.category}
                                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                         >
-                                            {collections.map((c: string) => <option key={c} value={c}>{c}</option>)}
+                                            {collections.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
                                         </select>
                                     </div>
                                     <div className={styles.inputGroup}>
@@ -1217,14 +1265,57 @@ export default function AdminPage() {
                         </div>
                     </div>
                 )}
+
+                {/* MODAL FOR COLLECTIONS */}
+                {showCollectionForm && (
+                    <div className={styles.modal}>
+                        <div className={styles.modalContent} style={{ maxWidth: '500px' }}>
+                            <div className={styles.modalHeader}>
+                                <h2>{editingCollection ? 'Editar Colección' : 'Nueva Colección'}</h2>
+                                <button onClick={() => setShowCollectionForm(false)}>×</button>
+                            </div>
+
+                            <form className={styles.form} onSubmit={handleSubmitCollection}>
+                                <div className={styles.inputGroup}>
+                                    <label>Nombre de la Colección</label>
+                                    <input
+                                        type="text"
+                                        value={collectionFormData.name}
+                                        onChange={(e) => setCollectionFormData({ ...collectionFormData, name: e.target.value })}
+                                        placeholder="Ej: Floral, Aniversario..."
+                                        required
+                                    />
+                                </div>
+                                <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
+                                    <label>Descripción</label>
+                                    <textarea
+                                        value={collectionFormData.description}
+                                        onChange={(e) => setCollectionFormData({ ...collectionFormData, description: e.target.value })}
+                                        placeholder="Breve descripción de la colección"
+                                        rows={3}
+                                    />
+                                </div>
+
+                                <div className={styles.modalFooter} style={{ marginTop: '2rem', display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                                    <button type="button" className="btn-secondary" onClick={() => setShowCollectionForm(false)}>Cancelar</button>
+                                    <button type="submit" className="btn-primary">
+                                        {editingCollection ? 'Actualizar' : 'Crear Colección'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
 }
 
-const EmptyState = ({ Icon, text }: { Icon: any, text: string }) => (
-    <div className={styles.emptyState}>
-        <Icon size={48} style={{ marginBottom: '1rem', opacity: 0.2 }} />
-        <p>{text}</p>
-    </div>
-);
+function EmptyState({ Icon, text }: { Icon: any, text: string }) {
+    return (
+        <div className={styles.emptyState}>
+            <Icon size={48} style={{ marginBottom: '1rem', opacity: 0.2 }} />
+            <p>{text}</p>
+        </div>
+    );
+}

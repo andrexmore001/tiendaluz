@@ -27,11 +27,11 @@ export default function ProductosPage() {
                 <nav className={styles.collectionNav}>
                     {collections.map(col => (
                         <button
-                            key={col}
-                            className={`${styles.colBtn} ${activeCollection === col ? styles.colBtnActive : ''}`}
-                            onClick={() => setActiveCollection(col)}
+                            key={col.id}
+                            className={`${styles.colBtn} ${activeCollection === col.name ? styles.colBtnActive : ''}`}
+                            onClick={() => setActiveCollection(col.name)}
                         >
-                            {col}
+                            {col.name}
                         </button>
                     ))}
                 </nav>
