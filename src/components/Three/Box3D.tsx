@@ -52,7 +52,9 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
 
     // Side Flaps Component
     const SideFlaps = () => {
-        const flapSize = (hingeOnWidth ? depth : width) * flapHeightPercent;
+        const flapSize = flapsLocation === 'lid'
+            ? height * flapHeightPercent
+            : (hingeOnWidth ? width : depth) * flapHeightPercent;
         const flapWidth = Math.max(0.1, (hingeOnWidth ? depth : width) + flapWidthOffset);
 
         const FlapGeometry = ({ w, h, t }: { w: number, h: number, t: number }) => {
@@ -81,13 +83,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
             return (
                 <>
                     {/* Left inner flap */}
-                    <group position={[-width / 2 + 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? 0.5 : -0.5) : (flapsLocation === 'lid' ? 1.57 : -1.57)]}>
+                    <group position={[-width / 2 + 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57)]}>
                         <mesh position={[0.005, flapSize / 2, 0]} material={materials[1]} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Right inner flap */}
-                    <group position={[width / 2 - 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? -0.5 : 0.5) : (flapsLocation === 'lid' ? -1.57 : 1.57)]}>
+                    <group position={[width / 2 - 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? 0.5 : (isOpen ? 0 : 1.57)]}>
                         <mesh position={[-0.005, flapSize / 2, 0]} material={materials[0]} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
@@ -98,13 +100,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
             return (
                 <>
                     {/* Back inner flap */}
-                    <group position={[0, 0, -depth / 2 + 0.002]} rotation={[isOpen ? 0.5 : 1.57, 0, 0]}>
+                    <group position={[0, 0, -depth / 2 + 0.02]} rotation={[flapsLocation === 'lid' ? 0.5 : (isOpen ? 0 : 1.57), 0, 0]}>
                         <mesh position={[0, flapSize / 2, 0.005]} material={materials[5]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Front inner flap */}
-                    <group position={[0, 0, depth / 2 - 0.002]} rotation={[isOpen ? -0.5 : -1.57, 0, 0]}>
+                    <group position={[0, 0, depth / 2 - 0.02]} rotation={[flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57), 0, 0]}>
                         <mesh position={[0, flapSize / 2, -0.005]} material={materials[4]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
