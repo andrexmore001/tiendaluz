@@ -1,0 +1,93 @@
+.hero {
+    position: relative;
+    height: 90vh;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    background-image: url('/hero-banner.png');
+    background-size: cover;
+    background-position: center;
+    overflow: hidden;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right,
+            rgba(255, 255, 255, 0.8) 0%,
+            rgba(255, 255, 255, 0.3) 50%,
+            transparent 100%);
+    z-index: 1;
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+    max-width: 600px;
+}
+
+.title {
+    font-size: 4rem;
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    animation: slideUp 1s ease-out;
+}
+
+.title span {
+    color: var(--primary);
+    font-style: italic;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    animation: slideUp 1s ease-out 0.2s both;
+}
+
+.ctaGroup {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    animation: slideUp 1s ease-out 0.4s both;
+}
+
+.secondaryBtn {
+    font-weight: 500;
+    color: var(--text-main);
+    border-bottom: 1px solid var(--primary);
+    padding-bottom: 2px;
+}
+
+.secondaryBtn:hover {
+    color: var(--primary);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        background-position: 70% center;
+    }
+
+    .overlay {
+        background: rgba(255, 255, 255, 0.6);
+    }
+
+    .title {
+        font-size: 2.5rem;
+    }
+}

@@ -1,0 +1,485 @@
+.adminWrapper {
+    display: flex;
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.sidebarHeader {
+    margin-bottom: 3rem;
+}
+
+.adminTitle {
+    font-family: var(--font-display);
+    color: var(--primary);
+    letter-spacing: 2px;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.adminUser {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #25D366;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.adminUser::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #25D366;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.navItem,
+.navItemActive {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.navItem {
+    color: #64748b;
+}
+
+.navItem:hover {
+    background: #f1f5f9;
+    color: var(--text-main);
+}
+
+.navItemActive {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.logoutBtn {
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1rem;
+    color: #ef4444;
+    border-radius: var(--radius-md);
+}
+
+.logoutBtn:hover {
+    background: #fef2f2;
+}
+
+/* Content */
+.content {
+    flex: 1;
+    padding: 4rem;
+    max-width: 1200px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.header h1 {
+    font-size: 2.2rem;
+}
+
+/* Tables & Lists */
+.productTable {
+    background: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.tableHeader {
+    background: #f8fafc;
+    padding: 1rem 2rem;
+    display: grid;
+    grid-template-columns: 80px 1.5fr 1fr 1fr 100px;
+    gap: 1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tableRow {
+    padding: 1rem 2rem;
+    display: grid;
+    grid-template-columns: 80px 1.5fr 1fr 1fr 120px;
+    gap: 1rem;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.tableRow:hover {
+    background: #f8fafc;
+    transform: translateX(4px);
+}
+
+.miniImg {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: var(--secondary);
+}
+
+.pName {
+    font-weight: 500;
+}
+
+.pCat {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.pPrice {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.rowActions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.iconBtn,
+.iconBtnDelete {
+    padding: 0.5rem;
+    border-radius: 6px;
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.iconBtnDelete:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.iconBtn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+/* Settings */
+.settingsGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+}
+
+.settingsSection {
+    background: white;
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.settingsSection h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.formStack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.inputGroup label {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.colorWrapper {
+    display: flex;
+    gap: 1rem;
+}
+
+.colorWrapper input[type="color"] {
+    width: 50px;
+    height: 45px;
+    padding: 0;
+    border: none;
+    background: none;
+}
+
+.inputWithIcon {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.inputWithIcon svg {
+    position: absolute;
+    left: 1rem;
+    color: #94a3b8;
+}
+
+.inputWithIcon input {
+    padding-left: 2.8rem !important;
+    width: 100%;
+}
+
+.inputGroup input,
+.inputGroup select {
+    padding: 0.8rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: inherit;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.modalContent {
+    background: white;
+    width: 95%;
+    max-width: 1100px;
+    max-height: 95vh;
+    border-radius: 24px;
+    padding: 2rem;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+}
+
+.modalHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: sticky;
+    top: -2.5rem;
+    /* Match modal padding */
+    background: white;
+    z-index: 10;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.modalHeader h2 {
+    font-size: 1.5rem;
+    font-family: var(--font-display);
+    color: var(--primary);
+    margin: 0;
+}
+
+.modalHeader button {
+    font-size: 1.8rem;
+    color: #94a3b8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.modalHeader button:hover {
+    color: #ef4444;
+}
+
+.fileRow,
+.dimensionsRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.dimensionsRow {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.uploadBox {
+    position: relative;
+    height: 140px;
+    background: #f8fafc;
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.uploadBox:hover {
+    border-color: var(--primary);
+    background: var(--primary-light);
+}
+
+.uploadBox input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.previewImg {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.emptyUpload {
+    color: #94a3b8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.modalBody {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.previewSection {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 1.2rem;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+}
+
+.adminBoxPreview {
+    height: 350px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+}
+
+.typeSelector label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.typeGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+}
+
+.typeBtn,
+.typeBtnActive {
+    padding: 0.8rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: left;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.typeBtnActive {
+    border-color: var(--primary);
+    background: var(--primary-light);
+    color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+.formGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+}
+
+.collectionsList {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.collectionItem {
+    background: white;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 500;
+}
