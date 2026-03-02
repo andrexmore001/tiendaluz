@@ -1,12 +1,13 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections } from '@/lib/data';
-import { Product } from '@/types/product';
+import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections, boxShapes as initialBoxShapes } from '@/lib/data';
+import { Product, BoxShape } from '@/types/product';
 
 export interface Material {
     id: string;
     name: string;
     textureUrl: string;
+    baseColor?: string;
     roughness?: number;
     metalness?: number;
 }
@@ -23,6 +24,13 @@ interface SettingsContextType {
     addCollection: (name: string) => void;
     deleteCollection: (name: string) => void;
     materials: Material[];
+    boxShapes: BoxShape[];
+    addBoxShape: (shape: BoxShape) => void;
+    updateBoxShape: (shape: BoxShape) => void;
+    deleteBoxShape: (id: string) => void;
+    addMaterial: (material: Material) => void;
+    updateMaterial: (material: Material) => void;
+    deleteMaterial: (id: string) => void;
     login: (password: string) => boolean;
     logout: () => void;
     storageError: string | null;
@@ -35,22 +43,24 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SiteSettings>(initialSettings);
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [collections, setCollections] = useState<string[]>(initialCollections);
+    const [boxShapes, setBoxShapes] = useState<BoxShape[]>(initialBoxShapes);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [storageError, setStorageError] = useState<string | null>(null);
 
-    const materials: Material[] = [
-        { id: 'carton-kraft', name: 'Cartón Kraft', textureUrl: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=1000' },
-        { id: 'madera-clara', name: 'Madera Clara', textureUrl: 'https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=1000' },
-        { id: 'terciopelo-negro', name: 'Terciopelo Negro', textureUrl: 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?q=80&w=1000' },
-        { id: 'cuero-blanco', name: 'Cuero Blanco', textureUrl: 'https://images.unsplash.com/photo-1524230507669-5ff97982bb5e?q=80&w=1000' }
-    ];
+    const [materials, setMaterials] = useState<Material[]>([
+        { id: 'carton-kraft', name: 'Cartón Kraft', textureUrl: '/materials/kraft.png', baseColor: '#e3c5a8' },
+        { id: 'madera', name: 'Madera Clara', textureUrl: '/materials/wood.png', baseColor: '#f1dabf' },
+        { id: 'MDF', name: 'MDF', textureUrl: '/materials/mdf.png', baseColor: '#d9c5a3' }
+    ]);
 
     // Initial load from localStorage
     useEffect(() => {
         const savedSettings = localStorage.getItem('artesana_settings');
         const savedProducts = localStorage.getItem('artesana_products');
         const savedCollections = localStorage.getItem('artesana_collections');
+        const savedBoxShapes = localStorage.getItem('artesana_box_shapes');
+        const savedMaterials = localStorage.getItem('artesana_materials');
         const savedAuth = localStorage.getItem('is_admin_auth');
 
         if (savedSettings) setSettings(JSON.parse(savedSettings));
@@ -75,6 +85,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             setProducts(finalProducts);
         }
         if (savedCollections) setCollections(JSON.parse(savedCollections));
+        if (savedBoxShapes) setBoxShapes(JSON.parse(savedBoxShapes));
+        if (savedMaterials) setMaterials(JSON.parse(savedMaterials));
         if (savedAuth === 'true') setIsAuthenticated(true);
 
         // SYNC ACROSS TABS
@@ -87,6 +99,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             }
             if (e.key === 'artesana_collections' && e.newValue) {
                 setCollections(JSON.parse(e.newValue));
+            }
+            if (e.key === 'artesana_box_shapes' && e.newValue) {
+                setBoxShapes(JSON.parse(e.newValue));
+            }
+            if (e.key === 'artesana_materials' && e.newValue) {
+                setMaterials(JSON.parse(e.newValue));
             }
         };
 
@@ -103,13 +121,15 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             localStorage.setItem('artesana_settings', JSON.stringify(settings));
             localStorage.setItem('artesana_products', JSON.stringify(products));
             localStorage.setItem('artesana_collections', JSON.stringify(collections));
+            localStorage.setItem('artesana_box_shapes', JSON.stringify(boxShapes));
+            localStorage.setItem('artesana_materials', JSON.stringify(materials));
             localStorage.setItem('is_admin_auth', isAuthenticated.toString());
             setStorageError(null);
         } catch (e) {
             console.error("Storage limit reached", e);
             setStorageError("El espacio de almacenamiento está lleno. Borra productos o usa fotos más ligeras.");
         }
-    }, [settings, products, collections, isAuthenticated, isLoaded]);
+    }, [settings, products, collections, boxShapes, materials, isAuthenticated, isLoaded]);
 
     // Apply CSS variables to the document root whenever settings change
     useEffect(() => {
@@ -152,6 +172,30 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setCollections(prev => prev.filter(c => c !== name));
     };
 
+    const addBoxShape = (shape: BoxShape) => {
+        setBoxShapes(prev => [...prev, shape]);
+    };
+
+    const updateBoxShape = (updatedShape: BoxShape) => {
+        setBoxShapes(prev => prev.map(s => s.id === updatedShape.id ? updatedShape : s));
+    };
+
+    const deleteBoxShape = (id: string) => {
+        setBoxShapes(prev => prev.filter(s => s.id !== id));
+    };
+
+    const addMaterial = (material: Material) => {
+        setMaterials(prev => [...prev, material]);
+    };
+
+    const updateMaterial = (updatedMaterial: Material) => {
+        setMaterials(prev => prev.map(m => m.id === updatedMaterial.id ? updatedMaterial : m));
+    };
+
+    const deleteMaterial = (id: string) => {
+        setMaterials(prev => prev.filter(m => m.id !== id));
+    };
+
     const login = (password: string) => {
         if (password === 'artesana2026') {
             setIsAuthenticated(true);
@@ -188,6 +232,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             addCollection,
             deleteCollection,
             materials,
+            boxShapes,
+            addBoxShape,
+            updateBoxShape,
+            deleteBoxShape,
+            addMaterial,
+            updateMaterial,
+            deleteMaterial,
             login,
             logout,
             storageError,

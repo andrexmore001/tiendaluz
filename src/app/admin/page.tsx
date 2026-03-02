@@ -20,6 +20,8 @@ import {
 import { } from '@/lib/data';
 import { useSettings } from '@/context/SettingsContext';
 import Box3D from '@/components/Three/Box3D';
+import { Product } from '@/types/product';
+import { SiteSettings } from '@/lib/data';
 import styles from './admin.module.css';
 
 export default function AdminPage() {
@@ -38,7 +40,14 @@ export default function AdminPage() {
         storageError,
         clearAllData,
         isAuthenticated,
-        logout
+        logout,
+        boxShapes,
+        addBoxShape,
+        updateBoxShape,
+        deleteBoxShape,
+        addMaterial,
+        updateMaterial,
+        deleteMaterial
     } = useSettings();
 
     const [activeTab, setActiveTab] = useState('products');
@@ -52,10 +61,34 @@ export default function AdminPage() {
     }, [isAuthenticated, router]);
 
     if (!isAuthenticated) return null;
+
     const [showProductForm, setShowProductForm] = useState(false);
     const [editingProduct, setEditingProduct] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [notification, setNotification] = useState<string | null>(null);
+    const [isOpen, setIsOpen] = useState(false); // Global open state for previews
+
+    // Box Shape Form State
+    const [showShapeForm, setShowShapeForm] = useState(false);
+    const [editingShape, setEditingShape] = useState<any>(null);
+    const [shapeFormData, setShapeFormData] = useState({
+        name: '',
+        type: 'standard',
+        width: 4,
+        height: 2,
+        depth: 4,
+        hingeEdge: 'long',
+        flapsLocation: 'base'
+    });
+
+    // Material Form State
+    const [showMaterialForm, setShowMaterialForm] = useState(false);
+    const [editingMaterial, setEditingMaterial] = useState<any>(null);
+    const [materialFormData, setMaterialFormData] = useState({
+        name: '',
+        textureUrl: '',
+        baseColor: '#e3c5a8'
+    });
 
     // Local form state
     const [formData, setFormData] = useState({
@@ -71,7 +104,10 @@ export default function AdminPage() {
         boxType: 'standard',
         materialId: 'carton-kraft',
         baseColor: '#F9F1E7',
-        materialTexture: '' // New field for uploaded texture
+        materialTexture: '',
+        shapeId: '',
+        hingeEdge: 'long',
+        flapsLocation: 'base'
     });
 
     const showToast = (msg: string) => {
@@ -122,13 +158,35 @@ export default function AdminPage() {
             boxType: p.boxType || 'standard',
             materialId: p.materialId || 'carton-kraft',
             baseColor: p.baseColor || '#F9F1E7',
-            materialTexture: p.customMaterialTexture || ''
+            materialTexture: p.customMaterialTexture || '',
+            shapeId: p.shapeId || '',
+            hingeEdge: p.hingeEdge || 'long',
+            flapsLocation: p.flapsLocation || 'base'
         });
         setShowProductForm(true);
     };
 
+    const handleShapeChange = (shapeId: string) => {
+        const shape = boxShapes.find(s => s.id === shapeId);
+        if (shape) {
+            setFormData({
+                ...formData,
+                shapeId: shape.id,
+                boxType: shape.type,
+                width: shape.defaultDimensions.width,
+                height: shape.defaultDimensions.height,
+                depth: shape.defaultDimensions.depth,
+                hingeEdge: shape.hingeEdge || 'long',
+                flapsLocation: shape.flapsLocation || 'base'
+            });
+        } else {
+            setFormData({ ...formData, shapeId: '' });
+        }
+    };
+
     const handleSubmitProduct = (e: React.FormEvent) => {
         e.preventDefault();
+        const selectedMaterial = materials.find(m => m.id === formData.materialId);
         const newP = {
             id: editingProduct ? editingProduct.id : Date.now().toString(),
             ...formData,
@@ -139,8 +197,10 @@ export default function AdminPage() {
             },
             boxType: formData.boxType,
             materialId: formData.materialId,
-            baseColor: formData.baseColor,
-            customMaterialTexture: formData.materialTexture
+            baseColor: formData.baseColor || selectedMaterial?.baseColor || '#F9F1E7',
+            customMaterialTexture: formData.materialTexture,
+            hingeEdge: formData.hingeEdge,
+            flapsLocation: formData.flapsLocation
         };
 
         if (editingProduct) {
@@ -178,6 +238,90 @@ export default function AdminPage() {
         if (name) {
             addCollection(name);
             showToast("Colección añadida");
+        }
+    };
+
+    const handleEditShape = (s: any) => {
+        setEditingShape(s);
+        setShapeFormData({
+            name: s.name,
+            type: s.type,
+            width: s.defaultDimensions.width,
+            height: s.defaultDimensions.height,
+            depth: s.defaultDimensions.depth,
+            hingeEdge: s.hingeEdge || 'long',
+            flapsLocation: s.flapsLocation || 'base'
+        });
+        setShowShapeForm(true);
+    };
+
+    const handleSubmitShape = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newS = {
+            id: editingShape ? editingShape.id : `shape_${Date.now()}`,
+            name: shapeFormData.name,
+            type: shapeFormData.type as any,
+            defaultDimensions: {
+                width: Number(shapeFormData.width),
+                height: Number(shapeFormData.height),
+                depth: Number(shapeFormData.depth)
+            },
+            hingeEdge: shapeFormData.hingeEdge as any,
+            flapsLocation: shapeFormData.flapsLocation as any
+        };
+
+        if (editingShape) {
+            updateBoxShape(newS as any);
+            showToast("Forma actualizada");
+        } else {
+            addBoxShape(newS as any);
+            showToast("Forma añadida");
+        }
+        setShowShapeForm(false);
+        setEditingShape(null);
+    };
+
+    const handleDeleteShape = (id: string) => {
+        if (confirm('¿Estás seguro de eliminar esta forma? Los productos que la usan podrían verse afectados.')) {
+            deleteBoxShape(id);
+            showToast("Forma eliminada");
+        }
+    };
+
+    const handleEditMaterial = (m: any) => {
+        setEditingMaterial(m);
+        setMaterialFormData({
+            name: m.name,
+            textureUrl: m.textureUrl,
+            baseColor: m.baseColor || '#FFFFFF'
+        });
+        setShowMaterialForm(true);
+    };
+
+    const handleSubmitMaterial = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newM = {
+            id: editingMaterial ? editingMaterial.id : `mat_${Date.now()}`,
+            name: materialFormData.name,
+            textureUrl: materialFormData.textureUrl,
+            baseColor: materialFormData.baseColor
+        };
+
+        if (editingMaterial) {
+            updateMaterial(newM);
+            showToast("Material actualizado");
+        } else {
+            addMaterial(newM);
+            showToast("Material añadido");
+        }
+        setShowMaterialForm(false);
+        setEditingMaterial(null);
+    };
+
+    const handleDeleteMaterial = (id: string) => {
+        if (confirm('¿Estás seguro de eliminar este material?')) {
+            deleteMaterial(id);
+            showToast("Material eliminado");
         }
     };
 
@@ -228,6 +372,20 @@ export default function AdminPage() {
                     >
                         <Settings size={20} />
                         <span>Configuración</span>
+                    </button>
+                    <button
+                        className={activeTab === 'materials' ? styles.navItemActive : styles.navItem}
+                        onClick={() => setActiveTab('materials')}
+                    >
+                        <Palette size={20} />
+                        <span>Materiales</span>
+                    </button>
+                    <button
+                        className={activeTab === 'shapes' ? styles.navItemActive : styles.navItem}
+                        onClick={() => setActiveTab('shapes')}
+                    >
+                        <Box size={20} />
+                        <span>Formas de Caja</span>
                     </button>
                 </nav>
 
@@ -400,6 +558,72 @@ export default function AdminPage() {
                     </div>
                 )}
 
+                {/* TAB: MATERIALS */}
+                {activeTab === 'materials' && (
+                    <div className={styles.tabContent}>
+                        <header className={styles.header}>
+                            <h1>Gestión de Materiales</h1>
+                            <button className="btn-primary" onClick={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '', baseColor: '#e3c5a8' }); setShowMaterialForm(true); }}>
+                                <Plus size={20} /> Nuevo Material
+                            </button>
+                        </header>
+
+                        <div className={styles.productTable}>
+                            <div className={styles.tableHeader}>
+                                <span>Vista Previa</span>
+                                <span>Nombre</span>
+                                <span>ID</span>
+                                <span>Acciones</span>
+                            </div>
+                            {materials.map((m) => (
+                                <div key={m.id} className={styles.tableRow}>
+                                    <div className={styles.miniImg} style={{ background: `url(${m.textureUrl})`, backgroundSize: 'cover', borderRadius: '4px' }}></div>
+                                    <span className={styles.pName}>{m.name}</span>
+                                    <span className={styles.pCat}>{m.id}</span>
+                                    <div className={styles.rowActions}>
+                                        <button className={styles.iconBtn} onClick={() => handleEditMaterial(m)}><Edit size={16} /></button>
+                                        <button className={styles.iconBtnDelete} onClick={() => handleDeleteMaterial(m.id)}><Trash2 size={16} /></button>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {/* TAB: SHAPES */}
+                {activeTab === 'shapes' && (
+                    <div className={styles.tabContent}>
+                        <header className={styles.header}>
+                            <h1>Formas de Caja Corporativas</h1>
+                            <button className="btn-primary" onClick={() => { setEditingShape(null); setShapeFormData({ name: '', type: 'standard', width: 4, height: 2, depth: 4, hingeEdge: 'long', flapsLocation: 'base' }); setShowShapeForm(true); }}>
+                                <Plus size={20} /> Nueva Forma
+                            </button>
+                        </header>
+
+                        <div className={styles.productTable}>
+                            <div className={styles.tableHeader}>
+                                <span>Nombre</span>
+                                <span>Tipo</span>
+                                <span>Medidas Base (cm)</span>
+                                <span>Acciones</span>
+                            </div>
+                            {boxShapes.length > 0 ? boxShapes.map((s) => (
+                                <div key={s.id} className={styles.tableRow}>
+                                    <span className={styles.pName}>{s.name}</span>
+                                    <span className={styles.pCat} style={{ textTransform: 'capitalize' }}>{s.type}</span>
+                                    <span className={styles.pPrice}>{s.defaultDimensions.width}x{s.defaultDimensions.height}x{s.defaultDimensions.depth}</span>
+                                    <div className={styles.rowActions}>
+                                        <button className={styles.iconBtn} onClick={() => handleEditShape(s)}><Edit size={16} /></button>
+                                        <button className={styles.iconBtnDelete} onClick={() => handleDeleteShape(s.id)}><Trash2 size={16} /></button>
+                                    </div>
+                                </div>
+                            )) : (
+                                <EmptyState Icon={Box} text="No hay formas de caja definidas." />
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* MODAL FOR PRODUCTS */}
                 {showProductForm && (
                     <div className={styles.modal}>
@@ -408,6 +632,7 @@ export default function AdminPage() {
                                 <h2>{editingProduct ? 'Editar Producto' : 'Nuevo Producto'}</h2>
                                 <button onClick={() => setShowProductForm(false)}>×</button>
                             </div>
+
                             <div className={styles.modalBody}>
                                 <div className={styles.previewSection}>
                                     <div className={styles.adminBoxPreview}>
@@ -419,10 +644,33 @@ export default function AdminPage() {
                                             materialTexture={formData.materialTexture || materials.find((m: any) => m.id === formData.materialId)?.textureUrl}
                                             baseColor={formData.baseColor}
                                             topTexture={formData.boxTexture}
+                                            hingeEdge={formData.hingeEdge as any}
+                                            flapsLocation={formData.flapsLocation as any}
+                                            isOpen={isOpen}
                                         />
                                     </div>
+                                    <div className={styles.previewControls}>
+                                        <button
+                                            type="button"
+                                            className={styles.pBtn}
+                                            onClick={() => setIsOpen(!isOpen)}
+                                        >
+                                            {isOpen ? 'Cerrar Caja' : 'Abrir Caja'}
+                                        </button>
+                                    </div>
                                     <div className={styles.typeSelector}>
-                                        <label>Forma de la Caja</label>
+                                        <label>Forma de la Caja (Modelo)</label>
+                                        <select
+                                            className={styles.pSelect}
+                                            value={formData.shapeId || ''}
+                                            onChange={(e) => handleShapeChange(e.target.value)}
+                                            style={{ marginBottom: '1rem', width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}
+                                        >
+                                            <option value="">-- Personalizado / Ninguna --</option>
+                                            {boxShapes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.type})</option>)}
+                                        </select>
+
+                                        <label>Mecánica Manual</label>
                                         <div className={styles.typeGrid}>
                                             <button
                                                 type="button"
@@ -433,12 +681,12 @@ export default function AdminPage() {
                                                 type="button"
                                                 className={formData.boxType === 'lid-base' ? styles.typeBtnActive : styles.typeBtn}
                                                 onClick={() => setFormData({ ...formData, boxType: 'lid-base' })}
-                                            >Tapa y Base</button>
+                                            >Tapa/Base</button>
                                             <button
                                                 type="button"
                                                 className={formData.boxType === 'drawer' ? styles.typeBtnActive : styles.typeBtn}
                                                 onClick={() => setFormData({ ...formData, boxType: 'drawer' })}
-                                            >Cajon</button>
+                                            >Cajón</button>
                                         </div>
                                     </div>
                                 </div>
@@ -462,17 +710,6 @@ export default function AdminPage() {
                                             >
                                                 {materials.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
                                             </select>
-                                        </div>
-                                        <div className={styles.inputGroup}>
-                                            <label>Color Base</label>
-                                            <div className={styles.colorWrapper}>
-                                                <input
-                                                    type="color"
-                                                    value={formData.baseColor}
-                                                    onChange={(e) => setFormData({ ...formData, baseColor: e.target.value })}
-                                                />
-                                                <input type="text" value={formData.baseColor} readOnly />
-                                            </div>
                                         </div>
                                         <div className={styles.inputGroup}>
                                             <label>Precio</label>
@@ -529,12 +766,63 @@ export default function AdminPage() {
                                         </div>
                                     </div>
 
+                                    {formData.boxType === 'standard' && (
+                                        <>
+                                            <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
+                                                <label>Ubicación de la Bisagra</label>
+                                                <div className={styles.typeToggle}>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.hingeEdge === 'long' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setFormData({ ...formData, hingeEdge: 'long' })}
+                                                    >Lado Largo</button>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.hingeEdge === 'short' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setFormData({ ...formData, hingeEdge: 'short' })}
+                                                    >Lado Corto</button>
+                                                </div>
+                                            </div>
+
+                                            <div className={styles.inputGroup} style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                                                <label>Ubicación de Aletas de Cierre (Aristas)</label>
+                                                <div className={styles.typeToggle}>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.flapsLocation === 'base' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, flapsLocation: 'base' });
+                                                            setIsOpen(true);
+                                                        }}
+                                                    >En la Caja</button>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.flapsLocation === 'lid' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, flapsLocation: 'lid' });
+                                                            setIsOpen(true);
+                                                        }}
+                                                    >En la Tapa</button>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+
                                     <div className={styles.fileRow}>
                                         <div className={styles.inputGroup}>
-                                            <label>Textura Material (Madera/Cartón)</label>
+                                            <label>Textura Material</label>
                                             <div className={styles.uploadBox}>
                                                 {formData.materialTexture ? (
-                                                    <img src={formData.materialTexture} alt="Preview" className={styles.previewImg} />
+                                                    <>
+                                                        <img src={formData.materialTexture} alt="Preview" className={styles.previewImg} />
+                                                        <button
+                                                            type="button"
+                                                            className={styles.deleteFileBtn}
+                                                            onClick={() => setFormData(prev => ({ ...prev, materialTexture: '' }))}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </>
                                                 ) : (
                                                     <div className={styles.emptyUpload}>
                                                         <Box size={20} />
@@ -552,7 +840,16 @@ export default function AdminPage() {
                                             <label>Foto Catálogo</label>
                                             <div className={styles.uploadBox}>
                                                 {formData.image ? (
-                                                    <img src={formData.image} alt="Preview" className={styles.previewImg} />
+                                                    <>
+                                                        <img src={formData.image} alt="Preview" className={styles.previewImg} />
+                                                        <button
+                                                            type="button"
+                                                            className={styles.deleteFileBtn}
+                                                            onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </>
                                                 ) : (
                                                     <div className={styles.emptyUpload}>
                                                         <Plus size={20} />
@@ -567,10 +864,19 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                         <div className={styles.inputGroup}>
-                                            <label>Diseño 3D</label>
+                                            <label>Diseño 3D (Arte)</label>
                                             <div className={styles.uploadBox}>
                                                 {formData.boxTexture ? (
-                                                    <img src={formData.boxTexture} alt="Preview" className={styles.previewImg} />
+                                                    <>
+                                                        <img src={formData.boxTexture} alt="Preview" className={styles.previewImg} />
+                                                        <button
+                                                            type="button"
+                                                            className={styles.deleteFileBtn}
+                                                            onClick={() => setFormData(prev => ({ ...prev, boxTexture: '' }))}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </>
                                                 ) : (
                                                     <div className={styles.emptyUpload}>
                                                         <Layers size={20} />
@@ -589,11 +895,12 @@ export default function AdminPage() {
                                     <div className={styles.formActions}>
                                         <button type="button" onClick={() => setShowProductForm(false)}>Cancelar</button>
                                         <button type="submit" className="btn-primary">
-                                            {editingProduct ? 'Guardar' : 'Añadir'}
+                                            {editingProduct ? 'Guardar Cambios' : 'Añadir Producto'}
                                         </button>
                                     </div>
                                 </form>
                             </div>
+
                             <div className={styles.dangerZone}>
                                 <h3>ZONA DE PELIGRO</h3>
                                 <button onClick={clearAllData} className={styles.deleteBtn}>
@@ -604,7 +911,176 @@ export default function AdminPage() {
                         </div>
                     </div>
                 )}
+
+                {/* MODAL FOR SHAPES */}
+                {showShapeForm && (
+                    <div className={styles.modal}>
+                        <div className={styles.modalContent} style={{ maxWidth: '600px' }}>
+                            <div className={styles.modalHeader}>
+                                <h2>{editingShape ? 'Editar Forma' : 'Nueva Forma'}</h2>
+                                <button onClick={() => setShowShapeForm(false)}>×</button>
+                            </div>
+                            <form className={styles.form} onSubmit={handleSubmitShape}>
+                                <div className={styles.formStack}>
+                                    <div className={styles.inputGroup}>
+                                        <label>Nombre de la Forma (Ej: Caja Premium)</label>
+                                        <input
+                                            type="text"
+                                            value={shapeFormData.name}
+                                            onChange={(e) => setShapeFormData({ ...shapeFormData, name: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label>Mecánica 3D</label>
+                                        <select
+                                            value={shapeFormData.type}
+                                            onChange={(e) => setShapeFormData({ ...shapeFormData, type: e.target.value as any })}
+                                        >
+                                            <option value="standard">Estándar (Bisagra trasera)</option>
+                                            <option value="lid-base">Tapa y Base (2 piezas separables)</option>
+                                            <option value="drawer">Cajón (Deslizable)</option>
+                                        </select>
+                                    </div>
+                                    {shapeFormData.type === 'standard' && (
+                                        <>
+                                            <div className={styles.inputGroup}>
+                                                <label>Posición Bisagra</label>
+                                                <select
+                                                    value={shapeFormData.hingeEdge}
+                                                    onChange={(e) => setShapeFormData({ ...shapeFormData, hingeEdge: e.target.value as any })}
+                                                >
+                                                    <option value="long">Lado más largo</option>
+                                                    <option value="short">Lado más corto</option>
+                                                </select>
+                                            </div>
+                                            <div className={styles.inputGroup}>
+                                                <label>Ubicación Aletas (Aristas)</label>
+                                                <select
+                                                    value={shapeFormData.flapsLocation}
+                                                    onChange={(e) => setShapeFormData({ ...shapeFormData, flapsLocation: e.target.value as any })}
+                                                >
+                                                    <option value="base">En la Caja (Base)</option>
+                                                    <option value="lid">En la Tapa</option>
+                                                </select>
+                                            </div>
+                                        </>
+                                    )}
+                                    <div className={styles.dimensionsRow}>
+                                        <div className={styles.inputGroup}>
+                                            <label>Ancho Base</label>
+                                            <input
+                                                type="number"
+                                                value={shapeFormData.width}
+                                                onChange={(e) => setShapeFormData({ ...shapeFormData, width: parseInt(e.target.value) || 0 })}
+                                            />
+                                        </div>
+                                        <div className={styles.inputGroup}>
+                                            <label>Alto Base</label>
+                                            <input
+                                                type="number"
+                                                value={shapeFormData.height}
+                                                onChange={(e) => setShapeFormData({ ...shapeFormData, height: parseInt(e.target.value) || 0 })}
+                                            />
+                                        </div>
+                                        <div className={styles.inputGroup}>
+                                            <label>Largo Base</label>
+                                            <input
+                                                type="number"
+                                                value={shapeFormData.depth}
+                                                onChange={(e) => setShapeFormData({ ...shapeFormData, depth: parseInt(e.target.value) || 0 })}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.formActions} style={{ marginTop: '2rem' }}>
+                                    <button type="button" onClick={() => setShowShapeForm(false)}>Cancelar</button>
+                                    <button type="submit" className="btn-primary">
+                                        {editingShape ? 'Actualizar' : 'Crear'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* MODAL FOR MATERIALS */}
+                {showMaterialForm && (
+                    <div className={styles.modal}>
+                        <div className={styles.modalContent} style={{ maxWidth: '450px' }}>
+                            <div className={styles.modalHeader}>
+                                <h2>{editingMaterial ? 'Editar Material' : 'Nuevo Material'}</h2>
+                                <button onClick={() => setShowMaterialForm(false)}>×</button>
+                            </div>
+                            <form className={styles.form} onSubmit={handleSubmitMaterial}>
+                                <div className={styles.formStack}>
+                                    <div className={styles.inputGroup}>
+                                        <label>Nombre del Material</label>
+                                        <input
+                                            type="text"
+                                            value={materialFormData.name}
+                                            onChange={(e) => setMaterialFormData({ ...materialFormData, name: e.target.value })}
+                                            placeholder="Ej: Madera Roja"
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label>Color Dominante (Para bordes/interior)</label>
+                                        <div className={styles.colorWrapper}>
+                                            <input
+                                                type="color"
+                                                value={materialFormData.baseColor || '#FFFFFF'}
+                                                onChange={(e) => setMaterialFormData({ ...materialFormData, baseColor: e.target.value })}
+                                            />
+                                            <input type="text" value={materialFormData.baseColor || '#FFFFFF'} readOnly />
+                                        </div>
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label>Imagen de Textura</label>
+                                        <div className={styles.uploadBox}>
+                                            {materialFormData.textureUrl ? (
+                                                <img src={materialFormData.textureUrl} alt="Preview" className={styles.previewImg} />
+                                            ) : (
+                                                <div className={styles.emptyUpload}>
+                                                    <Box size={20} />
+                                                    <span>Subir Textura</span>
+                                                </div>
+                                            )}
+                                            <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => {
+                                                            setMaterialFormData(prev => ({ ...prev, textureUrl: reader.result as string }));
+                                                        };
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className={styles.formActions} style={{ marginTop: '2rem' }}>
+                                    <button type="button" onClick={() => setShowMaterialForm(false)}>Cancelar</button>
+                                    <button type="submit" className="btn-primary">
+                                        {editingMaterial ? 'Guardar' : 'Crear'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
             </main>
         </div>
     );
 }
+
+const EmptyState = ({ Icon, text }: { Icon: any, text: string }) => (
+    <div className={styles.emptyState}>
+        <Icon size={48} style={{ marginBottom: '1rem', opacity: 0.2 }} />
+        <p>{text}</p>
+    </div>
+);

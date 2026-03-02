@@ -399,6 +399,30 @@
     font-weight: 500;
 }
 
+.deleteFileBtn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    z-index: 5;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.deleteFileBtn:hover {
+    background: #ef4444;
+    transform: scale(1.1);
+}
+
 .modalBody {
     display: grid;
     grid-template-columns: 1fr 1.5fr;
@@ -483,3 +507,27 @@
     align-items: center;
     font-weight: 500;
 }
+
+.previewControls {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.pBtn {
+    padding: 0.6rem 1.2rem;
+    background: #E8A2A2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pBtn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+

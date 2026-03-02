@@ -1,8 +1,9 @@
 "use client";
 import { Suspense, useRef, useMemo, useEffect, useState } from 'react';
-import { Canvas, useLoader, useFrame } from '@react-three/fiber';
+import { Canvas, useLoader, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, Stage, PerspectiveCamera, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
+import { Plus, Minus, Box, Layers, Trash2 } from 'lucide-react';
 
 interface Box3DProps {
     width?: number;
@@ -16,52 +17,138 @@ interface Box3DProps {
     isOpen?: boolean;
     materialTexture?: string;
     baseColor?: string;
+    hingeEdge?: 'long' | 'short';
+    flapsLocation?: 'lid' | 'base';
 }
 
-function StandardBox({ width, height, depth, materials, isOpen }: any) {
+function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'long', flapsLocation = 'base' }: any) {
     const hingeRef = useRef<THREE.Group>(null);
+
+    // Determine if we hinge on the Width side or Depth side
+    const hingeOnWidth = useMemo(() => {
+        const isWidthLonger = width >= depth;
+        return hingeEdge === 'long' ? isWidthLonger : !isWidthLonger;
+    }, [width, depth, hingeEdge]);
 
     useFrame(() => {
         if (hingeRef.current) {
             const targetRotation = isOpen ? -Math.PI * 0.7 : 0;
-            hingeRef.current.rotation.x = THREE.MathUtils.lerp(hingeRef.current.rotation.x, targetRotation, 0.1);
+            if (hingeOnWidth) {
+                hingeRef.current.rotation.x = THREE.MathUtils.lerp(hingeRef.current.rotation.x, targetRotation, 0.1);
+                hingeRef.current.rotation.z = 0;
+            } else {
+                hingeRef.current.rotation.z = THREE.MathUtils.lerp(hingeRef.current.rotation.z, -targetRotation, 0.1);
+                hingeRef.current.rotation.x = 0;
+            }
         }
     });
+
+    const hingePosition: [number, number, number] = hingeOnWidth
+        ? [0, height / 2, -depth / 2]
+        : [-width / 2, height / 2, 0];
+
+    // Side Flaps Component - Now centered at [0,0,0]
+    const SideFlaps = () => {
+        const flapSize = (hingeOnWidth ? depth : width) * 0.25;
+        const flapWidth = (hingeOnWidth ? depth : width) * 0.8;
+
+        if (hingeOnWidth) {
+            return (
+                <>
+                    {/* Left inner flap */}
+                    <group position={[-width / 2 + 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? 0.5 : -0.5) : 0]} visible={isOpen}>
+                        <mesh position={[0.01, flapSize / 2, 0]} material={materials[1]}>
+                            <boxGeometry args={[0.01, flapSize, flapWidth]} />
+                        </mesh>
+                    </group>
+                    {/* Right inner flap */}
+                    <group position={[width / 2 - 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? -0.5 : 0.5) : 0]} visible={isOpen}>
+                        <mesh position={[-0.01, flapSize / 2, 0]} material={materials[0]}>
+                            <boxGeometry args={[0.01, flapSize, flapWidth]} />
+                        </mesh>
+                    </group>
+                </>
+            );
+        } else {
+            return (
+                <>
+                    {/* Back inner flap */}
+                    <group position={[0, 0, -depth / 2 + 0.002]} rotation={[isOpen ? 0.5 : 0, 0, 0]} visible={isOpen}>
+                        <mesh position={[0, flapSize / 2, 0.01]} material={materials[5]}>
+                            <boxGeometry args={[flapWidth, flapSize, 0.01]} />
+                        </mesh>
+                    </group>
+                    {/* Front inner flap */}
+                    <group position={[0, 0, depth / 2 - 0.002]} rotation={[isOpen ? -0.5 : 0, 0, 0]} visible={isOpen}>
+                        <mesh position={[0, flapSize / 2, -0.01]} material={materials[4]}>
+                            <boxGeometry args={[flapWidth, flapSize, 0.01]} />
+                        </mesh>
+                    </group>
+                </>
+            );
+        }
+    };
 
     return (
         <group>
             {/* Hollow Base */}
             <group position={[0, 0, 0]}>
                 {/* Bottom */}
-                <mesh position={[0, -height / 2, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+                <mesh position={[0, -height / 2, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow material={materials[3]}>
                     <planeGeometry args={[width, depth]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
                 {/* Back */}
-                <mesh position={[0, 0, -depth / 2]} receiveShadow>
+                <mesh position={[0, 0, -depth / 2]} receiveShadow material={materials[5]}>
                     <planeGeometry args={[width, height]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                {/* Front - with texture mapping */}
+                {/* Front */}
                 <mesh position={[0, 0, depth / 2]} receiveShadow material={materials[4]}>
                     <planeGeometry args={[width, height]} />
                 </mesh>
                 {/* Left */}
-                <mesh position={[-width / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+                <mesh position={[-width / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow material={materials[1]}>
                     <planeGeometry args={[depth, height]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
                 {/* Right */}
-                <mesh position={[width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+                <mesh position={[width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow material={materials[0]}>
                     <planeGeometry args={[depth, height]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
+
+                {/* Side Flaps on BASE */}
+                {flapsLocation === 'base' && (
+                    <group position={[0, height / 2, 0]}>
+                        <SideFlaps />
+                    </group>
+                )}
             </group>
 
-            {/* Lid / Flap with hinge at the back */}
-            <group ref={hingeRef} position={[0, height / 2, -depth / 2]}>
-                <mesh position={[0, 0, depth / 2]} material={materials} castShadow>
+            {/* Lid / Flap */}
+            <group ref={hingeRef} position={hingePosition}>
+                <mesh
+                    position={hingeOnWidth ? [0, 0, depth / 2] : [width / 2, 0, 0]}
+                    material={materials}
+                    castShadow
+                >
                     <boxGeometry args={[width, 0.04, depth]} />
+                </mesh>
+
+                {/* Side Flaps on LID */}
+                {flapsLocation === 'lid' && (
+                    <group
+                        position={hingeOnWidth ? [0, -0.02, depth / 2] : [width / 2, -0.02, 0]}
+                        rotation={hingeOnWidth ? [Math.PI, 0, 0] : [0, 0, -Math.PI]}
+                    >
+                        <SideFlaps />
+                    </group>
+                )}
+
+                {/* Tuck Flap (Front of the lid) */}
+                <mesh
+                    position={hingeOnWidth ? [0, -0.025, depth] : [width, -0.025, 0]}
+                    rotation={hingeOnWidth ? [-0.6, 0, 0] : [0, 0, 0.6]}
+                    material={materials}
+                >
+                    <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.02, 0.05, hingeOnWidth ? 0.02 : depth * 0.92]} />
                 </mesh>
             </group>
         </group>
@@ -89,26 +176,21 @@ function LidBaseBox({ width, height, depth, materials, isOpen }: any) {
             {/* Hollow Base */}
             <group position={[0, -0.01, 0]}>
                 {/* Bottom */}
-                <mesh position={[0, -height * 0.45, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+                <mesh position={[0, -height * 0.45, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow material={materials[3]}>
                     <planeGeometry args={[width * 0.95, depth * 0.95]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
                 {/* Sides */}
-                <mesh position={[0, 0, -depth * 0.475]} receiveShadow>
+                <mesh position={[0, 0, -depth * 0.475]} receiveShadow material={materials[5]}>
                     <planeGeometry args={[width * 0.95, height * 0.9]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                <mesh position={[0, 0, depth * 0.475]} receiveShadow>
+                <mesh position={[0, 0, depth * 0.475]} receiveShadow material={materials[4]}>
                     <planeGeometry args={[width * 0.95, height * 0.9]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                <mesh position={[-width * 0.475, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+                <mesh position={[-width * 0.475, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow material={materials[1]}>
                     <planeGeometry args={[depth * 0.95, height * 0.9]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                <mesh position={[width * 0.475, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+                <mesh position={[width * 0.475, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow material={materials[0]}>
                     <planeGeometry args={[depth * 0.95, height * 0.9]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
             </group>
 
@@ -138,57 +220,41 @@ function DrawerBox({ width, height, depth, materials, isOpen }: any) {
 
     return (
         <group>
-            {/* Outer Sleeve - We use a group of planes to make it hollow */}
+            {/* Outer Sleeve */}
             <group>
-                {/* Top */}
-                <mesh position={[0, height / 2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+                <mesh position={[0, height / 2, 0]} rotation={[-Math.PI / 2, 0, 0]} material={materials[2]}>
                     <planeGeometry args={[width, depth]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                {/* Bottom */}
-                <mesh position={[0, -height / 2, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <mesh position={[0, -height / 2, 0]} rotation={[Math.PI / 2, 0, 0]} material={materials[3]}>
                     <planeGeometry args={[width, depth]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                {/* Left */}
-                <mesh position={[-width / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]}>
+                <mesh position={[-width / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]} material={materials[1]}>
                     <planeGeometry args={[depth, height]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                {/* Right */}
-                <mesh position={[width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]}>
+                <mesh position={[width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} material={materials[0]}>
                     <planeGeometry args={[depth, height]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
-                {/* Back */}
-                <mesh position={[0, 0, -depth / 2]}>
+                <mesh position={[0, 0, -depth / 2]} material={materials[5]}>
                     <planeGeometry args={[width, height]} />
-                    <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                 </mesh>
             </group>
 
-            {/* Inner Tray Group */}
+            {/* Inner Tray */}
             <group ref={trayGroupRef}>
-                {/* Tray Body - Hollow */}
                 <group position={[0, -height * 0.05, 0]}>
-                    <mesh position={[0, -height * 0.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+                    <mesh position={[0, -height * 0.4, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow material={materials[3]}>
                         <planeGeometry args={[width * 0.9, depth * 0.94]} />
-                        <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                     </mesh>
-                    <mesh position={[0, 0, -depth * 0.47]} receiveShadow>
+                    <mesh position={[0, 0, -depth * 0.47]} receiveShadow material={materials[5]}>
                         <planeGeometry args={[width * 0.9, height * 0.8]} />
-                        <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                     </mesh>
-                    <mesh position={[-width * 0.45, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow>
+                    <mesh position={[-width * 0.45, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow material={materials[1]}>
                         <planeGeometry args={[depth * 0.94, height * 0.8]} />
-                        <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                     </mesh>
-                    <mesh position={[width * 0.45, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow>
+                    <mesh position={[width * 0.45, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow material={materials[0]}>
                         <planeGeometry args={[depth * 0.94, height * 0.8]} />
-                        <meshStandardMaterial color={materials[0].color} side={THREE.DoubleSide} />
                     </mesh>
                 </group>
-                {/* Front face of tray with texture */}
                 <mesh position={[0, 0, depth * 0.49]} material={materials[4]} castShadow receiveShadow>
                     <boxGeometry args={[width * 0.96, height * 0.96, 0.02]} />
                 </mesh>
@@ -208,21 +274,37 @@ function BoxModel({
     boxType = 'standard',
     isOpen = false,
     materialTexture,
-    baseColor
+    baseColor,
+    hingeEdge,
+    flapsLocation
 }: any) {
     const groupRef = useRef<THREE.Group>(null);
     const [dynamicTexture, setDynamicTexture] = useState<THREE.Texture | null>(null);
+    const [baseTexture, setBaseTexture] = useState<THREE.Texture | null>(null);
+    const [materialMap, setMaterialMap] = useState<THREE.Texture | null>(null);
 
-    const baseTexture = topTexture ? (useLoader(THREE.TextureLoader, topTexture) as THREE.Texture) : null;
-    const materialMap = materialTexture ? (useLoader(THREE.TextureLoader, materialTexture) as THREE.Texture) : null;
+    useEffect(() => {
+        const loader = new THREE.TextureLoader();
+        loader.setCrossOrigin('anonymous');
 
-    if (materialMap) {
-        materialMap.wrapS = materialMap.wrapT = THREE.RepeatWrapping;
-        // Adjust tiling based on dimensions to keep texture scale consistent
-        const repeatX = Math.max(1, Math.floor(width / 3));
-        const repeatY = Math.max(1, Math.floor(depth / 3));
-        materialMap.repeat.set(repeatX, repeatY);
-    }
+        if (topTexture) {
+            loader.load(topTexture, (tex) => setBaseTexture(tex));
+        } else {
+            setBaseTexture(null);
+        }
+
+        if (materialTexture) {
+            loader.load(materialTexture, (tex) => {
+                tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+                const repeatX = Math.max(1, Math.floor(width / 3));
+                const repeatY = Math.max(1, Math.floor(depth / 3));
+                tex.repeat.set(repeatX, repeatY);
+                setMaterialMap(tex);
+            });
+        } else {
+            setMaterialMap(null);
+        }
+    }, [topTexture, materialTexture, width, depth]);
 
     useEffect(() => {
         const canvas = document.createElement('canvas');
@@ -231,8 +313,12 @@ function BoxModel({
         const ctx = canvas.getContext('2d');
 
         if (ctx) {
-            ctx.fillStyle = sideColor;
+            ctx.fillStyle = sideColor || baseColor || "#FFFFFF";
             ctx.fillRect(0, 0, 1024, 1024);
+
+            if (materialMap && materialMap.image) {
+                ctx.drawImage(materialMap.image as HTMLImageElement, 0, 0, 1024, 1024);
+            }
 
             if (baseTexture && baseTexture.image) {
                 ctx.drawImage(baseTexture.image as HTMLImageElement, 0, 0, 1024, 1024);
@@ -250,7 +336,7 @@ function BoxModel({
             newTexture.needsUpdate = true;
             setDynamicTexture(newTexture);
         }
-    }, [baseTexture, customText, textColor, sideColor]);
+    }, [baseTexture, materialMap, customText, textColor, sideColor, baseColor]);
 
     const materials = useMemo(() => {
         const materialConfig = {
@@ -279,14 +365,9 @@ function BoxModel({
         ];
     }, [dynamicTexture, baseTexture, sideColor, baseColor, materialMap, boxType]);
 
-    useFrame((state) => {
+    useFrame(() => {
         if (groupRef.current) {
-            // Initial entrance animation
-            groupRef.current.scale.lerp(new THREE.Vector3(1, 1, 1), 0.05);
-            // Continuous gentle rotation at a good constant angle for clarity
-            if (groupRef.current.rotation.y === 0) {
-                groupRef.current.rotation.y = Math.PI / 4.5;
-            }
+            if (groupRef.current.rotation.y === 0) groupRef.current.rotation.y = Math.PI / 4.5;
             groupRef.current.rotation.y += 0.001;
         }
     });
@@ -296,14 +377,33 @@ function BoxModel({
     const sD = depth / 10;
 
     return (
-        <group ref={groupRef} scale={[0, 0, 0]}>
-            <group rotation={[0, 0, 0]}>
-                {boxType === 'standard' && <StandardBox width={sW} height={sH} depth={sD} materials={materials} isOpen={isOpen} />}
-                {boxType === 'lid-base' && <LidBaseBox width={sW} height={sH} depth={sD} materials={materials} isOpen={isOpen} />}
-                {boxType === 'drawer' && <DrawerBox width={sW} height={sH} depth={sD} materials={materials} isOpen={isOpen} />}
-            </group>
+        <group ref={groupRef}>
+            {boxType === 'standard' && (
+                <StandardBox
+                    width={sW}
+                    height={sH}
+                    depth={sD}
+                    materials={materials}
+                    isOpen={isOpen}
+                    hingeEdge={hingeEdge}
+                    flapsLocation={flapsLocation || 'base'}
+                />
+            )}
+            {boxType === 'lid-base' && <LidBaseBox width={sW} height={sH} depth={sD} materials={materials} isOpen={isOpen} />}
+            {boxType === 'drawer' && <DrawerBox width={sW} height={sH} depth={sD} materials={materials} isOpen={isOpen} />}
         </group>
     );
+}
+
+function CameraController({ zoom }: { zoom: number }) {
+    const { camera } = useThree();
+    useEffect(() => {
+        if (camera instanceof THREE.PerspectiveCamera) {
+            camera.fov = 35 / zoom;
+            camera.updateProjectionMatrix();
+        }
+    }, [zoom, camera]);
+    return null;
 }
 
 export default function Box3D({
@@ -317,12 +417,27 @@ export default function Box3D({
     boxType,
     isOpen,
     materialTexture,
-    baseColor
+    baseColor,
+    hingeEdge,
+    flapsLocation
 }: Box3DProps) {
+    const [zoom, setZoom] = useState(1);
+
+    const handleZoomIn = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setZoom(prev => Math.min(prev + 0.2, 2.5));
+    };
+
+    const handleZoomOut = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setZoom(prev => Math.max(prev - 0.2, 0.5));
+    };
+
     return (
         <div style={{ width: '100%', height: '100%', minHeight: '450px', background: 'transparent', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
             <Canvas shadows={{ type: THREE.PCFShadowMap }} dpr={[1, 2]}>
                 <PerspectiveCamera makeDefault position={[6, 5, 8]} fov={35} />
+                <CameraController zoom={zoom} />
                 <ambientLight intensity={0.8} />
                 <spotLight position={[10, 10, 10]} angle={0.2} penumbra={1} intensity={2} castShadow />
                 <pointLight position={[-10, -5, -10]} intensity={0.5} />
@@ -341,6 +456,8 @@ export default function Box3D({
                             isOpen={isOpen}
                             materialTexture={materialTexture}
                             baseColor={baseColor}
+                            hingeEdge={hingeEdge}
+                            flapsLocation={flapsLocation}
                         />
                     </Stage>
                 </Suspense>
@@ -349,12 +466,64 @@ export default function Box3D({
                 <OrbitControls
                     makeDefault
                     enablePan={false}
+                    enableZoom={false}
+                    enableDamping={true}
+                    dampingFactor={0.05}
                     minPolarAngle={Math.PI / 4}
                     maxPolarAngle={Math.PI / 1.5}
-                    minDistance={4}
-                    maxDistance={15}
+                    minDistance={2}
+                    maxDistance={20}
                 />
             </Canvas>
+
+            <div style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem',
+                zIndex: 20
+            }}>
+                <button
+                    onClick={handleZoomIn}
+                    style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'white',
+                        border: '1px solid #eee',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        color: 'var(--primary)'
+                    }}
+                    title="Acercar"
+                >
+                    <Plus size={20} />
+                </button>
+                <button
+                    onClick={handleZoomOut}
+                    style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'white',
+                        border: '1px solid #eee',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                        color: 'var(--primary)'
+                    }}
+                    title="Alejar"
+                >
+                    <Minus size={20} />
+                </button>
+            </div>
         </div>
     );
 }

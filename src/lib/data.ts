@@ -1,4 +1,4 @@
-import { Product } from '@/types/product';
+import { Product, BoxShape } from '@/types/product';
 
 export interface SiteSettings {
     colors: {
@@ -34,6 +34,30 @@ export let siteSettings: SiteSettings = {
 
 export const collections = ["Todas", "Floral", "Aniversario", "Cumpleaños", "Especiales"];
 
+export const boxShapes: BoxShape[] = [
+    {
+        id: 'shape_standard',
+        name: 'Caja Estándar',
+        type: 'standard',
+        defaultDimensions: { width: 4, height: 2, depth: 4 },
+        flapsLocation: 'base'
+    },
+    {
+        id: 'shape_lid_base',
+        name: 'Caja Tapa y Base',
+        type: 'lid-base',
+        defaultDimensions: { width: 4, height: 2, depth: 4 },
+        flapsLocation: 'base'
+    },
+    {
+        id: 'shape_drawer',
+        name: 'Caja tipo Cajón',
+        type: 'drawer',
+        defaultDimensions: { width: 4, height: 2, depth: 4 },
+        flapsLocation: 'base'
+    }
+];
+
 export let products: Product[] = [
     {
         id: 'prod_primavera',
@@ -42,9 +66,10 @@ export let products: Product[] = [
         category: 'Floral',
         description: 'Una caja llena de vida y color para celebrar momentos especiales.',
         image: '/hero-banner.png',
-        boxTexture: '/hero-banner.png',
+        boxTexture: '/box-placeholder.png',
         dimensions: { width: 4, height: 2, depth: 4 },
-        boxType: 'standard'
+        boxType: 'standard',
+        shapeId: 'shape_standard'
     },
     {
         id: 'prod_gold',
@@ -53,9 +78,10 @@ export let products: Product[] = [
         category: 'Aniversario',
         description: 'Elegancia y distinción en cada detalle para celebrar el amor.',
         image: '/hero-banner.png',
-        boxTexture: '/hero-banner.png',
+        boxTexture: '/box-placeholder.png',
         dimensions: { width: 4, height: 2, depth: 4 },
-        boxType: 'lid-base'
+        boxType: 'lid-base',
+        shapeId: 'shape_lid_base'
     },
     {
         id: 'prod_azul',
@@ -64,9 +90,10 @@ export let products: Product[] = [
         category: 'Cumpleaños',
         description: 'Sorpresas vibrantes para un día inolvidable.',
         image: '/hero-banner.png',
-        boxTexture: '/hero-banner.png',
+        boxTexture: '/box-placeholder.png',
         dimensions: { width: 4, height: 2, depth: 4 },
-        boxType: 'drawer'
+        boxType: 'drawer',
+        shapeId: 'shape_drawer'
     }
 ];
 

@@ -1,3 +1,16 @@
+export interface BoxShape {
+    id: string;
+    name: string;
+    type: 'standard' | 'lid-base' | 'drawer';
+    defaultDimensions: {
+        width: number;
+        height: number;
+        depth: number;
+    };
+    hingeEdge?: 'long' | 'short';
+    flapsLocation?: 'lid' | 'base';
+}
+
 export interface Product {
     id: string;
     name: string;
@@ -15,4 +28,7 @@ export interface Product {
     materialId?: string;
     baseColor?: string;
     customMaterialTexture?: string; // New field for uploaded material texture
+    shapeId?: string; // Linked shape
+    hingeEdge?: 'long' | 'short';
+    flapsLocation?: 'lid' | 'base';
 }
