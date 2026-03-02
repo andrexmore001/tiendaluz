@@ -56,6 +56,7 @@ Total: $${(product.price * quantity).toLocaleString()}
                         flapHeightPercent={product.flapHeightPercent}
                         flapWidthOffset={product.flapWidthOffset}
                         flapType={product.flapType as any}
+                        tuckFlapHeightPercent={product.tuckFlapHeightPercent}
                     />
                     <button
                         className={styles.toggleOpen}

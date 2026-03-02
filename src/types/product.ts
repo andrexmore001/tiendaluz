@@ -13,6 +13,7 @@ export interface BoxShape {
     flapHeightPercent?: number;  // Default: 0.25 (25% of the related side)
     flapWidthOffset?: number;   // Default: -0.2 (Reduction from the edge in cm)
     flapType?: 'rectangular' | 'trapezoidal'; // Default: rectangular
+    tuckFlapHeightPercent?: number; // Height of the tuck flap (0-1)
 }
 
 export interface Product {
@@ -39,4 +40,5 @@ export interface Product {
     flapHeightPercent?: number;
     flapWidthOffset?: number;
     flapType?: 'rectangular' | 'trapezoidal';
+    tuckFlapHeightPercent?: number;
 }

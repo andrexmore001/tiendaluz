@@ -170,7 +170,8 @@ export default function AdminPage() {
             flapsLocation: p.flapsLocation || 'base',
             flapHeightPercent: p.flapHeightPercent || 0.25,
             flapWidthOffset: p.flapWidthOffset || -0.2,
-            flapType: p.flapType || 'rectangular'
+            flapType: p.flapType || 'rectangular',
+            tuckFlapHeightPercent: p.tuckFlapHeightPercent || 0.15
         });
         setShowProductForm(true);
     };
@@ -189,7 +190,8 @@ export default function AdminPage() {
                 flapsLocation: shape.flapsLocation || 'base',
                 flapHeightPercent: shape.flapHeightPercent || 0.25,
                 flapWidthOffset: shape.flapWidthOffset || -0.2,
-                flapType: shape.flapType || 'rectangular'
+                flapType: shape.flapType || 'rectangular',
+                tuckFlapHeightPercent: shape.tuckFlapHeightPercent || 0.15
             });
         } else {
             setFormData({ ...formData, shapeId: '' });
@@ -215,7 +217,8 @@ export default function AdminPage() {
             flapsLocation: formData.flapsLocation,
             flapHeightPercent: Number(formData.flapHeightPercent),
             flapWidthOffset: Number(formData.flapWidthOffset),
-            flapType: formData.flapType
+            flapType: formData.flapType,
+            tuckFlapHeightPercent: Number(formData.tuckFlapHeightPercent)
         };
 
         if (editingProduct) {
@@ -268,7 +271,8 @@ export default function AdminPage() {
             flapsLocation: s.flapsLocation || 'base',
             flapHeightPercent: s.flapHeightPercent || 0.25,
             flapWidthOffset: s.flapWidthOffset || -0.2,
-            flapType: s.flapType || 'rectangular'
+            flapType: s.flapType || 'rectangular',
+            tuckFlapHeightPercent: s.tuckFlapHeightPercent || 0.15
         });
         setShowShapeForm(true);
     };
@@ -288,7 +292,8 @@ export default function AdminPage() {
             flapsLocation: shapeFormData.flapsLocation as any,
             flapHeightPercent: Number(shapeFormData.flapHeightPercent),
             flapWidthOffset: Number(shapeFormData.flapWidthOffset),
-            flapType: shapeFormData.flapType as any
+            flapType: shapeFormData.flapType as any,
+            tuckFlapHeightPercent: Number(shapeFormData.tuckFlapHeightPercent)
         };
 
         if (editingShape) {
@@ -628,7 +633,8 @@ export default function AdminPage() {
                                     flapsLocation: 'base',
                                     flapHeightPercent: 0.25,
                                     flapWidthOffset: -0.2,
-                                    flapType: 'rectangular'
+                                    flapType: 'rectangular',
+                                    tuckFlapHeightPercent: 0.15
                                 });
                                 setShowShapeForm(true);
                             }}>
@@ -685,6 +691,7 @@ export default function AdminPage() {
                                             flapHeightPercent={Number(formData.flapHeightPercent)}
                                             flapWidthOffset={Number(formData.flapWidthOffset)}
                                             flapType={formData.flapType as any}
+                                            tuckFlapHeightPercent={Number(formData.tuckFlapHeightPercent)}
                                             isOpen={isOpen}
                                         />
                                     </div>
@@ -864,6 +871,17 @@ export default function AdminPage() {
                                                         step="0.1"
                                                         value={formData.flapWidthOffset}
                                                         onChange={(e) => setFormData({ ...formData, flapWidthOffset: parseFloat(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Alto Cierre (Tuck %)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.05"
+                                                        min="0"
+                                                        max="1"
+                                                        value={formData.tuckFlapHeightPercent}
+                                                        onChange={(e) => setFormData({ ...formData, tuckFlapHeightPercent: parseFloat(e.target.value) || 0 })}
                                                     />
                                                 </div>
                                             </div>
@@ -1060,6 +1078,17 @@ export default function AdminPage() {
                                                         step="0.1"
                                                         value={shapeFormData.flapWidthOffset}
                                                         onChange={(e) => setShapeFormData({ ...shapeFormData, flapWidthOffset: parseFloat(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Alto Cierre (Tuck %)</label>
+                                                    <input
+                                                        type="number"
+                                                        step="0.05"
+                                                        min="0"
+                                                        max="1"
+                                                        value={shapeFormData.tuckFlapHeightPercent}
+                                                        onChange={(e) => setShapeFormData({ ...shapeFormData, tuckFlapHeightPercent: parseFloat(e.target.value) || 0 })}
                                                     />
                                                 </div>
                                             </div>

@@ -22,9 +22,10 @@ interface Box3DProps {
     flapHeightPercent?: number;
     flapWidthOffset?: number;
     flapType?: 'rectangular' | 'trapezoidal';
+    tuckFlapHeightPercent?: number;
 }
 
-function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'long', flapsLocation = 'base', flapHeightPercent = 0.25, flapWidthOffset = -0.2, flapType = 'rectangular' }: any) {
+function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'long', flapsLocation = 'base', flapHeightPercent = 0.25, flapWidthOffset = -0.2, flapType = 'rectangular', tuckFlapHeightPercent = 0.15 }: any) {
     const hingeRef = useRef<THREE.Group>(null);
 
     // Determine if we hinge on the Width side or Depth side
@@ -174,8 +175,8 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                     position={hingeOnWidth ? [0, 0, depth] : [width, 0, 0]}
                     rotation={hingeOnWidth ? [isOpen ? 0.6 : 0, 0, 0] : [0, 0, isOpen ? -0.6 : 0]}
                 >
-                    <mesh material={materials} position={hingeOnWidth ? [0, -0.025, -0.005] : [-0.005, -0.025, 0]}>
-                        <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.01, 0.05, hingeOnWidth ? 0.01 : depth * 0.92]} />
+                    <mesh material={materials} position={hingeOnWidth ? [0, -(height * tuckFlapHeightPercent) / 2, -0.005] : [-0.005, -(height * tuckFlapHeightPercent) / 2, 0]}>
+                        <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.01, height * tuckFlapHeightPercent, hingeOnWidth ? 0.01 : depth * 0.92]} />
                     </mesh>
                 </group>
             </group>
@@ -307,7 +308,8 @@ function BoxModel({
     flapsLocation,
     flapHeightPercent,
     flapWidthOffset,
-    flapType
+    flapType,
+    tuckFlapHeightPercent
 }: any) {
     const groupRef = useRef<THREE.Group>(null);
     const [dynamicTexture, setDynamicTexture] = useState<THREE.Texture | null>(null);
@@ -421,6 +423,7 @@ function BoxModel({
                     flapHeightPercent={flapHeightPercent}
                     flapWidthOffset={flapWidthOffset ? flapWidthOffset / 10 : -0.02}
                     flapType={flapType || 'rectangular'}
+                    tuckFlapHeightPercent={tuckFlapHeightPercent || 0.15}
                 />
             )}
             {boxType === 'lid-base' && <LidBaseBox width={sW} height={sH} depth={sD} materials={materials} isOpen={isOpen} />}
@@ -456,7 +459,8 @@ export default function Box3D({
     flapsLocation,
     flapHeightPercent,
     flapWidthOffset,
-    flapType
+    flapType,
+    tuckFlapHeightPercent
 }: Box3DProps) {
     const [zoom, setZoom] = useState(1);
 
@@ -498,6 +502,7 @@ export default function Box3D({
                             flapHeightPercent={flapHeightPercent}
                             flapWidthOffset={flapWidthOffset}
                             flapType={flapType}
+                            tuckFlapHeightPercent={tuckFlapHeightPercent} // Passed the new prop
                         />
                     </Stage>
                 </Suspense>
