@@ -52,6 +52,9 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
         : [-width / 2, height / 2, 0];
 
     // Side Flaps Component
+    const designMat = materials[4];
+    const sideMat = materials[0];
+
     const SideFlaps = () => {
         const flapSize = flapsLocation === 'lid'
             ? height * flapHeightPercent
@@ -85,13 +88,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 <>
                     {/* Left inner flap */}
                     <group position={[-width / 2 + 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57)]}>
-                        <mesh position={[0.005, flapSize / 2, 0]} material={materials[1]} rotation={[0, Math.PI / 2, 0]}>
+                        <mesh position={[0.005, flapSize / 2, 0]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Right inner flap */}
                     <group position={[width / 2 - 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? 0.5 : (isOpen ? 0 : 1.57)]}>
-                        <mesh position={[-0.005, flapSize / 2, 0]} material={materials[0]} rotation={[0, Math.PI / 2, 0]}>
+                        <mesh position={[-0.005, flapSize / 2, 0]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
@@ -102,13 +105,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 <>
                     {/* Back inner flap */}
                     <group position={[0, 0, -depth / 2 + 0.02]} rotation={[flapsLocation === 'lid' ? 0.5 : (isOpen ? 0 : 1.57), 0, 0]}>
-                        <mesh position={[0, flapSize / 2, 0.005]} material={materials[5]}>
+                        <mesh position={[0, flapSize / 2, 0.005]} material={sideMat}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Front inner flap */}
                     <group position={[0, 0, depth / 2 - 0.02]} rotation={[flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57), 0, 0]}>
-                        <mesh position={[0, flapSize / 2, -0.005]} material={materials[4]}>
+                        <mesh position={[0, flapSize / 2, -0.005]} material={sideMat}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
@@ -129,16 +132,16 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 <mesh position={[0, 0, -depth / 2]} receiveShadow material={materials[5]}>
                     <planeGeometry args={[width, height]} />
                 </mesh>
-                {/* Front */}
-                <mesh position={[0, 0, depth / 2]} receiveShadow material={materials[4]}>
+                {/* Front (Visible face where lid tucks if hingeOnWidth) */}
+                <mesh position={[0, 0, depth / 2]} receiveShadow material={hingeOnWidth ? designMat : sideMat}>
                     <planeGeometry args={[width, height]} />
                 </mesh>
                 {/* Left */}
-                <mesh position={[-width / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow material={materials[1]}>
+                <mesh position={[-width / 2, 0, 0]} rotation={[0, Math.PI / 2, 0]} receiveShadow material={sideMat}>
                     <planeGeometry args={[depth, height]} />
                 </mesh>
-                {/* Right */}
-                <mesh position={[width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow material={materials[0]}>
+                {/* Right (Visible face where lid tucks if !hingeOnWidth) */}
+                <mesh position={[width / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} receiveShadow material={hingeOnWidth ? sideMat : designMat}>
                     <planeGeometry args={[depth, height]} />
                 </mesh>
 
@@ -175,7 +178,10 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                     position={hingeOnWidth ? [0, 0, depth] : [width, 0, 0]}
                     rotation={hingeOnWidth ? [isOpen ? -Math.PI / 2 : 0, 0, 0] : [0, 0, isOpen ? Math.PI / 2 : 0]}
                 >
-                    <mesh material={materials} position={hingeOnWidth ? [0, -(height * tuckFlapHeightPercent) / 2, -0.005] : [-0.005, -(height * tuckFlapHeightPercent) / 2, 0]}>
+                    <mesh
+                        material={hingeOnWidth ? [sideMat, sideMat, sideMat, sideMat, designMat, sideMat] : [designMat, sideMat, sideMat, sideMat, sideMat, sideMat]}
+                        position={hingeOnWidth ? [0, -(height * tuckFlapHeightPercent) / 2, -0.005] : [-0.005, -(height * tuckFlapHeightPercent) / 2, 0]}
+                    >
                         <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.01, height * tuckFlapHeightPercent, hingeOnWidth ? 0.01 : depth * 0.92]} />
                     </mesh>
                 </group>
