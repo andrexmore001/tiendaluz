@@ -56,13 +56,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
             return (
                 <>
                     {/* Left inner flap */}
-                    <group position={[-width / 2 + 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? 0.5 : -0.5) : 0]} visible={isOpen}>
+                    <group position={[-width / 2 + 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? 0.5 : -0.5) : (flapsLocation === 'lid' ? 1.57 : -1.57)]}>
                         <mesh position={[0.01, flapSize / 2, 0]} material={materials[1]}>
                             <boxGeometry args={[0.01, flapSize, flapWidth]} />
                         </mesh>
                     </group>
                     {/* Right inner flap */}
-                    <group position={[width / 2 - 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? -0.5 : 0.5) : 0]} visible={isOpen}>
+                    <group position={[width / 2 - 0.002, 0, 0]} rotation={[0, 0, isOpen ? (flapsLocation === 'lid' ? -0.5 : 0.5) : (flapsLocation === 'lid' ? -1.57 : 1.57)]}>
                         <mesh position={[-0.01, flapSize / 2, 0]} material={materials[0]}>
                             <boxGeometry args={[0.01, flapSize, flapWidth]} />
                         </mesh>
@@ -73,13 +73,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
             return (
                 <>
                     {/* Back inner flap */}
-                    <group position={[0, 0, -depth / 2 + 0.002]} rotation={[isOpen ? 0.5 : 0, 0, 0]} visible={isOpen}>
+                    <group position={[0, 0, -depth / 2 + 0.002]} rotation={[isOpen ? 0.5 : 1.57, 0, 0]}>
                         <mesh position={[0, flapSize / 2, 0.01]} material={materials[5]}>
                             <boxGeometry args={[flapWidth, flapSize, 0.01]} />
                         </mesh>
                     </group>
                     {/* Front inner flap */}
-                    <group position={[0, 0, depth / 2 - 0.002]} rotation={[isOpen ? -0.5 : 0, 0, 0]} visible={isOpen}>
+                    <group position={[0, 0, depth / 2 - 0.002]} rotation={[isOpen ? -0.5 : -1.57, 0, 0]}>
                         <mesh position={[0, flapSize / 2, -0.01]} material={materials[4]}>
                             <boxGeometry args={[flapWidth, flapSize, 0.01]} />
                         </mesh>
@@ -129,13 +129,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                     material={materials}
                     castShadow
                 >
-                    <boxGeometry args={[width, 0.04, depth]} />
+                    <boxGeometry args={[width, 0.01, depth]} />
                 </mesh>
 
                 {/* Side Flaps on LID */}
                 {flapsLocation === 'lid' && (
                     <group
-                        position={hingeOnWidth ? [0, -0.02, depth / 2] : [width / 2, -0.02, 0]}
+                        position={hingeOnWidth ? [0, -0.005, depth / 2] : [width / 2, -0.005, 0]}
                         rotation={hingeOnWidth ? [Math.PI, 0, 0] : [0, 0, -Math.PI]}
                     >
                         <SideFlaps />
@@ -143,13 +143,14 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 )}
 
                 {/* Tuck Flap (Front of the lid) */}
-                <mesh
-                    position={hingeOnWidth ? [0, -0.025, depth] : [width, -0.025, 0]}
-                    rotation={hingeOnWidth ? [-0.6, 0, 0] : [0, 0, 0.6]}
-                    material={materials}
+                <group
+                    position={hingeOnWidth ? [0, 0, depth] : [width, 0, 0]}
+                    rotation={hingeOnWidth ? [isOpen ? -0.6 : -1.57, 0, 0] : [0, 0, isOpen ? 0.6 : 1.57]}
                 >
-                    <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.02, 0.05, hingeOnWidth ? 0.02 : depth * 0.92]} />
-                </mesh>
+                    <mesh material={materials} position={hingeOnWidth ? [0, 0.025, 0] : [0.025, 0, 0]}>
+                        <boxGeometry args={[hingeOnWidth ? width * 0.92 : 0.01, 0.05, hingeOnWidth ? 0.01 : depth * 0.92]} />
+                    </mesh>
+                </group>
             </group>
         </group>
     );
