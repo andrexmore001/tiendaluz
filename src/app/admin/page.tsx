@@ -792,23 +792,25 @@ export default function AdminPage() {
                             <div className={styles.modalBody}>
                                 <div className={styles.previewSection}>
                                     <div className={styles.adminBoxPreview}>
-                                        <Box3D
-                                            width={Number(formData.width)}
-                                            height={Number(formData.height)}
-                                            depth={Number(formData.depth)}
-                                            boxType={formData.boxType as any}
-                                            materialTexture={formData.materialTexture || materials.find((m: any) => m.id === formData.materialId)?.textureUrl}
-                                            baseColor={formData.baseColor}
-                                            topTexture={formData.boxTexture}
-                                            hingeEdge={formData.hingeEdge as any}
-                                            flapsLocation={formData.flapsLocation as any}
-                                            flapHeightPercent={Number(formData.flapHeightPercent)}
-                                            flapWidthOffset={Number(formData.flapWidthOffset)}
-                                            flapType={formData.flapType as any}
-                                            tuckFlapHeightPercent={Number(formData.tuckFlapHeightPercent)}
-                                            isOpen={isOpen}
-                                        />
-                                    </div>
+    {(() => {
+        const selectedMaterial = materials.find(
+            (m: any) => m.id === formData.materialId
+        );
+
+        return (
+            <Box3D
+    width={Number(formData.width)}
+    height={Number(formData.height)}
+    depth={Number(formData.depth)}
+    materialData={selectedMaterial}
+    customMaterialTexture={formData.materialTexture}
+    baseColor={formData.baseColor}
+    isOpen={isOpen}
+    hingeEdge={formData.hingeEdge as "long" | "short"}
+/>
+        );
+    })()}
+</div>
                                     <div className={styles.previewControls}>
                                         <button
                                             type="button"

@@ -6,7 +6,17 @@ import { Product, BoxShape, Collection } from '@/types/product';
 export interface Material {
     id: string;
     name: string;
-    textureUrl: string;
+
+    /* Tipo físico */
+    type: "corrugated" | "mdf" | "wood";
+
+    /* Propiedades industriales */
+    thickness_mm: number;
+    tolerance_mm: number;
+    stiffness_factor: number;
+
+    /* Visual */
+    textureUrl?: string;
     baseColor?: string;
     roughness?: number;
     metalness?: number;
@@ -50,10 +60,37 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [storageError, setStorageError] = useState<string | null>(null);
 
     const [materials, setMaterials] = useState<Material[]>([
-        { id: 'carton-kraft', name: 'Cartón Kraft', textureUrl: '/materials/kraft.png', baseColor: '#e3c5a8' },
-        { id: 'madera', name: 'Madera Clara', textureUrl: '/materials/wood.png', baseColor: '#f1dabf' },
-        { id: 'MDF', name: 'MDF', textureUrl: '/materials/mdf.png', baseColor: '#d9c5a3' }
-    ]);
+    {
+        id: 'carton-kraft',
+        name: 'Cartón Kraft',
+        type: "corrugated",
+        thickness_mm: 4,
+        tolerance_mm: 1,
+        stiffness_factor: 0.08,
+        textureUrl: '/materials/kraft.jpg',
+        baseColor: '#e3c5a8'
+    },
+    {
+        id: 'madera',
+        name: 'Madera Clara',
+        type: "wood",
+        thickness_mm: 6,
+        tolerance_mm: 0.5,
+        stiffness_factor: 0.03,
+        textureUrl: '/materials/wood.png',
+        baseColor: '#f1dabf'
+    },
+    {
+        id: 'mdf',
+        name: 'MDF',
+        type: "mdf",
+        thickness_mm: 5,
+        tolerance_mm: 0.5,
+        stiffness_factor: 0.05,
+        textureUrl: '/materials/mdf.png',
+        baseColor: '#d9c5a3'
+    }
+]);
 
     // Initial load from localStorage
     useEffect(() => {

@@ -1,4 +1,4 @@
-import { Product, BoxShape } from '@/types/product';
+import { Product, BoxShape, Collection } from '@/types/product';
 
 export interface SiteSettings {
     colors: {
@@ -82,7 +82,7 @@ export let products: Product[] = [
         description: 'Una caja llena de vida y color para celebrar momentos especiales.',
         image: '/hero-banner.png',
         boxTexture: '/box-placeholder.png',
-        dimensions: { width: 4, height: 2, depth: 4 },
+        dimensions: { width: 30, height: 20, depth: 30 },
         boxType: 'standard',
         shapeId: 'shape_standard'
     },
@@ -94,7 +94,7 @@ export let products: Product[] = [
         description: 'Elegancia y distinción en cada detalle para celebrar el amor.',
         image: '/hero-banner.png',
         boxTexture: '/box-placeholder.png',
-        dimensions: { width: 4, height: 2, depth: 4 },
+        dimensions: { width: 30, height: 20, depth: 30 },
         boxType: 'lid-base',
         shapeId: 'shape_lid_base'
     },
@@ -106,7 +106,7 @@ export let products: Product[] = [
         description: 'Sorpresas vibrantes para un día inolvidable.',
         image: '/hero-banner.png',
         boxTexture: '/box-placeholder.png',
-        dimensions: { width: 4, height: 2, depth: 4 },
+        dimensions: { width: 30, height: 20, depth: 30 },
         boxType: 'drawer',
         shapeId: 'shape_drawer'
     }
