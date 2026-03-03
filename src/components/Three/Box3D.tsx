@@ -15,6 +15,11 @@ interface Box3DProps {
   customMaterialTexture?: string;
   baseColor?: string;
   hingeEdge?: "long" | "short";
+  flapsLocation?: "base" | "lid";
+  flapHeightPercent?: number;
+  flapWidthOffset?: number;
+  flapType?: "rectangular" | "trapezoidal";
+  tuckFlapHeightPercent?: number;
 }
 
 function IndustrialBox({
@@ -25,7 +30,12 @@ function IndustrialBox({
   customMaterialTexture,
   baseColor,
   isOpen = false,
-  hingeEdge = "long"
+  hingeEdge = "long",
+  flapsLocation = "base",
+  flapHeightPercent = 0.25,
+  flapWidthOffset = -0.2,
+  flapType = "rectangular",
+  tuckFlapHeightPercent = 0.15
 }: Box3DProps) {
 
   const scaleFactor = 10;
@@ -40,19 +50,14 @@ function IndustrialBox({
   const thickness =
     ((materialData?.thickness_mm ?? 3) / 10) / scaleFactor;
 
-  /* ===========================
-     MATERIAL
-  ============================ */
+  /* ================= MATERIAL ================= */
 
   const material = useMemo(() => {
     const loader = new THREE.TextureLoader();
     let map: THREE.Texture | null = null;
 
-    if (customMaterialTexture) {
-      map = loader.load(customMaterialTexture);
-    } else if (materialData?.textureUrl) {
-      map = loader.load(materialData.textureUrl);
-    }
+    if (customMaterialTexture) map = loader.load(customMaterialTexture);
+    else if (materialData?.textureUrl) map = loader.load(materialData.textureUrl);
 
     if (map) {
       map.wrapS = map.wrapT = THREE.RepeatWrapping;
@@ -63,131 +68,162 @@ function IndustrialBox({
 
     return new THREE.MeshStandardMaterial({
       map: map ?? undefined,
-      color: map
-        ? "#ffffff"
-        : materialData?.baseColor || baseColor || "#e5e5e5",
+      color: map ? "#ffffff" : materialData?.baseColor || baseColor || "#e5e5e5",
       roughness: materialData?.roughness ?? 0.75,
       metalness: materialData?.metalness ?? 0.05,
     });
   }, [materialData, customMaterialTexture, baseColor, width, depth]);
 
-  /* ===========================
-     BISAGRA
-     long  = trasera (eje X)
-     short = lateral (eje Z)
-  ============================ */
+  /* ================= BISAGRA ================= */
 
   const isLongEdge = hingeEdge === "short";
 
-const lidRef = useRef<THREE.Group>(null);
-const currentRotation = useRef(0);
+  const lidRef = useRef<THREE.Group>(null);
+  const currentRotation = useRef(0);
+  const targetRotation = isOpen ? Math.PI / 1.8 : 0;
 
-const targetRotation = isOpen ? Math.PI / 1.8 : 0;
+  useFrame(() => {
+    if (!lidRef.current) return;
 
-useFrame(() => {
-  if (!lidRef.current) return;
+    currentRotation.current = THREE.MathUtils.lerp(
+      currentRotation.current,
+      targetRotation,
+      0.08
+    );
 
-  currentRotation.current = THREE.MathUtils.lerp(
-    currentRotation.current,
-    targetRotation,
-    0.08
-  );
+    if (isLongEdge) {
+      lidRef.current.rotation.x = -currentRotation.current;
+    } else {
+      lidRef.current.rotation.z = currentRotation.current;
+    }
+  });
 
-  if (isLongEdge) {
-    // long → bisagra trasera → eje X
-    lidRef.current.rotation.x = -currentRotation.current;
-  } else {
-    // short → bisagra lateral → eje Z
-    lidRef.current.rotation.z = currentRotation.current;
-  }
+  /* ================= ALETAS ================= */
+
+  // AHORA DEPENDEN DE ALTURA TOTAL REAL
+  const flapHeight = h * flapHeightPercent;
+  const tuckHeight = h * tuckFlapHeightPercent;
+  const flapWidth = w + flapWidthOffset / scaleFactor;
+  console.log("DEBUG ALETAS:", {
+  flapHeightPercent,
+  flapsLocation,
+  flapWidthOffset,
+  tuckFlapHeightPercent,
+  flapType
 });
-
   return (
     <group>
 
       {/* ===== BASE ===== */}
 
-      {/* Piso */}
-      <mesh
-        material={material}
-        position={[0, thickness / 2, 0]}
-        castShadow
-        receiveShadow
-      >
+      <mesh material={material} position={[0, thickness / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[w, thickness, d]} />
       </mesh>
 
-      {/* Frente */}
-      <mesh
-        material={material}
-        position={[0, baseHeight / 2, d / 2 - thickness / 2]}
-        castShadow
-        receiveShadow
-      >
+      <mesh material={material} position={[0, baseHeight / 2, d / 2 - thickness / 2]} castShadow receiveShadow>
         <boxGeometry args={[w, baseHeight, thickness]} />
       </mesh>
 
-      {/* Atrás */}
-      <mesh
-        material={material}
-        position={[0, baseHeight / 2, -d / 2 + thickness / 2]}
-        castShadow
-        receiveShadow
-      >
+      <mesh material={material} position={[0, baseHeight / 2, -d / 2 + thickness / 2]} castShadow receiveShadow>
         <boxGeometry args={[w, baseHeight, thickness]} />
       </mesh>
 
-      {/* Izquierda */}
-      <mesh
-        material={material}
-        position={[-w / 2 + thickness / 2, baseHeight / 2, 0]}
-        castShadow
-        receiveShadow
-      >
+      <mesh material={material} position={[-w / 2 + thickness / 2, baseHeight / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[thickness, baseHeight, d]} />
       </mesh>
 
-      {/* Derecha */}
-      <mesh
-        material={material}
-        position={[w / 2 - thickness / 2, baseHeight / 2, 0]}
-        castShadow
-        receiveShadow
-      >
+      <mesh material={material} position={[w / 2 - thickness / 2, baseHeight / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[thickness, baseHeight, d]} />
       </mesh>
 
-      {/* ===== TAPA ANIMADA ===== */}
+      {/* ===== TAPA ===== */}
 
       <group
-  ref={lidRef}
-  position={
-    isLongEdge
-      ? [0, baseHeight + thickness / 2, -d / 2]   // trasera
-      : [-w / 2, baseHeight + thickness / 2, 0]   // lateral
-  }
->
-  <mesh
-    material={material}
-    position={
-      isLongEdge
-        ? [0, 0, d / 2]
-        : [w / 2, 0, 0]
-    }
-    castShadow
-    receiveShadow
-  >
-    <boxGeometry args={[w, thickness, d]} />
-  </mesh>
-</group>
+        ref={lidRef}
+        position={
+          isLongEdge
+            ? [0, baseHeight + thickness / 2, -d / 2]
+            : [-w / 2, baseHeight + thickness / 2, 0]
+        }
+      >
+        <mesh
+          material={material}
+          position={
+            isLongEdge
+              ? [0, 0, d / 2]
+              : [w / 2, 0, 0]
+          }
+          castShadow
+          receiveShadow
+        >
+          <boxGeometry args={[w, thickness, d]} />
+        </mesh>
+
+        {/* ALETAS EN TAPA */}
+        {flapsLocation === "lid" && (
+  <>
+    {/* Lateral izquierda */}
+    <mesh
+      material={material}
+      position={[-w / 2 - thickness / 2, flapHeight / 2, 0]}
+    >
+      <boxGeometry args={[thickness, flapHeight, d]} />
+    </mesh>
+
+    {/* Lateral derecha */}
+    <mesh
+      material={material}
+      position={[w / 2 + thickness / 2, flapHeight / 2, 0]}
+    >
+      <boxGeometry args={[thickness, flapHeight, d]} />
+    </mesh>
+
+    {/* Tuck frontal */}
+    <mesh
+      material={material}
+      position={[0, tuckHeight / 2, d / 2 + thickness / 2]}
+    >
+      <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
+    </mesh>
+  </>
+)}
+        
+      </group>
+
+      {/* ===== ALETAS EN BASE ===== */}
+
+      {flapsLocation === "base" && (
+        <>
+          <mesh
+            material={material}
+            position={[-w / 2, baseHeight + flapHeight / 2, 0]}
+            rotation={[0, 0, Math.PI / 2]}
+          >
+            <boxGeometry args={[flapHeight, thickness, d]} />
+          </mesh>
+
+          <mesh
+            material={material}
+            position={[w / 2, baseHeight + flapHeight / 2, 0]}
+            rotation={[0, 0, -Math.PI / 2]}
+          >
+            <boxGeometry args={[flapHeight, thickness, d]} />
+          </mesh>
+
+          <mesh
+            material={material}
+            position={[0, baseHeight + tuckHeight / 2, d / 2]}
+          >
+            <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
+          </mesh>
+        </>
+      )}
 
     </group>
   );
 }
 
-/* ===========================
-   CAMERA CONTROLLER
-=========================== */
+/* ================= CAMERA ================= */
 
 function CameraController({ zoom }: { zoom: number }) {
   const { camera } = useThree();
@@ -202,34 +238,21 @@ function CameraController({ zoom }: { zoom: number }) {
   return null;
 }
 
-/* ===========================
-   MAIN COMPONENT
-=========================== */
+/* ================= MAIN ================= */
 
-export default function Box3D({
-  width = 30,
-  height = 20,
-  depth = 30,
-  materialData,
-  customMaterialTexture,
-  baseColor,
-  isOpen = false,
-  hingeEdge = "long"
-}: Box3DProps) {
+export default function Box3D(props: Box3DProps) {
 
   const [zoom, setZoom] = useState(1);
 
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        minHeight: "450px",
-        borderRadius: "16px",
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
+    <div style={{
+      width: "100%",
+      height: "100%",
+      minHeight: "450px",
+      borderRadius: "16px",
+      overflow: "hidden",
+      position: "relative",
+    }}>
       <Canvas shadows dpr={[1, 2]}>
         <PerspectiveCamera makeDefault position={[5, 4, 7]} />
         <CameraController zoom={zoom} />
@@ -239,43 +262,25 @@ export default function Box3D({
         <directionalLight position={[-6, 5, -6]} intensity={0.6} />
 
         <Suspense fallback={null}>
-          <IndustrialBox
-            width={width}
-            height={height}
-            depth={depth}
-            materialData={materialData}
-            customMaterialTexture={customMaterialTexture}
-            baseColor={baseColor}
-            isOpen={isOpen}
-            hingeEdge={hingeEdge}
-          />
+          <IndustrialBox {...props} />
         </Suspense>
 
-        <ContactShadows
-          position={[0, 0, 0]}
-          opacity={0.35}
-          scale={10}
-          blur={2}
-        />
-
+        <ContactShadows position={[0, 0, 0]} opacity={0.35} scale={10} blur={2} />
         <OrbitControls enablePan={false} enableZoom={false} />
       </Canvas>
 
-      {/* ZOOM */}
-      <div
-        style={{
-          position: "absolute",
-          top: "1rem",
-          right: "1rem",
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.5rem",
-        }}
-      >
-        <button onClick={() => setZoom((z) => Math.min(z + 0.2, 2.5))}>
+      <div style={{
+        position: "absolute",
+        top: "1rem",
+        right: "1rem",
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.5rem",
+      }}>
+        <button onClick={() => setZoom(z => Math.min(z + 0.2, 2.5))}>
           <Plus size={18} />
         </button>
-        <button onClick={() => setZoom((z) => Math.max(z - 0.2, 0.5))}>
+        <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.5))}>
           <Minus size={18} />
         </button>
       </div>
