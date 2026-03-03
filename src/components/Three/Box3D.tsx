@@ -74,11 +74,7 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                     return s;
                 }, [w, h]);
 
-                return (
-                    <mesh position={[0, 0, -t / 2]}>
-                        <extrudeGeometry args={[shape, { depth: t, bevelEnabled: false }]} />
-                    </mesh>
-                );
+                return <extrudeGeometry args={[shape, { depth: t, bevelEnabled: false }]} />;
             }
             return <boxGeometry args={[w, h, t]} />; // Width, Height, Thickness
         };
@@ -88,13 +84,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 <>
                     {/* Left inner flap */}
                     <group position={[-width / 2 + 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57)]}>
-                        <mesh position={[0.005, flapSize / 2, 0]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
+                        <mesh position={[0.005, flapSize / 2, -0.005]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Right inner flap */}
                     <group position={[width / 2 - 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? 0.5 : (isOpen ? 0 : 1.57)]}>
-                        <mesh position={[-0.005, flapSize / 2, 0]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
+                        <mesh position={[-0.005, flapSize / 2, -0.005]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
@@ -105,13 +101,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 <>
                     {/* Back inner flap */}
                     <group position={[0, 0, -depth / 2 + 0.02]} rotation={[flapsLocation === 'lid' ? 0.5 : (isOpen ? 0 : 1.57), 0, 0]}>
-                        <mesh position={[0, flapSize / 2, 0.005]} material={sideMat}>
+                        <mesh position={[0, flapSize / 2, 0]} material={sideMat}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Front inner flap */}
                     <group position={[0, 0, depth / 2 - 0.02]} rotation={[flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57), 0, 0]}>
-                        <mesh position={[0, flapSize / 2, -0.005]} material={sideMat}>
+                        <mesh position={[0, flapSize / 2, -0.01]} material={sideMat}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
