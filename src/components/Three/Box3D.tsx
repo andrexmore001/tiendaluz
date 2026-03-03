@@ -63,7 +63,7 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
 
         const FlapGeometry = ({ w, h, t }: { w: number, h: number, t: number }) => {
             if (flapType === 'trapezoidal') {
-                const shape = useMemo(() => {
+                const geometry = useMemo(() => {
                     const s = new THREE.Shape();
                     const inset = Math.min(h * 0.2, w * 0.1);
                     s.moveTo(-w / 2, -h / 2);
@@ -71,10 +71,12 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                     s.lineTo(w / 2 - inset, h / 2);
                     s.lineTo(-w / 2 + inset, h / 2);
                     s.closePath();
-                    return s;
-                }, [w, h]);
+                    const g = new THREE.ExtrudeGeometry(s, { depth: t, bevelEnabled: false });
+                    g.translate(0, 0, -t / 2); // Physically center the extruded volume
+                    return g;
+                }, [w, h, t]);
 
-                return <extrudeGeometry args={[shape, { depth: t, bevelEnabled: false }]} />;
+                return <primitive object={geometry} attach="geometry" />;
             }
             return <boxGeometry args={[w, h, t]} />; // Width, Height, Thickness
         };
@@ -84,13 +86,13 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                 <>
                     {/* Left inner flap */}
                     <group position={[-width / 2 + 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57)]}>
-                        <mesh position={[0.005, flapSize / 2, -0.005]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
+                        <mesh position={[0, flapSize / 2, 0]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
                     {/* Right inner flap */}
                     <group position={[width / 2 - 0.02, 0, 0]} rotation={[0, 0, flapsLocation === 'lid' ? 0.5 : (isOpen ? 0 : 1.57)]}>
-                        <mesh position={[-0.005, flapSize / 2, -0.005]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
+                        <mesh position={[0, flapSize / 2, 0]} material={sideMat} rotation={[0, Math.PI / 2, 0]}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
@@ -107,7 +109,7 @@ function StandardBox({ width, height, depth, materials, isOpen, hingeEdge = 'lon
                     </group>
                     {/* Front inner flap */}
                     <group position={[0, 0, depth / 2 - 0.02]} rotation={[flapsLocation === 'lid' ? -0.5 : (isOpen ? 0 : -1.57), 0, 0]}>
-                        <mesh position={[0, flapSize / 2, -0.01]} material={sideMat}>
+                        <mesh position={[0, flapSize / 2, 0]} material={sideMat}>
                             <FlapGeometry w={flapWidth} h={flapSize} t={0.01} />
                         </mesh>
                     </group>
