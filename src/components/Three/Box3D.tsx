@@ -1,6 +1,6 @@
 "use client";
 import { Suspense, useMemo, useRef, useEffect, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { Plus, Minus } from "lucide-react";
@@ -28,8 +28,6 @@ function IndustrialBox({
   hingeEdge = "long"
 }: Box3DProps) {
 
-  const groupRef = useRef<THREE.Group>(null);
-
   const scaleFactor = 10;
 
   const w = width / scaleFactor;
@@ -41,6 +39,10 @@ function IndustrialBox({
 
   const thickness =
     ((materialData?.thickness_mm ?? 3) / 10) / scaleFactor;
+
+  /* ===========================
+     MATERIAL
+  ============================ */
 
   const material = useMemo(() => {
     const loader = new THREE.TextureLoader();
@@ -69,10 +71,41 @@ function IndustrialBox({
     });
   }, [materialData, customMaterialTexture, baseColor, width, depth]);
 
-  return (
-    <group ref={groupRef}>
+  /* ===========================
+     BISAGRA
+     long  = trasera (eje X)
+     short = lateral (eje Z)
+  ============================ */
 
-      {/* ===== BASE HUECA REAL ===== */}
+  const isLongEdge = hingeEdge === "short";
+
+const lidRef = useRef<THREE.Group>(null);
+const currentRotation = useRef(0);
+
+const targetRotation = isOpen ? Math.PI / 1.8 : 0;
+
+useFrame(() => {
+  if (!lidRef.current) return;
+
+  currentRotation.current = THREE.MathUtils.lerp(
+    currentRotation.current,
+    targetRotation,
+    0.08
+  );
+
+  if (isLongEdge) {
+    // long → bisagra trasera → eje X
+    lidRef.current.rotation.x = -currentRotation.current;
+  } else {
+    // short → bisagra lateral → eje Z
+    lidRef.current.rotation.z = currentRotation.current;
+  }
+});
+
+  return (
+    <group>
+
+      {/* ===== BASE ===== */}
 
       {/* Piso */}
       <mesh
@@ -84,7 +117,7 @@ function IndustrialBox({
         <boxGeometry args={[w, thickness, d]} />
       </mesh>
 
-      {/* Pared frontal */}
+      {/* Frente */}
       <mesh
         material={material}
         position={[0, baseHeight / 2, d / 2 - thickness / 2]}
@@ -94,7 +127,7 @@ function IndustrialBox({
         <boxGeometry args={[w, baseHeight, thickness]} />
       </mesh>
 
-      {/* Pared trasera */}
+      {/* Atrás */}
       <mesh
         material={material}
         position={[0, baseHeight / 2, -d / 2 + thickness / 2]}
@@ -104,7 +137,7 @@ function IndustrialBox({
         <boxGeometry args={[w, baseHeight, thickness]} />
       </mesh>
 
-      {/* Pared izquierda */}
+      {/* Izquierda */}
       <mesh
         material={material}
         position={[-w / 2 + thickness / 2, baseHeight / 2, 0]}
@@ -114,7 +147,7 @@ function IndustrialBox({
         <boxGeometry args={[thickness, baseHeight, d]} />
       </mesh>
 
-      {/* Pared derecha */}
+      {/* Derecha */}
       <mesh
         material={material}
         position={[w / 2 - thickness / 2, baseHeight / 2, 0]}
@@ -124,37 +157,37 @@ function IndustrialBox({
         <boxGeometry args={[thickness, baseHeight, d]} />
       </mesh>
 
-      {/* ===== TAPA CON BISAGRA CONFIGURABLE ===== */}
+      {/* ===== TAPA ANIMADA ===== */}
 
       <group
-        position={
-          hingeEdge === "long"
-            ? [0, baseHeight, -d / 2]
-            : [-w / 2, baseHeight, 0]
-        }
-        rotation={
-          hingeEdge === "long"
-            ? [isOpen ? -Math.PI / 1.8 : 0, 0, 0]
-            : [0, 0, isOpen ? Math.PI / 1.8 : 0]
-        }
-      >
-        <mesh
-          material={material}
-          position={
-            hingeEdge === "long"
-              ? [0, thickness / 2, d / 2]
-              : [w / 2, thickness / 2, 0]
-          }
-          castShadow
-          receiveShadow
-        >
-          <boxGeometry args={[w, thickness, d]} />
-        </mesh>
-      </group>
+  ref={lidRef}
+  position={
+    isLongEdge
+      ? [0, baseHeight + thickness / 2, -d / 2]   // trasera
+      : [-w / 2, baseHeight + thickness / 2, 0]   // lateral
+  }
+>
+  <mesh
+    material={material}
+    position={
+      isLongEdge
+        ? [0, 0, d / 2]
+        : [w / 2, 0, 0]
+    }
+    castShadow
+    receiveShadow
+  >
+    <boxGeometry args={[w, thickness, d]} />
+  </mesh>
+</group>
 
     </group>
   );
 }
+
+/* ===========================
+   CAMERA CONTROLLER
+=========================== */
 
 function CameraController({ zoom }: { zoom: number }) {
   const { camera } = useThree();
@@ -168,6 +201,10 @@ function CameraController({ zoom }: { zoom: number }) {
 
   return null;
 }
+
+/* ===========================
+   MAIN COMPONENT
+=========================== */
 
 export default function Box3D({
   width = 30,
@@ -214,10 +251,17 @@ export default function Box3D({
           />
         </Suspense>
 
-        <ContactShadows position={[0, 0, 0]} opacity={0.35} scale={10} blur={2} />
+        <ContactShadows
+          position={[0, 0, 0]}
+          opacity={0.35}
+          scale={10}
+          blur={2}
+        />
+
         <OrbitControls enablePan={false} enableZoom={false} />
       </Canvas>
 
+      {/* ZOOM */}
       <div
         style={{
           position: "absolute",
