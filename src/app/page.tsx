@@ -2,6 +2,7 @@
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
+import Home3DSection from '@/components/HomeVisualizer/Home3DSection';
 import { useSettings } from '@/context/SettingsContext';
 import Link from 'next/link';
 import styles from './page.module.css';
@@ -14,6 +15,7 @@ export default function Home() {
       <Navbar />
       <Hero />
       <Features />
+      <Home3DSection />
 
       <section className="section-padding container text-center">
         <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Colecciones Destacadas</h2>
