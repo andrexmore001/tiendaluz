@@ -1,0 +1,28 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+
+export async function GET() {
+    try {
+        const materials = await prisma.material.findMany();
+        return NextResponse.json(materials);
+    } catch (error) {
+        return NextResponse.json({ error: 'Error fetching materials' }, { status: 500 });
+    }
+}
+
+export async function POST(request: Request) {
+    try {
+        const data = await request.json();
+        const { id, ...rest } = data;
+
+        const material = await prisma.material.upsert({
+            where: { id: id || 'new' },
+            update: rest,
+            create: { ...rest, id: id || undefined },
+        });
+
+        return NextResponse.json(material);
+    } catch (error) {
+        return NextResponse.json({ error: 'Error saving material' }, { status: 500 });
+    }
+}

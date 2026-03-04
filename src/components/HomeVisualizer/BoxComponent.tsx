@@ -204,8 +204,21 @@ export default function BoxComponent({ isOpen, text, logoTexture }: BoxComponent
     return (
         <group ref={groupRef}>
             {/* Manual render of panels for better control */}
-            {(['frontHalf-width', 'frontHalf-length', 'backHalf-width', 'backHalf-length'] as const).map((key: string): React.ReactNode => {
-                const [half, side] = key.split('-') as [string, string];
+            {(['frontHalf-width', 'frontHalf-length', 'backHalf-width', 'backHalf-length'] as const).map((key) => {
+                const parts = key.split('-') as [string, string];
+                const half = parts[0] as 'frontHalf' | 'backHalf';
+                const side = parts[1] as 'width' | 'length';
+                const isFrontFace = half === 'frontHalf' && side === 'length';
+
+                // Pre-calculate logo orientation to avoid inline 'as' casting errors
+                let logoAspect = 1;
+                if (logoTexture && logoTexture.image) {
+                    const img = logoTexture.image as any;
+                    if (img.width && img.height) {
+                        logoAspect = img.width / img.height;
+                    }
+                }
+
                 return (
                     <group key={key} ref={el => { if (el) (panelsRef.current as any)[half][side].side = el }}>
                         <mesh geometry={geometries[half][side].side} material={material} />
@@ -217,65 +230,71 @@ export default function BoxComponent({ isOpen, text, logoTexture }: BoxComponent
                         <group position={[0, -0.5 * params.depth, 0]} ref={el => { if (el) (panelsRef.current as any)[half][side].bottom = el }}>
                             <mesh geometry={geometries[half][side].bottom} material={material} />
                         </group>
+
+                        {/* Nest Text and Logo inside the front panel for perfect sync */}
+                        {isFrontFace ? (
+                            <group position={[0, 0, params.thickness + 0.1]}>
+                                {/* Brand Text with underlining effect */}
+                                <group
+                                    position={[
+                                        0.5 * params.length - 0.5 * params.copyrightSize[0],
+                                        -0.5 * (params.depth - params.copyrightSize[1]) + 2,
+                                        0.1
+                                    ]}
+                                >
+                                    {/* Main Text */}
+                                    <Text
+                                        position={[0, 4, 0]}
+                                        fontSize={2.2}
+                                        color="#222"
+                                        anchorX="right"
+                                        anchorY="bottom"
+                                    >
+                                        {text || 'Tu marca aquí'}
+                                    </Text>
+
+                                    {/* Underline for Main Text */}
+                                    <mesh position={[-6.5, 3.8, 0]}>
+                                        <planeGeometry args={[13, 0.1]} />
+                                        <meshBasicMaterial color="#333" />
+                                    </mesh>
+
+                                    {/* Secondary Text */}
+                                    <Text
+                                        position={[0, 1.5, 0]}
+                                        fontSize={1.4}
+                                        color="#444"
+                                        anchorX="right"
+                                        anchorY="bottom"
+                                    >
+                                        ¡Un mundo de posibilidades...!
+                                    </Text>
+
+                                    {/* Underline for Secondary Text */}
+                                    <mesh position={[-11, 1.3, 0]}>
+                                        <planeGeometry args={[22, 0.1]} />
+                                        <meshBasicMaterial color="#444" />
+                                    </mesh>
+                                </group>
+
+                                {logoTexture && logoTexture.image ? (
+                                    <mesh position={[0, 0, 0.2]}>
+                                        <planeGeometry args={[12, 12 / logoAspect]} />
+                                        <meshBasicMaterial
+                                            map={logoTexture}
+                                            transparent={true}
+                                            opacity={1}
+                                            polygonOffset={true}
+                                            polygonOffsetFactor={-4}
+                                            depthWrite={false}
+                                        />
+                                    </mesh>
+                                ) : null}
+                            </group>
+                        ) : null}
                     </group>
                 );
             })}
-
-            {/* Brand Text with underlining effect */}
-            <group
-                position={[
-                    -0.5 * Math.cos(animated.current.openingAngle) * params.width + 0.5 * params.length - 0.5 * params.copyrightSize[0],
-                    -0.5 * (params.depth - params.copyrightSize[1]) + 2,
-                    0.5 * Math.sin(animated.current.openingAngle) * params.width + params.thickness + 0.2
-                ]}
-            >
-                {/* Main Text */}
-                <Text
-                    position={[0, 4, 0]}
-                    fontSize={2.2}
-                    color="#222"
-                    anchorX="right"
-                    anchorY="bottom"
-                >
-                    {text || 'Tu marca aquí'}
-                </Text>
-
-                {/* Underline for Main Text */}
-                <mesh position={[-6.5, 3.8, 0]}>
-                    <planeGeometry args={[13, 0.1]} />
-                    <meshBasicMaterial color="#333" />
-                </mesh>
-
-                {/* Secondary Text */}
-                <Text
-                    position={[0, 1.5, 0]}
-                    fontSize={1.4}
-                    color="#444"
-                    anchorX="right"
-                    anchorY="bottom"
-                >
-                    ¡Un mundo de posibilidades...!
-                </Text>
-
-                {/* Underline for Secondary Text */}
-                <mesh position={[-11, 1.3, 0]}>
-                    <planeGeometry args={[22, 0.1]} />
-                    <meshBasicMaterial color="#444" />
-                </mesh>
-            </group>
-
-            {logoTexture && logoTexture.image && (
-                <mesh
-                    position={[
-                        -0.5 * Math.cos(animated.current.openingAngle) * params.width,
-                        0,
-                        0.5 * Math.sin(animated.current.openingAngle) * params.width + params.thickness + 0.25
-                    ]}
-                >
-                    <planeGeometry args={[15, 15 / ((logoTexture.image as HTMLImageElement).width / (logoTexture.image as HTMLImageElement).height)]} />
-                    <meshBasicMaterial map={logoTexture} transparent polygonOffset polygonOffsetFactor={-1} />
-                </mesh>
-            )}
         </group>
     );
 }

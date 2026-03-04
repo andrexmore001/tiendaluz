@@ -1,16 +1,42 @@
 "use client";
 import React, { useState, useRef, Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei';
 import * as THREE from 'three';
 import BoxComponent from './BoxComponent';
 import styles from './Home3DSection.module.css';
+
+function LightHolder() {
+    const groupRef = useRef<THREE.Group>(null);
+    useFrame((state) => {
+        if (groupRef.current) {
+            groupRef.current.quaternion.copy(state.camera.quaternion);
+        }
+    });
+    return (
+        <group ref={groupRef}>
+            <pointLight position={[-30, 300, 0]} intensity={0.5} />
+            <pointLight position={[50, 0, 150]} intensity={0.7} />
+        </group>
+    );
+}
 
 export default function Home3DSection() {
     const [text, setText] = useState('Tienda Luz');
     const [isOpen, setIsOpen] = useState(true);
     const [logoTexture, setLogoTexture] = useState<THREE.Texture | null>(null);
     const controlsRef = useRef<any>(null);
+
+    // Load default logo on mount
+    React.useEffect(() => {
+        const loader = new THREE.TextureLoader();
+        // Use local path to avoid CORS issues found in browser debugging
+        const defaultLogoUrl = "/branding/default-logo.png";
+        loader.load(defaultLogoUrl, (texture) => {
+            texture.colorSpace = THREE.SRGBColorSpace;
+            setLogoTexture(texture);
+        });
+    }, []);
 
     const handleZoom = (amount: number) => {
         if (controlsRef.current) {
@@ -59,10 +85,7 @@ export default function Home3DSection() {
                         >
                             {/* Original Lighting Setup */}
                             <ambientLight intensity={0.5} />
-                            <group> {/* lightHolder equivalent */}
-                                <pointLight position={[-30, 300, 0]} intensity={0.5} />
-                                <pointLight position={[50, 0, 150]} intensity={0.7} />
-                            </group>
+                            <LightHolder />
 
                             <Suspense fallback={null}>
                                 <BoxComponent

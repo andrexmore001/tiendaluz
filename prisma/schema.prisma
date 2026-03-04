@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Setting {
+  id        String @id @default("site-settings")
+  title     String @default("Artesana")
+  slug      String @default("artesana")
+  logo      String?
+  primaryColor   String @default("#E8A2A2")
+  secondaryColor String @default("#F9F1E7")
+  accentColor    String @default("#D4AF37")
+  backgroundColor String @default("#FFFFFF")
+  phone     String @default("+57 300 000 0000")
+  email     String @default("contacto@artesana.com")
+  address   String @default("Calle Falsa 123, Bogotá")
+  instagram String @default("https://instagram.com/artesana")
+  facebook  String @default("https://facebook.com/artesana")
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  name             String
+  price            Float
+  category         String
+  description      String
+  image            String?
+  boxTexture       String?
+  displayMode      String   @default("3d")
+  width            Float    @default(4)
+  height           Float    @default(2)
+  depth            Float    @default(4)
+  boxType          String   @default("standard")
+  materialId       String   @default("carton-kraft")
+  baseColor        String   @default("#F9F1E7")
+  materialTexture  String?
+  shapeId          String?
+  hingeEdge        String   @default("long")
+  flapsLocation    String   @default("base")
+  flapHeightPercent Float   @default(0.25)
+  flapWidthOffset  Float    @default(-0.2)
+  flapType         String   @default("rectangular")
+  tuckFlapHeightPercent Float @default(0.15)
+  images           ProductImage[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  url       String
+  textX     Float   @default(50)
+  textY     Float   @default(50)
+  rotation  Float   @default(0)
+  scale     Float   @default(1)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+}
+
+model Collection {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model Material {
+  id              String  @id @default(cuid())
+  name            String
+  type            String  @default("corrugated")
+  thickness_mm    Float   @default(4)
+  tolerance_mm    Float   @default(1)
+  stiffness_factor Float  @default(0.08)
+  textureUrl      String?
+  baseColor       String  @default("#e3c5a8")
+  roughness       Float   @default(0.9)
+  metalness       Float   @default(0)
+}
+
+model BoxShape {
+  id                String  @id @default(cuid())
+  name              String
+  type              String  @default("standard")
+  width             Float
+  height            Float
+  depth             Float
+  hingeEdge         String  @default("long")
+  flapsLocation     String  @default("base")
+  flapHeightPercent Float   @default(0.25)
+  flapWidthOffset   Float   @default(-0.2)
+  flapType          String  @default("rectangular")
+  tuckFlapHeightPercent Float @default(0.15)
+}
