@@ -25,6 +25,11 @@ export default function CustomizerPage({
     materials.find((m) => m.id === product.materialId) ||
     materials.find((m) => m.id === "carton-kraft");
 
+  const [currentView, setCurrentView] = useState<'3d' | 'photos'>(product.displayMode === 'photos' ? 'photos' : '3d');
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+
+  const displayPhotos = product.images && product.images.length > 0 ? product.images : [product.image];
+
   const handleWhatsApp = () => {
     const phoneNumber = settings.contact.phone.replace(/\s+/g, "");
     const message = `Hola, quiero comprar:
@@ -44,26 +49,84 @@ Total: $${(product.price * quantity).toLocaleString()}
 
       <div className={`${styles.container} container`}>
         <div className={styles.visualizer}>
-          <div className={styles.badge}>Vista Previa 3D</div>
+          <div className={styles.badge}>
+            {currentView === '3d' ? 'Vista Previa 3D' : 'Galería de Fotos'}
+          </div>
 
-          <Box3D
-            width={product.dimensions?.width || 30}
-            height={product.dimensions?.height || 20}
-            depth={product.dimensions?.depth || 30}
-            materialData={currentMaterial}
-            customMaterialTexture={product.customMaterialTexture}
-            baseColor={product.baseColor}
-            hingeEdge={product.hingeEdge}
-            isOpen={isOpen} // 🔥 IMPORTANTE
-          />
+          {currentView === '3d' ? (
+            <div style={{ width: '100%', height: '400px' }}>
+              <Box3D
+                width={product.dimensions?.width || 30}
+                height={product.dimensions?.height || 20}
+                depth={product.dimensions?.depth || 30}
+                materialData={currentMaterial}
+                customMaterialTexture={product.customMaterialTexture}
+                baseColor={product.baseColor}
+                hingeEdge={product.hingeEdge}
+                isOpen={isOpen}
+                text={text}
+              />
+            </div>
+          ) : (
+            <div className={styles.photoGallery} style={{ width: '100%', height: '400px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className={styles.mainPhotoWrapper}>
+                <div className={styles.imageRelativeWrapper}>
+                  <img src={displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || '')} alt={product.name} />
+                  {text && displayPhotos[activePhotoIdx] && (
+                    <div
+                      className={styles.textOverlay}
+                      style={{
+                        top: `${(displayPhotos[activePhotoIdx] as any).textConfig?.y ?? 50}%`,
+                        left: `${(displayPhotos[activePhotoIdx] as any).textConfig?.x ?? 50}%`,
+                        transform: `translate(-50%, -50%) rotate(${(displayPhotos[activePhotoIdx] as any).textConfig?.rotation ?? 0}deg) scale(${(displayPhotos[activePhotoIdx] as any).textConfig?.scale ?? 1})`,
+                      }}
+                    >
+                      {text}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className={styles.photoThumbs} style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+                {displayPhotos.map((img: any, idx) => (
+                  <img
+                    key={idx}
+                    src={typeof img === 'string' ? img : img.url}
+                    alt={`Thumb ${idx}`}
+                    onClick={() => setActivePhotoIdx(idx)}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      objectFit: 'cover',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      border: activePhotoIdx === idx ? '2px solid var(--primary)' : '1px solid #eee'
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-          {/* 🔥 BOTÓN ABRIR / CERRAR */}
-          <button
-            className={styles.toggleOpen}
-            onClick={() => setIsOpen((prev) => !prev)}
-          >
-            {isOpen ? "Cerrar Caja" : "Abrir Caja"}
-          </button>
+          <div className={styles.visualizerControls} style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center' }}>
+            {currentView === '3d' && (
+              <button
+                className={styles.toggleOpen}
+                onClick={() => setIsOpen((prev) => !prev)}
+              >
+                {isOpen ? "Cerrar Caja" : "Abrir Caja"}
+              </button>
+            )}
+
+            {product.displayMode === 'both' && (
+              <button
+                className={styles.pBtn}
+                style={{ padding: '0.6rem 1.2rem', borderRadius: '10px', background: '#333', color: 'white', border: 'none', cursor: 'pointer' }}
+                onClick={() => setCurrentView(currentView === '3d' ? 'photos' : '3d')}
+              >
+                {currentView === '3d' ? "Ver Fotos" : "Ver 3D"}
+              </button>
+            )}
+          </div>
         </div>
 
         <aside className={styles.controls}>

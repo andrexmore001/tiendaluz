@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useMemo, useRef, useEffect, useState } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, ContactShadows } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, ContactShadows, Text } from "@react-three/drei";
 import * as THREE from "three";
 import { Plus, Minus } from "lucide-react";
 import { Material } from "@/context/SettingsContext";
@@ -20,6 +20,7 @@ interface Box3DProps {
   flapWidthOffset?: number;
   flapType?: "rectangular" | "trapezoidal";
   tuckFlapHeightPercent?: number;
+  text?: string;
 }
 
 function IndustrialBox({
@@ -35,7 +36,8 @@ function IndustrialBox({
   flapHeightPercent = 0.25,
   flapWidthOffset = -0.2,
   flapType = "rectangular",
-  tuckFlapHeightPercent = 0.15
+  tuckFlapHeightPercent = 0.15,
+  text = ""
 }: Box3DProps) {
 
   const scaleFactor = 10;
@@ -105,12 +107,29 @@ function IndustrialBox({
   const tuckHeight = h * tuckFlapHeightPercent;
   const flapWidth = w + flapWidthOffset / scaleFactor;
   console.log("DEBUG ALETAS:", {
-  flapHeightPercent,
-  flapsLocation,
-  flapWidthOffset,
-  tuckFlapHeightPercent,
-  flapType
-});
+    flapHeightPercent,
+    flapsLocation,
+    flapWidthOffset,
+    tuckFlapHeightPercent,
+    flapType
+  });
+  /* ----- TRAPECIO GEOMETRY ----- */
+
+  const trapezoidGeometry = useMemo(() => {
+    const shape = new THREE.Shape();
+
+    const topWidth = flapWidth * 0.6;
+    const bottomWidth = flapWidth;
+
+    shape.moveTo(-bottomWidth / 2, 0);
+    shape.lineTo(bottomWidth / 2, 0);
+    shape.lineTo(topWidth / 2, flapHeight);
+    shape.lineTo(-topWidth / 2, flapHeight);
+    shape.closePath();
+
+    const geometry = new THREE.ShapeGeometry(shape);
+    return geometry;
+  }, [flapWidth, flapHeight]);
   return (
     <group>
 
@@ -159,63 +178,106 @@ function IndustrialBox({
           <boxGeometry args={[w, thickness, d]} />
         </mesh>
 
+        {/* TEXT ON LID */}
+        {text && (
+          <Text
+            position={
+              isLongEdge
+                ? [0, thickness / 2 + 0.01, d / 2]
+                : [w / 2, thickness / 2 + 0.01, 0]
+            }
+            rotation={
+              isLongEdge
+                ? [-Math.PI / 2, 0, 0]
+                : [-Math.PI / 2, 0, Math.PI / 2]
+            }
+            fontSize={0.2}
+            color="#333"
+            anchorX="center"
+            anchorY="middle"
+            maxWidth={isLongEdge ? w * 0.8 : d * 0.8}
+            font="/fonts/Inter-Bold.ttf" // Fallback to default if not found
+          >
+            {text}
+          </Text>
+        )}
+
         {/* ALETAS EN TAPA */}
         {flapsLocation === "lid" && (
-  <>
-    {/* Lateral izquierda */}
-    <mesh
-      material={material}
-      position={[-w / 2 - thickness / 2, flapHeight / 2, 0]}
-    >
-      <boxGeometry args={[thickness, flapHeight, d]} />
-    </mesh>
+          <>
+            {/* Lateral izquierda */}
+            <mesh
+              material={material}
+              position={[-w / 2 - thickness / 2, flapHeight / 2, 0]}
+            >
+              <boxGeometry args={[thickness, flapHeight, d]} />
+            </mesh>
 
-    {/* Lateral derecha */}
-    <mesh
-      material={material}
-      position={[w / 2 + thickness / 2, flapHeight / 2, 0]}
-    >
-      <boxGeometry args={[thickness, flapHeight, d]} />
-    </mesh>
+            {/* Lateral derecha */}
+            <mesh
+              material={material}
+              position={[w / 2 + thickness / 2, flapHeight / 2, 0]}
+            >
+              <boxGeometry args={[thickness, flapHeight, d]} />
+            </mesh>
 
-    {/* Tuck frontal */}
-    <mesh
-      material={material}
-      position={[0, tuckHeight / 2, d / 2 + thickness / 2]}
-    >
-      <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
-    </mesh>
-  </>
-)}
-        
+            {/* Tuck frontal */}
+            {flapType === "rectangular" ? (
+              <mesh
+                material={material}
+                position={[0, tuckHeight / 2, d / 2 + thickness / 2]}
+              >
+                <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
+              </mesh>
+            ) : (
+              <mesh
+                material={material}
+                geometry={trapezoidGeometry}
+                position={[0, 0, d / 2 + thickness / 2]}
+                rotation={[-Math.PI / 2, 0, 0]}
+              />
+            )}
+          </>
+        )}
+
       </group>
 
       {/* ===== ALETAS EN BASE ===== */}
 
       {flapsLocation === "base" && (
         <>
+          {/* Lateral izquierda */}
           <mesh
             material={material}
-            position={[-w / 2, baseHeight + flapHeight / 2, 0]}
-            rotation={[0, 0, Math.PI / 2]}
+            position={[-w / 2 - thickness / 2, baseHeight + flapHeight / 2, 0]}
           >
-            <boxGeometry args={[flapHeight, thickness, d]} />
+            <boxGeometry args={[thickness, flapHeight, d]} />
           </mesh>
 
+          {/* Lateral derecha */}
           <mesh
             material={material}
-            position={[w / 2, baseHeight + flapHeight / 2, 0]}
-            rotation={[0, 0, -Math.PI / 2]}
+            position={[w / 2 + thickness / 2, baseHeight + flapHeight / 2, 0]}
           >
-            <boxGeometry args={[flapHeight, thickness, d]} />
+            <boxGeometry args={[thickness, flapHeight, d]} />
           </mesh>
 
-          <mesh
-            material={material}
-            position={[0, baseHeight + tuckHeight / 2, d / 2]}
-          >
-            <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
-          </mesh>
+          {/* Tuck frontal */}
+          {flapType === "rectangular" ? (
+            <mesh
+              material={material}
+              position={[0, baseHeight + tuckHeight / 2, d / 2 + thickness / 2]}
+            >
+              <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
+            </mesh>
+          ) : (
+            <mesh
+              material={material}
+              geometry={trapezoidGeometry}
+              position={[0, baseHeight, d / 2 + thickness / 2]}
+              rotation={[-Math.PI / 2, 0, 0]}
+            />
+          )}
         </>
       )}
 

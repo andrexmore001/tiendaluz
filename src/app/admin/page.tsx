@@ -70,7 +70,6 @@ export default function AdminPage() {
     if (!isAuthenticated) return null;
 
     const [showProductForm, setShowProductForm] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<any>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [notification, setNotification] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false); // Global open state for previews
@@ -117,6 +116,8 @@ export default function AdminPage() {
         description: '',
         image: '',
         boxTexture: '',
+        displayMode: '3d' as '3d' | 'photos' | 'both',
+        images: [] as { url: string; textConfig?: { x: number; y: number; rotation: number; scale: number; } }[],
         width: 4,
         height: 2,
         depth: 4,
@@ -132,6 +133,9 @@ export default function AdminPage() {
         flapType: 'rectangular',
         tuckFlapHeightPercent: 0.15
     });
+
+    const [editingImageConfig, setEditingImageConfig] = useState<number | null>(null);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
     const showToast = (msg: string) => {
         setNotification(msg);
@@ -175,6 +179,10 @@ export default function AdminPage() {
             description: p.description,
             image: p.image || '',
             boxTexture: p.boxTexture || '',
+            displayMode: p.displayMode || '3d',
+            images: Array.isArray(p.images)
+                ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img)
+                : [],
             width: p.dimensions?.width || 4,
             height: p.dimensions?.height || 2,
             depth: p.dimensions?.depth || 4,
@@ -217,10 +225,19 @@ export default function AdminPage() {
 
     const handleSubmitProduct = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation for photos mode
+        if ((formData.displayMode === 'photos' || formData.displayMode === 'both') && formData.images.length < 2) {
+            showToast("El modo fotos requiere al menos 2 imágenes en la galería");
+            return;
+        }
+
         const selectedMaterial = materials.find(m => m.id === formData.materialId);
         const newP = {
             id: editingProduct ? editingProduct.id : Date.now().toString(),
             ...formData,
+            displayMode: formData.displayMode,
+            images: formData.images,
             dimensions: {
                 width: Number(formData.width),
                 height: Number(formData.height),
@@ -258,14 +275,79 @@ export default function AdminPage() {
         }
     };
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'boxTexture') => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setFormData(prev => ({ ...prev, [field]: reader.result as string }));
+    const compressImage = (base64Str: string, maxWidth = 1200, maxHeight = 1200): Promise<string> => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > height) {
+                    if (width > maxWidth) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    }
+                } else {
+                    if (height > maxHeight) {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx?.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', 0.7)); // Compress to JPEG with 0.7 quality
             };
-            reader.readAsDataURL(file);
+        });
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'boxTexture' | 'gallery' | 'materialTexture') => {
+        const files = e.target.files;
+        if (!files) return;
+
+        if (field === 'gallery') {
+            const newImages: any[] = [...formData.images];
+            for (const file of Array.from(files)) {
+                await new Promise<void>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                        const compressed = await compressImage(reader.result as string);
+                        newImages.push({
+                            url: compressed,
+                            textConfig: { x: 50, y: 50, rotation: 0, scale: 1 }
+                        });
+                        setFormData(prev => ({ ...prev, images: [...newImages] }));
+                        resolve();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        } else {
+            const file = files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const compressed = await compressImage(reader.result as string);
+                    setFormData(prev => ({ ...prev, [field]: compressed }));
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    };
+
+    const removeGalleryImage = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index)
+        }));
+        if (editingImageConfig === index) {
+            setEditingImageConfig(null);
+        } else if (editingImageConfig !== null && editingImageConfig > index) {
+            setEditingImageConfig(editingImageConfig - 1);
         }
     };
 
@@ -378,14 +460,28 @@ export default function AdminPage() {
         };
 
         if (editingMaterial) {
-            updateMaterial(newM);
+            updateMaterial(newM as any);
             showToast("Material actualizado");
         } else {
-            addMaterial(newM);
+            addMaterial(newM as any);
             showToast("Material añadido");
         }
         setShowMaterialForm(false);
         setEditingMaterial(null);
+    };
+
+    const handleConfigChange = (field: string, value: number) => {
+        if (editingImageConfig === null) return;
+        const newImages = [...formData.images];
+        const currentImg = newImages[editingImageConfig];
+        newImages[editingImageConfig] = {
+            ...currentImg,
+            textConfig: {
+                ...(currentImg.textConfig || { x: 50, y: 50, rotation: 0, scale: 1 }),
+                [field]: value
+            }
+        } as any;
+        setFormData({ ...formData, images: newImages });
     };
 
     const handleDeleteMaterial = (id: string) => {
@@ -791,65 +887,94 @@ export default function AdminPage() {
 
                             <div className={styles.modalBody}>
                                 <div className={styles.previewSection}>
-                                    <div className={styles.adminBoxPreview}>
-    {(() => {
-        const selectedMaterial = materials.find(
-            (m: any) => m.id === formData.materialId
-        );
-
-        return (
-            <Box3D
-    width={Number(formData.width)}
-    height={Number(formData.height)}
-    depth={Number(formData.depth)}
-    materialData={selectedMaterial}
-    customMaterialTexture={formData.materialTexture}
-    baseColor={formData.baseColor}
-    isOpen={isOpen}
-    hingeEdge={formData.hingeEdge as "long" | "short"}
-/>
-        );
-    })()}
-</div>
-                                    <div className={styles.previewControls}>
-                                        <button
-                                            type="button"
-                                            className={styles.pBtn}
-                                            onClick={() => setIsOpen(!isOpen)}
-                                        >
-                                            {isOpen ? 'Cerrar Caja' : 'Abrir Caja'}
-                                        </button>
-                                    </div>
                                     <div className={styles.typeSelector}>
-                                        <label>Forma de la Caja (Modelo)</label>
-                                        <select
-                                            className={styles.pSelect}
-                                            value={formData.shapeId || ''}
-                                            onChange={(e) => handleShapeChange(e.target.value)}
-                                            style={{ marginBottom: '1rem', width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}
-                                        >
-                                            <option value="">-- Personalizado / Ninguna --</option>
-                                            {boxShapes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.type})</option>)}
-                                        </select>
-
-                                        <label>Mecánica Manual</label>
-                                        <div className={styles.typeGrid}>
+                                        <label>Modo de Visualización</label>
+                                        <div className={styles.typeToggle} style={{ marginBottom: '1.5rem' }}>
                                             <button
                                                 type="button"
-                                                className={formData.boxType === 'standard' ? styles.typeBtnActive : styles.typeBtn}
-                                                onClick={() => setFormData({ ...formData, boxType: 'standard' })}
-                                            >Estandar</button>
+                                                className={formData.displayMode === 'photos' ? styles.typeBtnActive : styles.typeBtn}
+                                                onClick={() => setFormData({ ...formData, displayMode: 'photos' })}
+                                            >Solo Fotos</button>
                                             <button
                                                 type="button"
-                                                className={formData.boxType === 'lid-base' ? styles.typeBtnActive : styles.typeBtn}
-                                                onClick={() => setFormData({ ...formData, boxType: 'lid-base' })}
-                                            >Tapa/Base</button>
+                                                className={formData.displayMode === '3d' ? styles.typeBtnActive : styles.typeBtn}
+                                                onClick={() => setFormData({ ...formData, displayMode: '3d' })}
+                                            >Solo 3D</button>
                                             <button
                                                 type="button"
-                                                className={formData.boxType === 'drawer' ? styles.typeBtnActive : styles.typeBtn}
-                                                onClick={() => setFormData({ ...formData, boxType: 'drawer' })}
-                                            >Cajón</button>
+                                                className={formData.displayMode === 'both' ? styles.typeBtnActive : styles.typeBtn}
+                                                onClick={() => setFormData({ ...formData, displayMode: 'both' })}
+                                            >Ambos</button>
                                         </div>
+
+                                        {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
+                                            <>
+                                                <div className={styles.adminBoxPreview}>
+                                                    {(() => {
+                                                        const selectedMaterial = materials.find(
+                                                            (m: any) => m.id === formData.materialId
+                                                        );
+
+                                                        return (
+                                                            <Box3D
+                                                                width={Number(formData.width)}
+                                                                height={Number(formData.height)}
+                                                                depth={Number(formData.depth)}
+                                                                materialData={selectedMaterial}
+                                                                customMaterialTexture={formData.materialTexture}
+                                                                baseColor={formData.baseColor}
+                                                                isOpen={isOpen}
+                                                                hingeEdge={formData.hingeEdge as "long" | "short"}
+                                                                flapsLocation={formData.flapsLocation as "base" | "lid"}
+                                                                flapHeightPercent={Number(formData.flapHeightPercent)}
+                                                                flapWidthOffset={Number(formData.flapWidthOffset)}
+                                                                flapType={formData.flapType as "rectangular" | "trapezoidal"}
+                                                                tuckFlapHeightPercent={Number(formData.tuckFlapHeightPercent)}
+                                                            />
+                                                        );
+                                                    })()}
+                                                </div>
+                                                <div className={styles.previewControls}>
+                                                    <button
+                                                        type="button"
+                                                        className={styles.pBtn}
+                                                        onClick={() => setIsOpen(!isOpen)}
+                                                    >
+                                                        {isOpen ? 'Cerrar Caja' : 'Abrir Caja'}
+                                                    </button>
+                                                </div>
+
+                                                <label style={{ marginTop: '1.5rem', display: 'block' }}>Forma de la Caja (Modelo)</label>
+                                                <select
+                                                    className={styles.pSelect}
+                                                    value={formData.shapeId || ''}
+                                                    onChange={(e) => handleShapeChange(e.target.value)}
+                                                    style={{ marginBottom: '1rem', width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}
+                                                >
+                                                    <option value="">-- Personalizado / Ninguna --</option>
+                                                    {boxShapes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.type})</option>)}
+                                                </select>
+
+                                                <label>Mecánica Manual</label>
+                                                <div className={styles.typeGrid}>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.boxType === 'standard' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setFormData({ ...formData, boxType: 'standard' })}
+                                                    >Estandar</button>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.boxType === 'lid-base' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setFormData({ ...formData, boxType: 'lid-base' })}
+                                                    >Tapa/Base</button>
+                                                    <button
+                                                        type="button"
+                                                        className={formData.boxType === 'drawer' ? styles.typeBtnActive : styles.typeBtn}
+                                                        onClick={() => setFormData({ ...formData, boxType: 'drawer' })}
+                                                    >Cajón</button>
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -901,34 +1026,36 @@ export default function AdminPage() {
                                         />
                                     </div>
 
-                                    <div className={styles.dimensionsRow}>
-                                        <div className={styles.inputGroup}>
-                                            <label>Ancho (cm)</label>
-                                            <input
-                                                type="number"
-                                                value={formData.width}
-                                                onChange={(e) => setFormData({ ...formData, width: parseInt(e.target.value) || 0 })}
-                                            />
+                                    {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
+                                        <div className={styles.dimensionsRow}>
+                                            <div className={styles.inputGroup}>
+                                                <label>Ancho (cm)</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.width}
+                                                    onChange={(e) => setFormData({ ...formData, width: parseInt(e.target.value) || 0 })}
+                                                />
+                                            </div>
+                                            <div className={styles.inputGroup}>
+                                                <label>Alto (cm)</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.height}
+                                                    onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) || 0 })}
+                                                />
+                                            </div>
+                                            <div className={styles.inputGroup}>
+                                                <label>Largo (cm)</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.depth}
+                                                    onChange={(e) => setFormData({ ...formData, depth: parseInt(e.target.value) || 0 })}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className={styles.inputGroup}>
-                                            <label>Alto (cm)</label>
-                                            <input
-                                                type="number"
-                                                value={formData.height}
-                                                onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) || 0 })}
-                                            />
-                                        </div>
-                                        <div className={styles.inputGroup}>
-                                            <label>Largo (cm)</label>
-                                            <input
-                                                type="number"
-                                                value={formData.depth}
-                                                onChange={(e) => setFormData({ ...formData, depth: parseInt(e.target.value) || 0 })}
-                                            />
-                                        </div>
-                                    </div>
+                                    )}
 
-                                    {formData.boxType === 'standard' && (
+                                    {(formData.displayMode === '3d' || formData.displayMode === 'both') && formData.boxType === 'standard' && (
                                         <>
                                             <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
                                                 <label>Ubicación de la Bisagra</label>
@@ -1022,34 +1149,7 @@ export default function AdminPage() {
 
                                     <div className={styles.fileRow}>
                                         <div className={styles.inputGroup}>
-                                            <label>Textura Material</label>
-                                            <div className={styles.uploadBox}>
-                                                {formData.materialTexture ? (
-                                                    <>
-                                                        <img src={formData.materialTexture} alt="Preview" className={styles.previewImg} />
-                                                        <button
-                                                            type="button"
-                                                            className={styles.deleteFileBtn}
-                                                            onClick={() => setFormData(prev => ({ ...prev, materialTexture: '' }))}
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <div className={styles.emptyUpload}>
-                                                        <Box size={20} />
-                                                        <span>Subir Textura</span>
-                                                    </div>
-                                                )}
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleFileUpload(e, 'materialTexture' as any)}
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className={styles.inputGroup}>
-                                            <label>Foto Catálogo</label>
+                                            <label>Foto Catálogo (Principal)</label>
                                             <div className={styles.uploadBox}>
                                                 {formData.image ? (
                                                     <>
@@ -1075,34 +1175,134 @@ export default function AdminPage() {
                                                 />
                                             </div>
                                         </div>
-                                        <div className={styles.inputGroup}>
-                                            <label>Diseño 3D (Arte)</label>
-                                            <div className={styles.uploadBox}>
-                                                {formData.boxTexture ? (
-                                                    <>
-                                                        <img src={formData.boxTexture} alt="Preview" className={styles.previewImg} />
-                                                        <button
-                                                            type="button"
-                                                            className={styles.deleteFileBtn}
-                                                            onClick={() => setFormData(prev => ({ ...prev, boxTexture: '' }))}
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <div className={styles.emptyUpload}>
-                                                        <Layers size={20} />
-                                                        <span>Subir Arte</span>
+
+                                        {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
+                                            <>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Textura Material</label>
+                                                    <div className={styles.uploadBox}>
+                                                        {formData.materialTexture ? (
+                                                            <>
+                                                                <img src={formData.materialTexture} alt="Preview" className={styles.previewImg} />
+                                                                <button
+                                                                    type="button"
+                                                                    className={styles.deleteFileBtn}
+                                                                    onClick={() => setFormData(prev => ({ ...prev, materialTexture: '' }))}
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <div className={styles.emptyUpload}>
+                                                                <Box size={20} />
+                                                                <span>Subir Textura</span>
+                                                            </div>
+                                                        )}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleFileUpload(e, 'materialTexture' as any)}
+                                                        />
                                                     </div>
-                                                )}
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleFileUpload(e, 'boxTexture')}
-                                                />
+                                                </div>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Diseño 3D (Arte)</label>
+                                                    <div className={styles.uploadBox}>
+                                                        {formData.boxTexture ? (
+                                                            <>
+                                                                <img src={formData.boxTexture} alt="Preview" className={styles.previewImg} />
+                                                                <button
+                                                                    type="button"
+                                                                    className={styles.deleteFileBtn}
+                                                                    onClick={() => setFormData(prev => ({ ...prev, boxTexture: '' }))}
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <div className={styles.emptyUpload}>
+                                                                <Layers size={20} />
+                                                                <span>Subir Arte</span>
+                                                            </div>
+                                                        )}
+                                                        <input
+                                                            type="file"
+                                                            accept="image/*"
+                                                            onChange={(e) => handleFileUpload(e, 'boxTexture')}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {(formData.displayMode === 'photos' || formData.displayMode === 'both') && (
+                                        <div className={styles.gallerySection} style={{ marginTop: '2rem' }}>
+                                            <label>Galería de Imágenes (Mínimo 2 para modo fotos)</label>
+                                            <div className={styles.galleryGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                                                {formData.images.map((img: any, idx: number) => (
+                                                    <div key={idx} className={styles.galleryItem} style={{ position: 'relative', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                                                        <img src={img.url || img} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                        {img.textConfig && (
+                                                            <div
+                                                                style={{
+                                                                    position: 'absolute',
+                                                                    top: `${img.textConfig.y}%`,
+                                                                    left: `${img.textConfig.x}%`,
+                                                                    width: '4px',
+                                                                    height: '4px',
+                                                                    background: '#ff4d4f',
+                                                                    borderRadius: '50%',
+                                                                    transform: 'translate(-50%, -50%)',
+                                                                    boxShadow: '0 0 0 1px white',
+                                                                    pointerEvents: 'none'
+                                                                }}
+                                                            />
+                                                        )}
+                                                        <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '4px' }}>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditingImageConfig(idx)}
+                                                                style={{
+                                                                    background: 'rgba(59, 130, 246, 0.95)',
+                                                                    color: 'white',
+                                                                    border: 'none',
+                                                                    borderRadius: '6px',
+                                                                    padding: '6px',
+                                                                    cursor: 'pointer',
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    justifyContent: 'center'
+                                                                }}
+                                                                title="Configurar Texto"
+                                                            >
+                                                                <Settings size={16} />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeGalleryImage(idx)}
+                                                                style={{ background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}
+                                                            >
+                                                                <Trash2 size={12} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                                <div className={styles.uploadBox} style={{ height: '100px' }}>
+                                                    <div className={styles.emptyUpload}>
+                                                        <Plus size={20} />
+                                                        <span>Añadir</span>
+                                                    </div>
+                                                    <input
+                                                        type="file"
+                                                        multiple
+                                                        accept="image/*"
+                                                        onChange={(e) => handleFileUpload(e, 'gallery')}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     <div className={styles.formActions}>
                                         <button type="button" onClick={() => setShowProductForm(false)}>Cancelar</button>
@@ -1376,6 +1576,110 @@ export default function AdminPage() {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Image Config Modal */}
+                {editingImageConfig !== null && formData.images[editingImageConfig] && (
+                    <div className={styles.modal} style={{ zIndex: 5000 }}>
+                        <div className={styles.modalContent} style={{ maxWidth: '800px', width: '90%' }}>
+                            <div className={styles.modalHeader}>
+                                <h2>Configurar Texto para Imagen</h2>
+                                <button onClick={() => setEditingImageConfig(null)}>×</button>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginTop: '1.5rem' }}>
+                                <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', background: '#f0f0f0', height: '400px', border: '1px solid #ddd', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', maxHeight: '100%' }}>
+                                        <img
+                                            src={formData.images[editingImageConfig].url}
+                                            style={{ maxWidth: '100%', maxHeight: '400px', objectFit: 'contain', display: 'block' }}
+                                            alt="Preview"
+                                        />
+                                        {/* MUESTRA DEL TEXTO EN TIEMPO REAL */}
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                top: `${formData.images[editingImageConfig].textConfig?.y ?? 50}%`,
+                                                left: `${formData.images[editingImageConfig].textConfig?.x ?? 50}%`,
+                                                transform: `translate(-50%, -50%) rotate(${formData.images[editingImageConfig].textConfig?.rotation ?? 0}deg) scale(${formData.images[editingImageConfig].textConfig?.scale ?? 1})`,
+                                                color: '#333',
+                                                fontWeight: 'bold',
+                                                textShadow: '0 0 10px white, 0 0 5px white',
+                                                pointerEvents: 'none',
+                                                whiteSpace: 'nowrap',
+                                                fontSize: '1.5rem',
+                                                fontFamily: 'var(--font-display)',
+                                                width: '80%',
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            EJEMPLO TEXTO
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    <div className={styles.inputGroup}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>Posición Horizontal (X)</span>
+                                            <span style={{ fontWeight: 'bold' }}>{formData.images[editingImageConfig].textConfig?.x ?? 50}%</span>
+                                        </label>
+                                        <input
+                                            type="range" min="0" max="100"
+                                            value={formData.images[editingImageConfig].textConfig?.x ?? 50}
+                                            onChange={(e) => handleConfigChange('x', parseInt(e.target.value))}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>Posición Vertical (Y)</span>
+                                            <span style={{ fontWeight: 'bold' }}>{formData.images[editingImageConfig].textConfig?.y ?? 50}%</span>
+                                        </label>
+                                        <input
+                                            type="range" min="0" max="100"
+                                            value={formData.images[editingImageConfig].textConfig?.y ?? 50}
+                                            onChange={(e) => handleConfigChange('y', parseInt(e.target.value))}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>Rotación</span>
+                                            <span style={{ fontWeight: 'bold' }}>{formData.images[editingImageConfig].textConfig?.rotation ?? 0}°</span>
+                                        </label>
+                                        <input
+                                            type="range" min="-180" max="180"
+                                            value={formData.images[editingImageConfig].textConfig?.rotation ?? 0}
+                                            onChange={(e) => handleConfigChange('rotation', parseInt(e.target.value))}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                            <span>Escala</span>
+                                            <span style={{ fontWeight: 'bold' }}>{formData.images[editingImageConfig].textConfig?.scale ?? 1}x</span>
+                                        </label>
+                                        <input
+                                            type="range" min="0.5" max="4" step="0.1"
+                                            value={formData.images[editingImageConfig].textConfig?.scale ?? 1}
+                                            onChange={(e) => handleConfigChange('scale', parseFloat(e.target.value))}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        className="btn-primary"
+                                        style={{ marginTop: 'auto', padding: '1rem' }}
+                                        onClick={() => setEditingImageConfig(null)}
+                                    >
+                                        Guardar Configuración
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

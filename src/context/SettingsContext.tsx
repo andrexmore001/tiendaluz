@@ -60,37 +60,37 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [storageError, setStorageError] = useState<string | null>(null);
 
     const [materials, setMaterials] = useState<Material[]>([
-    {
-        id: 'carton-kraft',
-        name: 'Cartón Kraft',
-        type: "corrugated",
-        thickness_mm: 4,
-        tolerance_mm: 1,
-        stiffness_factor: 0.08,
-        textureUrl: '/materials/kraft.jpg',
-        baseColor: '#e3c5a8'
-    },
-    {
-        id: 'madera',
-        name: 'Madera Clara',
-        type: "wood",
-        thickness_mm: 6,
-        tolerance_mm: 0.5,
-        stiffness_factor: 0.03,
-        textureUrl: '/materials/wood.png',
-        baseColor: '#f1dabf'
-    },
-    {
-        id: 'mdf',
-        name: 'MDF',
-        type: "mdf",
-        thickness_mm: 5,
-        tolerance_mm: 0.5,
-        stiffness_factor: 0.05,
-        textureUrl: '/materials/mdf.png',
-        baseColor: '#d9c5a3'
-    }
-]);
+        {
+            id: 'carton-kraft',
+            name: 'Cartón Kraft',
+            type: "corrugated",
+            thickness_mm: 4,
+            tolerance_mm: 1,
+            stiffness_factor: 0.08,
+            textureUrl: '/materials/kraft.jpg',
+            baseColor: '#e3c5a8'
+        },
+        {
+            id: 'madera',
+            name: 'Madera Clara',
+            type: "wood",
+            thickness_mm: 6,
+            tolerance_mm: 0.5,
+            stiffness_factor: 0.03,
+            textureUrl: '/materials/wood.png',
+            baseColor: '#f1dabf'
+        },
+        {
+            id: 'mdf',
+            name: 'MDF',
+            type: "mdf",
+            thickness_mm: 5,
+            tolerance_mm: 0.5,
+            stiffness_factor: 0.05,
+            textureUrl: '/materials/mdf.png',
+            baseColor: '#d9c5a3'
+        }
+    ]);
 
     // Initial load from localStorage
     useEffect(() => {
@@ -106,13 +106,26 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
             if (savedProducts) {
                 const parsed: Product[] = JSON.parse(savedProducts);
-                // Basic migration: Ensure all products have all current fields
+                // Migration: Ensure all products have all current fields
                 const migrated = parsed.map(p => {
                     const defaultP = initialProducts.find(ip => ip.id === p.id);
                     return {
                         ...defaultP, // Start with defaults if it exists in code
                         ...p,         // Overwrite with saved data
-                        dimensions: { ...defaultP?.dimensions, ...p.dimensions }
+                        // Ensure dimensions is an object if it exists
+                        dimensions: p.dimensions || defaultP?.dimensions || { width: 4, height: 2, depth: 4 },
+                        // Migrate images from string[] to object[] if necessary
+                        images: Array.isArray(p.images)
+                            ? (p.images as any[]).map(img => {
+                                if (typeof img === 'string') {
+                                    return { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } };
+                                }
+                                return {
+                                    ...img,
+                                    textConfig: img.textConfig || { x: 50, y: 50, rotation: 0, scale: 1 }
+                                };
+                            })
+                            : []
                     };
                 });
                 setProducts(migrated as Product[]);

@@ -82,6 +82,8 @@ export let products: Product[] = [
         description: 'Una caja llena de vida y color para celebrar momentos especiales.',
         image: '/hero-banner.png',
         boxTexture: '/box-placeholder.png',
+        displayMode: '3d',
+        images: [],
         dimensions: { width: 30, height: 20, depth: 30 },
         boxType: 'standard',
         shapeId: 'shape_standard'
@@ -94,6 +96,8 @@ export let products: Product[] = [
         description: 'Elegancia y distinción en cada detalle para celebrar el amor.',
         image: '/hero-banner.png',
         boxTexture: '/box-placeholder.png',
+        displayMode: '3d',
+        images: [],
         dimensions: { width: 30, height: 20, depth: 30 },
         boxType: 'lid-base',
         shapeId: 'shape_lid_base'
@@ -106,6 +110,8 @@ export let products: Product[] = [
         description: 'Sorpresas vibrantes para un día inolvidable.',
         image: '/hero-banner.png',
         boxTexture: '/box-placeholder.png',
+        displayMode: '3d',
+        images: [],
         dimensions: { width: 30, height: 20, depth: 30 },
         boxType: 'drawer',
         shapeId: 'shape_drawer'
