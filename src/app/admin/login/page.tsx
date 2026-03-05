@@ -1,40 +1,39 @@
-"use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { QrCode, Smartphone, RefreshCw, ChevronRight, Lock, User, AlertCircle } from 'lucide-react';
+import { signIn } from 'next-auth/react';
 import { useSettings } from '@/context/SettingsContext';
 import styles from './login.module.css';
 
 export default function AdminLogin() {
     const router = useRouter();
-    const { login, isAuthenticated } = useSettings();
-    const [username, setUsername] = useState('admin');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Redirect if already logged in
-    useEffect(() => {
-        if (isAuthenticated) {
-            router.push('/admin');
-        }
-    }, [isAuthenticated, router]);
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(false);
 
-        // Simulated delay for premium feel
-        setTimeout(() => {
-            const success = login(password);
-            if (success) {
-                router.push('/admin');
-            } else {
+        try {
+            const result = await signIn('credentials', {
+                email: username,
+                password: password,
+                redirect: false,
+            });
+
+            if (result?.error) {
                 setError(true);
                 setIsLoading(false);
+            } else {
+                router.push('/admin');
             }
-        }, 1200);
+        } catch (err) {
+            setError(true);
+            setIsLoading(false);
+        }
     };
 
     return (

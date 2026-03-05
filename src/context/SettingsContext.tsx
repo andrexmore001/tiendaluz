@@ -26,7 +26,6 @@ interface SettingsContextType {
     settings: SiteSettings;
     products: Product[];
     collections: Collection[];
-    isAuthenticated: boolean;
     updateSettings: (newSettings: Partial<SiteSettings>) => void;
     addProduct: (product: Product) => void;
     updateProduct: (product: Product) => void;
@@ -42,8 +41,6 @@ interface SettingsContextType {
     addMaterial: (material: Material) => void;
     updateMaterial: (material: Material) => void;
     deleteMaterial: (id: string) => void;
-    login: (password: string) => boolean;
-    logout: () => void;
     storageError: string | null;
     clearAllData: () => void;
 }
@@ -56,7 +53,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [collections, setCollections] = useState<Collection[]>(initialCollections);
     const [boxShapes, setBoxShapes] = useState<BoxShape[]>(initialBoxShapes);
     const [materials, setMaterials] = useState<Material[]>([]);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [storageError, setStorageError] = useState<string | null>(null);
@@ -111,10 +107,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 if (Array.isArray(resShapes)) {
                     setBoxShapes(resShapes);
                 }
-
-                // Auth still in localStorage for simplicity in this MVP
-                const savedAuth = localStorage.getItem('is_admin_auth');
-                if (savedAuth === 'true') setIsAuthenticated(true);
 
             } catch (e) {
                 console.error("Error loading from API", e);
@@ -302,21 +294,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const login = (password: string) => {
-        const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'artesana2026';
-        if (password === adminPass) {
-            setIsAuthenticated(true);
-            localStorage.setItem('is_admin_auth', 'true');
-            return true;
-        }
-        return false;
-    };
-
-    const logout = () => {
-        setIsAuthenticated(false);
-        localStorage.removeItem('is_admin_auth');
-    };
-
     const clearAllData = () => {
         if (confirm('¿Estás seguro de resetear todos los datos? Se borrarán tus productos y configuraciones personalizadas.')) {
             localStorage.clear();
@@ -332,7 +309,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             settings,
             products,
             collections,
-            isAuthenticated,
             updateSettings,
             addProduct,
             updateProduct,
@@ -348,8 +324,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             addMaterial,
             updateMaterial,
             deleteMaterial,
-            login,
-            logout,
             storageError,
             clearAllData
         }}>
