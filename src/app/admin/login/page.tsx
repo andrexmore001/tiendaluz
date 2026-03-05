@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { QrCode, Smartphone, RefreshCw, ChevronRight, Lock, User, AlertCircle } from 'lucide-react';
