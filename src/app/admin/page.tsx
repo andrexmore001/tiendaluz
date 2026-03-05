@@ -21,6 +21,7 @@ import {
     X,
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
+import { useSession, signOut } from 'next-auth/react';
 import Box3D from '@/components/Three/Box3D';
 import { Product } from '@/types/product';
 import { SiteSettings } from '@/lib/data';
@@ -42,8 +43,6 @@ export default function AdminPage() {
         materials,
         storageError,
         clearAllData,
-        isAuthenticated,
-        logout,
         boxShapes,
         addBoxShape,
         updateBoxShape,
@@ -53,14 +52,13 @@ export default function AdminPage() {
         deleteMaterial
     } = useSettings();
 
+    const { data: session, status } = useSession();
     const [activeTab, setActiveTab] = useState('products');
     const [localSettings, setLocalSettings] = useState(settings);
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            router.push('/admin/login');
-        }
-    }, [isAuthenticated, router]);
+    // Initial redirect handled by middleware, but we can keep a safety check or loading state
+    if (status === "loading") return <div className={styles.loading}>Cargando...</div>;
+    if (!session) return null;
 
     // PREVENT STALE SETTINGS: Update localSettings when global settings load from localStorage
     useEffect(() => {
@@ -69,7 +67,6 @@ export default function AdminPage() {
         }
     }, [settings]);
 
-    if (!isAuthenticated) return null;
 
     const [showProductForm, setShowProductForm] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
@@ -664,7 +661,7 @@ export default function AdminPage() {
                     </button>
                 </nav>
 
-                <button className={styles.logoutBtn} onClick={() => { logout(); router.push('/admin/login'); }}>
+                <button className={styles.logoutBtn} onClick={() => signOut({ callbackUrl: '/admin/login' })}>
                     <LogOut size={20} />
                     <span>Cerrar Sesión</span>
                 </button>

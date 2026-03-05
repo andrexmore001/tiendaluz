@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from '@/context/SettingsContext';
 import DynamicStyles from '@/components/DynamicStyles';
+import { SessionProvider } from 'next-auth/react';
 
 const inter = Inter({
   variable: "--font-body",
@@ -27,10 +28,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} ${playfair.variable}`}>
-        <SettingsProvider>
-          <DynamicStyles />
-          {children}
-        </SettingsProvider>
+        <SessionProvider>
+          <SettingsProvider>
+            <DynamicStyles />
+            {children}
+          </SettingsProvider>
+        </SessionProvider>
       </body>
     </html>
   );
