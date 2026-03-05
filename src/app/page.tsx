@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 import Home3DSection from '@/components/HomeVisualizer/Home3DSection';
+import Footer from '@/components/Footer';
 import { useSettings } from '@/context/SettingsContext';
 import Link from 'next/link';
 import styles from './page.module.css';
@@ -47,6 +48,7 @@ export default function Home() {
           </div>
         )}
       </section>
+      <Footer />
     </main>
   );
 }
