@@ -303,7 +303,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     };
 
     const login = (password: string) => {
-        if (password === 'artesana2026') {
+        const adminPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'artesana2026';
+        if (password === adminPass) {
             setIsAuthenticated(true);
             localStorage.setItem('is_admin_auth', 'true');
             return true;
