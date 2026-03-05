@@ -99,23 +99,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 }
 
                 if (Array.isArray(resProducts)) {
-                    setProducts(resProducts.map(p => ({
-                        ...p,
-                        dimensions: { width: p.width, height: p.height, depth: p.depth },
-                        images: p.images.map((img: any) => ({
-                            url: img.url,
-                            textConfig: { x: img.textX, y: img.textY, rotation: img.rotation, scale: img.scale }
-                        }))
-                    })));
+                    setProducts(resProducts);
                 }
 
                 if (Array.isArray(resCollections)) setCollections(resCollections);
                 if (Array.isArray(resMaterials)) setMaterials(resMaterials);
                 if (Array.isArray(resShapes)) {
-                    setBoxShapes(resShapes.map(s => ({
-                        ...s,
-                        defaultDimensions: { width: s.width, height: s.height, depth: s.depth }
-                    })));
+                    setBoxShapes(resShapes);
                 }
 
                 // Auth still in localStorage for simplicity in this MVP
@@ -179,50 +169,132 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
     const deleteProduct = async (id: string) => {
         setProducts(prev => prev.filter(p => p.id !== id));
-        // Add delete route later if needed, for now upsert covers it in the UI flow
-    };
-
-    const addCollection = (collection: Collection) => {
-        if (!collections.find(c => c.id === collection.id)) {
-            setCollections(prev => [...prev, collection]);
+        try {
+            await fetch(`/api/products?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting product", e);
         }
     };
 
-    const updateCollection = (updatedCollection: Collection) => {
+    const addCollection = async (collection: Collection) => {
+        if (!collections.find(c => c.id === collection.id)) {
+            setCollections(prev => [...prev, collection]);
+            try {
+                await fetch('/api/collections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(collection)
+                });
+            } catch (e) {
+                console.error("Error adding collection", e);
+            }
+        }
+    };
+
+    const updateCollection = async (updatedCollection: Collection) => {
         setCollections(prev => prev.map(c => c.id === updatedCollection.id ? updatedCollection : c));
+        try {
+            await fetch('/api/collections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedCollection)
+            });
+        } catch (e) {
+            console.error("Error updating collection", e);
+        }
     };
 
-    const deleteCollection = (id: string) => {
+    const deleteCollection = async (id: string) => {
         setCollections(prev => prev.filter(c => c.id !== id));
+        try {
+            await fetch(`/api/collections?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting collection", e);
+        }
     };
 
-    const addBoxShape = (shape: BoxShape) => {
+    const addBoxShape = async (shape: BoxShape) => {
         setBoxShapes(prev => [...prev, shape]);
+        try {
+            await fetch('/api/box-shapes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(shape)
+            });
+        } catch (e) {
+            console.error("Error adding shape", e);
+        }
     };
 
-    const updateBoxShape = (updatedShape: BoxShape) => {
+    const updateBoxShape = async (updatedShape: BoxShape) => {
         setBoxShapes(prev => prev.map(s => s.id === updatedShape.id ? updatedShape : s));
+        try {
+            await fetch('/api/box-shapes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedShape)
+            });
+        } catch (e) {
+            console.error("Error updating shape", e);
+        }
     };
 
-    const deleteBoxShape = (id: string) => {
+    const deleteBoxShape = async (id: string) => {
         setBoxShapes(prev => prev.filter(s => s.id !== id));
+        try {
+            await fetch(`/api/box-shapes?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting shape", e);
+        }
     };
 
-    const addMaterial = (material: Material) => {
+    const addMaterial = async (material: Material) => {
         setMaterials(prev => [...prev, material]);
+        try {
+            await fetch('/api/materials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(material)
+            });
+        } catch (e) {
+            console.error("Error adding material", e);
+        }
     };
 
-    const updateMaterial = (updatedMaterial: Material) => {
+    const updateMaterial = async (updatedMaterial: Material) => {
         setMaterials(prev => prev.map(m => m.id === updatedMaterial.id ? updatedMaterial : m));
+        try {
+            await fetch('/api/materials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedMaterial)
+            });
+        } catch (e) {
+            console.error("Error updating material", e);
+        }
     };
 
-    const deleteMaterial = (id: string) => {
+    const deleteMaterial = async (id: string) => {
         setMaterials(prev => prev.filter(m => m.id !== id));
+        try {
+            await fetch(`/api/materials?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting material", e);
+        }
     };
 
     const login = (password: string) => {
         if (password === 'artesana2026') {
             setIsAuthenticated(true);
+            localStorage.setItem('is_admin_auth', 'true');
             return true;
         }
         return false;

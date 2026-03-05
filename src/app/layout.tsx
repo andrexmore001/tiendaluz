@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { SettingsProvider } from '@/context/SettingsContext';
+import DynamicStyles from '@/components/DynamicStyles';
 
 const inter = Inter({
   variable: "--font-body",
@@ -17,8 +19,6 @@ export const metadata: Metadata = {
   description: "Marca femenina dedicada a la venta de cajas personalizadas y regalos especiales. Detalles hechos con amor.",
 };
 
-import { SettingsProvider } from '@/context/SettingsContext';
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,6 +28,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.variable} ${playfair.variable}`}>
         <SettingsProvider>
+          <DynamicStyles />
           {children}
         </SettingsProvider>
       </body>

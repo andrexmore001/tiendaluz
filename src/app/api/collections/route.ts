@@ -26,3 +26,23 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Error saving collection' }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get('id');
+
+        if (!id) {
+            return NextResponse.json({ error: 'ID de colección requerido' }, { status: 400 });
+        }
+
+        await prisma.collection.delete({
+            where: { id },
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting collection:', error);
+        return NextResponse.json({ error: 'Error al eliminar colección' }, { status: 500 });
+    }
+}

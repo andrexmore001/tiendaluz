@@ -131,7 +131,8 @@ export default function AdminPage() {
         flapHeightPercent: 0.25,
         flapWidthOffset: -0.2,
         flapType: 'rectangular',
-        tuckFlapHeightPercent: 0.15
+        tuckFlapHeightPercent: 0.15,
+        priceTiers: [] as { id?: string; minQty: number; maxQty?: number | null; unitPrice: number; }[]
     });
 
     const [editingImageConfig, setEditingImageConfig] = useState<number | null>(null);
@@ -196,7 +197,8 @@ export default function AdminPage() {
             flapHeightPercent: p.flapHeightPercent || 0.25,
             flapWidthOffset: p.flapWidthOffset || -0.2,
             flapType: p.flapType || 'rectangular',
-            tuckFlapHeightPercent: p.tuckFlapHeightPercent || 0.15
+            tuckFlapHeightPercent: p.tuckFlapHeightPercent || 0.15,
+            priceTiers: p.priceTiers || []
         });
         setShowProductForm(true);
     };
@@ -252,7 +254,8 @@ export default function AdminPage() {
             flapHeightPercent: Number(formData.flapHeightPercent),
             flapWidthOffset: Number(formData.flapWidthOffset),
             flapType: formData.flapType,
-            tuckFlapHeightPercent: Number(formData.tuckFlapHeightPercent)
+            tuckFlapHeightPercent: Number(formData.tuckFlapHeightPercent),
+            priceTiers: formData.priceTiers
         };
 
         if (editingProduct) {
@@ -265,6 +268,47 @@ export default function AdminPage() {
 
         setShowProductForm(false);
         setEditingProduct(null);
+    };
+
+    const handleAddTier = () => {
+        const lastTier = formData.priceTiers[formData.priceTiers.length - 1];
+        const nextMin = lastTier ? (lastTier.maxQty ? lastTier.maxQty + 1 : lastTier.minQty + 1) : 1;
+
+        // Default to 10% discount from base price for new tier
+        const defaultDiscount = 10;
+        const newPrice = Math.round(formData.price * (1 - defaultDiscount / 100));
+
+        setFormData(prev => ({
+            ...prev,
+            priceTiers: [
+                ...prev.priceTiers,
+                { minQty: nextMin, maxQty: null, unitPrice: newPrice }
+            ]
+        }));
+    };
+
+    const handleRemoveTier = (idx: number) => {
+        setFormData(prev => ({
+            ...prev,
+            priceTiers: prev.priceTiers.filter((_: any, i: number) => i !== idx)
+        }));
+    };
+
+    const handleTierChange = (idx: number, field: string, value: any) => {
+        const newTiers = [...formData.priceTiers];
+        const tier = { ...newTiers[idx], [field]: value };
+
+        // If discount % changed, update unitPrice
+        if (field === 'discount') {
+            tier.unitPrice = Math.round(formData.price * (1 - (value / 100)));
+        }
+        // If unitPrice changed, update discount (calculated field)
+        else if (field === 'unitPrice') {
+            // Internal use only if needed, but we mostly use field to detect intent
+        }
+
+        newTiers[idx] = tier;
+        setFormData({ ...formData, priceTiers: newTiers });
     };
 
     const handleDeleteCollection = (id: string) => {
@@ -1303,6 +1347,85 @@ export default function AdminPage() {
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* SECTION: PRECIOS POR VOLUMEN */}
+                                    <div className={styles.sectionDivider} style={{ margin: '2rem 0', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>Precios por Volumen (Escalas)</h3>
+                                            <button
+                                                type="button"
+                                                className="btn-secondary"
+                                                onClick={handleAddTier}
+                                                style={{ fontSize: '0.8rem', padding: '0.4rem 0.8rem' }}
+                                            >
+                                                <Plus size={14} /> Añadir Escala
+                                            </button>
+                                        </div>
+                                        <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
+                                            Define rangos de cantidad y el precio unitario correspondiente. El precio base se usará si no hay escalas.
+                                        </p>
+
+                                        {formData.priceTiers.length > 0 ? (
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                                {formData.priceTiers.map((tier: any, idx: number) => {
+                                                    const discount = formData.price > 0
+                                                        ? Math.round(((formData.price - tier.unitPrice) / formData.price) * 100)
+                                                        : 0;
+                                                    return (
+                                                        <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 40px', gap: '1rem', alignItems: 'end', background: '#f8fafc', padding: '1rem', borderRadius: '8px' }}>
+                                                            <div className={styles.inputGroup}>
+                                                                <label style={{ fontSize: '0.75rem' }}>Min Cant.</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tier.minQty}
+                                                                    onChange={(e) => handleTierChange(idx, 'minQty', parseInt(e.target.value) || 0)}
+                                                                    placeholder="1"
+                                                                />
+                                                            </div>
+                                                            <div className={styles.inputGroup}>
+                                                                <label style={{ fontSize: '0.75rem' }}>Max Cant.</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tier.maxQty || ''}
+                                                                    onChange={(e) => handleTierChange(idx, 'maxQty', e.target.value ? parseInt(e.target.value) : null)}
+                                                                    placeholder="Infinito"
+                                                                />
+                                                            </div>
+                                                            <div className={styles.inputGroup}>
+                                                                <label style={{ fontSize: '0.75rem' }}>Descuento %</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={discount}
+                                                                    onChange={(e) => handleTierChange(idx, 'discount', parseInt(e.target.value) || 0)}
+                                                                    placeholder="10"
+                                                                />
+                                                            </div>
+                                                            <div className={styles.inputGroup}>
+                                                                <label style={{ fontSize: '0.75rem' }}>Precio Unit.</label>
+                                                                <input
+                                                                    type="number"
+                                                                    value={tier.unitPrice}
+                                                                    onChange={(e) => handleTierChange(idx, 'unitPrice', parseInt(e.target.value) || 0)}
+                                                                    placeholder="85000"
+                                                                />
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleRemoveTier(idx)}
+                                                                style={{ background: '#fee2e2', color: '#ef4444', border: 'none', borderRadius: '6px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div style={{ textAlign: 'center', padding: '2rem', border: '1px dashed #cbd5e1', borderRadius: '12px', background: '#f8fafc' }}>
+                                                <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>No hay escalas de precio definidas para este producto.</p>
+                                            </div>
+                                        )}
+                                    </div>
 
                                     <div className={styles.formActions}>
                                         <button type="button" onClick={() => setShowProductForm(false)}>Cancelar</button>

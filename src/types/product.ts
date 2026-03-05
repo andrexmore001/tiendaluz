@@ -16,6 +16,13 @@ export interface BoxShape {
     tuckFlapHeightPercent?: number; // Height of the tuck flap (0-1)
 }
 
+export interface PriceTier {
+    id: string;
+    minQty: number;
+    maxQty?: number | null;
+    unitPrice: number;
+}
+
 export interface Product {
     id: string;
     name: string;
@@ -51,6 +58,7 @@ export interface Product {
     flapWidthOffset?: number;
     flapType?: 'rectangular' | 'trapezoidal';
     tuckFlapHeightPercent?: number;
+    priceTiers?: PriceTier[];
 }
 
 export interface Collection {

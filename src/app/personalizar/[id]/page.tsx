@@ -30,14 +30,32 @@ export default function CustomizerPage({
 
   const displayPhotos = product.images && product.images.length > 0 ? product.images : [product.image];
 
+  // Calculate tiered price
+  const getTieredPrice = () => {
+    if (!product.priceTiers || product.priceTiers.length === 0) return product.price;
+
+    // Find the tier that matches the quantity
+    const activeTier = product.priceTiers.find(tier => {
+      const minMatch = quantity >= tier.minQty;
+      const maxMatch = tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty;
+      return minMatch && maxMatch;
+    });
+
+    return activeTier ? activeTier.unitPrice : product.price;
+  };
+
+  const currentUnitPrice = getTieredPrice();
+
   const handleWhatsApp = () => {
     const phoneNumber = settings.contact.phone.replace(/\s+/g, "");
+    const total = currentUnitPrice * quantity;
     const message = `Hola, quiero comprar:
 Producto: ${product.name}
 Cantidad: ${quantity}
+Precio Unitario: $${currentUnitPrice.toLocaleString()}
 Texto personalizado: ${text || "Sin texto"}
 Incluye imagen personalizada: ${includeImage ? "Sí" : "No"}
-Total: $${(product.price * quantity).toLocaleString()}
+Total: $${total.toLocaleString()}
 `;
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
@@ -68,7 +86,7 @@ Total: $${(product.price * quantity).toLocaleString()}
               />
             </div>
           ) : (
-            <div className={styles.photoGallery} style={{ width: '100%', height: '400px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className={styles.photoGallery}>
               <div className={styles.mainPhotoWrapper}>
                 <div className={styles.imageRelativeWrapper}>
                   <img src={displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || '')} alt={product.name} />
@@ -86,7 +104,7 @@ Total: $${(product.price * quantity).toLocaleString()}
                   )}
                 </div>
               </div>
-              <div className={styles.photoThumbs} style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              <div className={styles.photoThumbs}>
                 {displayPhotos.map((img: any, idx) => (
                   <img
                     key={idx}
@@ -94,12 +112,7 @@ Total: $${(product.price * quantity).toLocaleString()}
                     alt={`Thumb ${idx}`}
                     onClick={() => setActivePhotoIdx(idx)}
                     style={{
-                      width: '60px',
-                      height: '60px',
-                      objectFit: 'cover',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      border: activePhotoIdx === idx ? '2px solid var(--primary)' : '1px solid #eee'
+                      border: activePhotoIdx === idx ? '2px solid var(--primary)' : undefined
                     }}
                   />
                 ))}
@@ -133,10 +146,47 @@ Total: $${(product.price * quantity).toLocaleString()}
           <div className={styles.productHeader}>
             <h1>{product.name}</h1>
             <p className={styles.price}>
-              ${product.price.toLocaleString()} COP
+              ${currentUnitPrice.toLocaleString()} <span className={styles.unitText}>por unidad</span>
             </p>
             <p className={styles.description}>{product.description}</p>
           </div>
+
+          {/* TABLA DE PRECIOS POR VOLUMEN */}
+          {product.priceTiers && product.priceTiers.length > 0 && (
+            <div className={styles.pricingTableCard}>
+              <div className={styles.tableHeader}>
+                <span>Cantidad</span>
+                <span>Precio Unit.</span>
+              </div>
+              <div className={styles.tableBody}>
+                {/* Pre-tier (range from 1 to the first tier's minQty - 1 if it starts > 1) */}
+                {product.priceTiers[0].minQty > 1 && (
+                  <div className={`${styles.tableRow} ${quantity < product.priceTiers[0].minQty ? styles.activeRow : ''}`}>
+                    <span>1 - {product.priceTiers[0].minQty - 1}</span>
+                    <span>${product.price.toLocaleString()}</span>
+                  </div>
+                )}
+
+                {product.priceTiers.map((tier, idx) => {
+                  const isActive = quantity >= tier.minQty && (tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty);
+                  const label = tier.maxQty ? `${tier.minQty} - ${tier.maxQty}` : `${tier.minQty}+`;
+                  const discount = product.price > 0
+                    ? Math.round(((product.price - tier.unitPrice) / product.price) * 100)
+                    : 0;
+
+                  return (
+                    <div key={tier.id || idx} className={`${styles.tableRow} ${isActive ? styles.activeRow : ''}`}>
+                      <div className={styles.tierInfo}>
+                        <span>{label} unidades</span>
+                        {discount > 0 && <span className={styles.savingsBadge}>Ahorra {discount}%</span>}
+                      </div>
+                      <span className={styles.tierPrice}>${tier.unitPrice.toLocaleString()}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           <div className={styles.customSection}>
             <h3>
@@ -151,7 +201,8 @@ Total: $${(product.price * quantity).toLocaleString()}
             />
           </div>
 
-          <div className={styles.customSection}>
+          {/* SECTION: FOTOGRAFÍA ESPECIAL - OCULTO POR AHORA POR UX */}
+          {/* <div className={styles.customSection}>
             <h3>
               <ImageIcon size={18} /> Fotografía Especial
             </h3>
@@ -163,19 +214,26 @@ Total: $${(product.price * quantity).toLocaleString()}
               />
               <span>Deseo incluir una fotografía impresa</span>
             </label>
-          </div>
+          </div> */}
 
           <div className={styles.footer}>
-            <div className={styles.qtySelector}>
-              <button
-                onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-              >
-                -
-              </button>
-              <span>{quantity}</span>
-              <button onClick={() => setQuantity((prev) => prev + 1)}>
-                +
-              </button>
+            <div className={styles.qtyRow}>
+              <div className={styles.qtySelector}>
+                <button
+                  onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+                >
+                  -
+                </button>
+                <span>{quantity}</span>
+                <button onClick={() => setQuantity((prev) => prev + 1)}>
+                  +
+                </button>
+              </div>
+
+              <div className={styles.totalInfo}>
+                <span className={styles.totalLabel}>Total:</span>
+                <span className={styles.totalValue}>${(currentUnitPrice * quantity).toLocaleString()}</span>
+              </div>
             </div>
 
             <button

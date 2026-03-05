@@ -38,6 +38,8 @@ export async function POST(request: Request) {
                 phone: contact?.phone,
                 email: contact?.email,
                 address: contact?.address,
+                instagram: contact?.instagram,
+                facebook: contact?.facebook,
             },
             create: {
                 id: 'site-settings',
@@ -49,6 +51,8 @@ export async function POST(request: Request) {
                 phone: contact?.phone,
                 email: contact?.email,
                 address: contact?.address,
+                instagram: contact?.instagram,
+                facebook: contact?.facebook,
             },
         });
 

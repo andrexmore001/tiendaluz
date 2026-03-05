@@ -1,6 +1,9 @@
 import { Product, BoxShape, Collection } from '@/types/product';
 
 export interface SiteSettings {
+    title: string;
+    slug: string;
+    logo?: string;
     colors: {
         primary: string;
         secondary: string;
@@ -17,6 +20,9 @@ export interface SiteSettings {
 }
 
 export let siteSettings: SiteSettings = {
+    title: 'Artesana',
+    slug: 'artesana',
+    logo: '',
     colors: {
         primary: '#E8A2A2',
         secondary: '#F9F1E7',
