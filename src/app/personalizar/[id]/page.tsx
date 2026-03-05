@@ -1,6 +1,7 @@
 "use client";
 import { useState, use } from "react";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import Box3D from "@/components/Three/Box3D";
 import { useSettings } from "@/context/SettingsContext";
 import { Type, Image as ImageIcon, MessageCircle } from "lucide-react";
@@ -270,6 +271,7 @@ Total: $${total.toLocaleString()}
           </div>
         </aside>
       </div>
+      <Footer />
     </main>
   );
 }
