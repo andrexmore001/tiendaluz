@@ -318,17 +318,34 @@
     .container {
         grid-template-columns: 1fr;
         padding: 1rem;
+        gap: 2rem;
     }
 
     .visualizer {
-        height: 450px;
+        height: 500px;
         position: relative;
         top: 0;
         margin-bottom: 2rem;
+        border-radius: 20px;
     }
 
     .productHeader h1 {
         font-size: 2.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .productHeader h1 {
+        font-size: 1.8rem;
+    }
+
+    .price {
+        font-size: 1.5rem;
+    }
+
+    .footer {
+        padding: 1.5rem;
+        margin-top: 2rem;
     }
 }
 

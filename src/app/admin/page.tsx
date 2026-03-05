@@ -16,9 +16,10 @@ import {
     MessageCircle,
     Mail,
     MapPin,
-    Type
+    Type,
+    Menu,
+    X,
 } from 'lucide-react';
-import { } from '@/lib/data';
 import { useSettings } from '@/context/SettingsContext';
 import Box3D from '@/components/Three/Box3D';
 import { Product } from '@/types/product';
@@ -74,6 +75,7 @@ export default function AdminPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [notification, setNotification] = useState<string | null>(null);
     const [isOpen, setIsOpen] = useState(false); // Global open state for previews
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Box Shape Form State
     const [showShapeForm, setShowShapeForm] = useState(false);
@@ -587,8 +589,21 @@ export default function AdminPage() {
                     {notification}
                 </div>
             )}
+            {/* Sidebar Overlay (Mobile) */}
+            {mobileMenuOpen && (
+                <div
+                    className={styles.sidebarOverlay}
+                    onClick={() => setMobileMenuOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className={styles.sidebar}>
+            <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.sidebarOpen : ''}`}>
+                <div className={styles.mobileClose}>
+                    <button onClick={() => setMobileMenuOpen(false)}>
+                        <X size={24} />
+                    </button>
+                </div>
                 <div className={styles.sidebarHeader}>
                     <h2 className={styles.adminTitle}>{settings.title} Admin</h2>
                     <p className={styles.adminUser}>Dispositivo Vinculado</p>
@@ -597,35 +612,35 @@ export default function AdminPage() {
                 <nav className={styles.nav}>
                     <button
                         className={activeTab === 'products' ? styles.navItemActive : styles.navItem}
-                        onClick={() => setActiveTab('products')}
+                        onClick={() => { setActiveTab('products'); setMobileMenuOpen(false); }}
                     >
                         <Package size={20} />
                         <span>Productos</span>
                     </button>
                     <button
                         className={activeTab === 'collections' ? styles.navItemActive : styles.navItem}
-                        onClick={() => setActiveTab('collections')}
+                        onClick={() => { setActiveTab('collections'); setMobileMenuOpen(false); }}
                     >
                         <Layers size={20} />
                         <span>Colecciones</span>
                     </button>
                     <button
                         className={activeTab === 'settings' ? styles.navItemActive : styles.navItem}
-                        onClick={() => setActiveTab('settings')}
+                        onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}
                     >
                         <Settings size={20} />
                         <span>Configuración</span>
                     </button>
                     <button
                         className={activeTab === 'materials' ? styles.navItemActive : styles.navItem}
-                        onClick={() => setActiveTab('materials')}
+                        onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}
                     >
                         <Palette size={20} />
                         <span>Materiales</span>
                     </button>
                     <button
                         className={activeTab === 'shapes' ? styles.navItemActive : styles.navItem}
-                        onClick={() => setActiveTab('shapes')}
+                        onClick={() => { setActiveTab('shapes'); setMobileMenuOpen(false); }}
                     >
                         <Box size={20} />
                         <span>Formas de Caja</span>
@@ -650,7 +665,15 @@ export default function AdminPage() {
                 {activeTab === 'products' && (
                     <div className={styles.tabContent}>
                         <header className={styles.header}>
-                            <h1>Gestión de Productos</h1>
+                            <div className={styles.headerTitleGroup}>
+                                <button
+                                    className={styles.mobileMenuToggle}
+                                    onClick={() => setMobileMenuOpen(true)}
+                                >
+                                    <Menu size={24} />
+                                </button>
+                                <h1>Gestión de Productos</h1>
+                            </div>
                             <button className="btn-primary" onClick={() => { setEditingProduct(null); setShowProductForm(true); }}>
                                 <Plus size={20} /> Agregar Producto
                             </button>
