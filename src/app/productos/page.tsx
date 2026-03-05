@@ -47,7 +47,7 @@ export default function ProductosPage() {
                                 <h3>{product.name}</h3>
                                 <p className={styles.price}>${product.price.toLocaleString()}</p>
                                 <Link href={`/personalizar/${product.id}`} className={styles.productBtn}>
-                                    Personalizar
+                                    Comprar
                                 </Link>
                             </div>
                         </div>

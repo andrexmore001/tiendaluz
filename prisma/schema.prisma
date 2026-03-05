@@ -65,6 +65,7 @@ model PriceTier {
 model ProductImage {
   id        String  @id @default(cuid())
   url       String
+  isCustomizable Boolean @default(false)
   textX     Float   @default(50)
   textY     Float   @default(50)
   rotation  Float   @default(0)

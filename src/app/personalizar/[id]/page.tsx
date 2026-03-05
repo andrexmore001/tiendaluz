@@ -90,7 +90,7 @@ Total: $${total.toLocaleString()}
               <div className={styles.mainPhotoWrapper}>
                 <div className={styles.imageRelativeWrapper}>
                   <img src={displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || '')} alt={product.name} />
-                  {text && displayPhotos[activePhotoIdx] && (
+                  {text && displayPhotos[activePhotoIdx] && (displayPhotos[activePhotoIdx] as any).isCustomizable && (
                     <div
                       className={styles.textOverlay}
                       style={{
@@ -188,18 +188,29 @@ Total: $${total.toLocaleString()}
             </div>
           )}
 
-          <div className={styles.customSection}>
-            <h3>
-              <Type size={18} /> Texto Personalizado
-            </h3>
-            <input
-              type="text"
-              placeholder="Escribe el mensaje para la caja..."
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className={styles.input}
-            />
-          </div>
+          {/* Conditionally show text input if 3D mode or at least one image is customizable */}
+          {(() => {
+            const is3D = product.displayMode === '3d' || product.displayMode === 'both' || !product.displayMode;
+            const hasCustomGallery = product.images && product.images.some((img: any) => img && typeof img === 'object' && img.isCustomizable);
+
+            if (is3D || hasCustomGallery) {
+              return (
+                <div className={styles.customSection}>
+                  <h3>
+                    <Type size={18} /> Texto Personalizado
+                  </h3>
+                  <input
+                    type="text"
+                    placeholder="Escribe el mensaje para la caja..."
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    className={styles.input}
+                  />
+                </div>
+              );
+            }
+            return null;
+          })()}
 
           {/* SECTION: FOTOGRAFÍA ESPECIAL - OCULTO POR AHORA POR UX */}
           {/* <div className={styles.customSection}>

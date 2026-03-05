@@ -23,6 +23,7 @@ export async function GET() {
                 customMaterialTexture: p.materialTexture,
                 images: images.map((img: any) => ({
                     url: img.url,
+                    isCustomizable: img.isCustomizable,
                     textConfig: {
                         x: img.textX,
                         y: img.textY,
@@ -73,6 +74,7 @@ export async function POST(request: Request) {
 
         const imageOperations = images?.map((img: any) => ({
             url: img.url,
+            isCustomizable: !!img.isCustomizable,
             textX: Number(img.textConfig?.x || 50),
             textY: Number(img.textConfig?.y || 50),
             rotation: Number(img.textConfig?.rotation || 0),

@@ -33,7 +33,7 @@ export default function Home() {
                 <h3>{product.name}</h3>
                 <p className={styles.price}>${product.price.toLocaleString()}</p>
                 <Link href={`/personalizar/${product.id}`} className="btn-primary" style={{ display: 'block' }}>
-                  Personalizar
+                  Comprar
                 </Link>
               </div>
             </div>

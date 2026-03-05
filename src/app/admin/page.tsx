@@ -15,7 +15,8 @@ import {
     Palette,
     MessageCircle,
     Mail,
-    MapPin
+    MapPin,
+    Type
 } from 'lucide-react';
 import { } from '@/lib/data';
 import { useSettings } from '@/context/SettingsContext';
@@ -117,7 +118,7 @@ export default function AdminPage() {
         image: '',
         boxTexture: '',
         displayMode: '3d' as '3d' | 'photos' | 'both',
-        images: [] as { url: string; textConfig?: { x: number; y: number; rotation: number; scale: number; } }[],
+        images: [] as { url: string; isCustomizable?: boolean; textConfig?: { x: number; y: number; rotation: number; scale: number; } }[],
         width: 4,
         height: 2,
         depth: 4,
@@ -370,7 +371,7 @@ export default function AdminPage() {
                         const compressed = await compressImage(reader.result as string);
                         newImages.push({
                             url: compressed,
-                            textConfig: { x: 50, y: 50, rotation: 0, scale: 1 }
+                            isCustomizable: false
                         });
                         setFormData(prev => ({ ...prev, images: [...newImages] }));
                         resolve();
@@ -404,6 +405,26 @@ export default function AdminPage() {
             setEditingImageConfig(null);
         } else if (editingImageConfig !== null && editingImageConfig > index) {
             setEditingImageConfig(editingImageConfig - 1);
+        }
+    };
+
+    const toggleImageCustomization = (index: number) => {
+        const newImages = [...formData.images];
+        const current = newImages[index];
+        const isCustomizable = !current.isCustomizable;
+
+        newImages[index] = {
+            ...current,
+            isCustomizable,
+            // If enabling, ensure textConfig exists
+            textConfig: isCustomizable ? (current.textConfig || { x: 50, y: 50, rotation: 0, scale: 1 }) : current.textConfig
+        };
+
+        setFormData({ ...formData, images: newImages });
+        if (isCustomizable) {
+            setEditingImageConfig(index);
+        } else if (editingImageConfig === index) {
+            setEditingImageConfig(null);
         }
     };
 
@@ -1430,24 +1451,47 @@ export default function AdminPage() {
                                                             />
                                                         )}
                                                         <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '4px' }}>
+                                                            {img.isCustomizable && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setEditingImageConfig(idx)}
+                                                                    style={{
+                                                                        background: 'rgba(59, 130, 246, 0.95)',
+                                                                        color: 'white',
+                                                                        border: 'none',
+                                                                        borderRadius: '6px',
+                                                                        padding: '6px',
+                                                                        cursor: 'pointer',
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        justifyContent: 'center'
+                                                                    }}
+                                                                    title="Configurar Texto"
+                                                                >
+                                                                    <Settings size={16} />
+                                                                </button>
+                                                            )}
+
                                                             <button
                                                                 type="button"
-                                                                onClick={() => setEditingImageConfig(idx)}
+                                                                onClick={() => toggleImageCustomization(idx)}
                                                                 style={{
-                                                                    background: 'rgba(59, 130, 246, 0.95)',
-                                                                    color: 'white',
+                                                                    background: img.isCustomizable ? 'var(--primary)' : 'rgba(255, 255, 255, 0.9)',
+                                                                    color: img.isCustomizable ? 'white' : '#666',
                                                                     border: 'none',
                                                                     borderRadius: '6px',
                                                                     padding: '6px',
                                                                     cursor: 'pointer',
                                                                     display: 'flex',
                                                                     alignItems: 'center',
-                                                                    justifyContent: 'center'
+                                                                    justifyContent: 'center',
+                                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                                                 }}
-                                                                title="Configurar Texto"
+                                                                title={img.isCustomizable ? "Desactivar Personalización" : "Activar Personalización"}
                                                             >
-                                                                <Settings size={16} />
+                                                                <Type size={16} />
                                                             </button>
+
                                                             <button
                                                                 type="button"
                                                                 onClick={() => removeGalleryImage(idx)}

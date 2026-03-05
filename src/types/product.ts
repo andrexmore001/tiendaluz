@@ -34,6 +34,7 @@ export interface Product {
     displayMode?: 'photos' | '3d' | 'both';
     images?: {
         url: string;
+        isCustomizable?: boolean;
         textConfig?: {
             x: number;      // 0-100%
             y: number;      // 0-100%
