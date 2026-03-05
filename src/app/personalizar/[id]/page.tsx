@@ -235,7 +235,20 @@ Total: $${total.toLocaleString()}
                 >
                   -
                 </button>
-                <span>{quantity}</span>
+                <input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    if (!isNaN(val)) setQuantity(Math.max(1, val));
+                    else if (e.target.value === '') setQuantity(0); // Allow clearing while typing
+                  }}
+                  onBlur={() => {
+                    if (quantity < 1) setQuantity(1);
+                  }}
+                  className={styles.qtyInput}
+                />
                 <button onClick={() => setQuantity((prev) => prev + 1)}>
                   +
                 </button>

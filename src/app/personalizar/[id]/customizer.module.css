@@ -214,9 +214,9 @@
 .qtySelector {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 0.5rem;
     background: #f1f5f9;
-    padding: 0.6rem 1.2rem;
+    padding: 0.4rem 0.8rem;
     border-radius: 16px;
     border: 1px solid #e2e8f0;
 }
@@ -229,13 +229,45 @@
     background: transparent;
     cursor: pointer;
     width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background 0.2s ease;
 }
 
-.qtySelector span {
-    font-size: 1.2rem;
-    font-weight: 700;
-    min-width: 30px;
+.qtySelector button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.qtyInput {
+    width: 60px;
+    border: none;
+    background: white;
     text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.4rem;
+    border-radius: 8px;
+    font-family: inherit;
+    color: #1a1a1a;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.qtyInput:focus {
+    outline: 2px solid var(--primary);
+}
+
+/* Remove arrows from number input */
+.qtyInput::-webkit-outer-spin-button,
+.qtyInput::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.qtyInput[type=number] {
+    -moz-appearance: textfield;
 }
 
 .totalInfo {
