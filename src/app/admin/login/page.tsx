@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { QrCode, Smartphone, RefreshCw, ChevronRight, Lock, User, AlertCircle } from 'lucide-react';
+import { RefreshCw, Lock, User, AlertCircle } from 'lucide-react';
 import { signIn } from 'next-auth/react';
-import { useSettings } from '@/context/SettingsContext';
 import styles from './login.module.css';
 
 export default function AdminLogin() {
@@ -59,12 +58,12 @@ export default function AdminLogin() {
                         <h2>Bienvenido de nuevo</h2>
 
                         <div className={styles.inputGroup}>
-                            <label><User size={16} /> Usuario</label>
+                            <label><User size={16} /> Usuario (Email)</label>
                             <input
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                placeholder="tu_usuario"
+                                placeholder="nombre@artesana.com"
                                 required
                             />
                         </div>
