@@ -1,17 +1,47 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSettings } from '@/context/SettingsContext';
 import styles from './Hero.module.css';
 
 export default function Hero() {
+    const { settings } = useSettings();
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const title = settings.heroTitle || 'Creamos cajas que cuentan historias';
+    const subtitle = settings.heroSubtitle || 'Regalos personalizados hechos con amor, diseñados para emocionar y perdurar en el corazón.';
+    const images = settings.heroImages && settings.heroImages.length > 0
+        ? settings.heroImages
+        : ['/hero-banner.png'];
+
+    useEffect(() => {
+        if (images.length <= 1) return;
+
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prev) => (prev + 1) % images.length);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [images.length]);
+
     return (
         <section className={styles.hero}>
+            {images.map((img, idx) => (
+                <div
+                    key={idx}
+                    className={styles.heroSlide}
+                    style={{
+                        backgroundImage: `url(${img})`,
+                        opacity: idx === currentImageIndex ? 1 : 0,
+                        transition: 'opacity 1s ease-in-out'
+                    }}
+                />
+            ))}
             <div className={styles.overlay}></div>
             <div className={`${styles.content} container`}>
-                <h1 className={styles.title}>
-                    Creamos cajas que <br />
-                    <span>cuentan historias</span>
+                <h1 className={styles.title} dangerouslySetInnerHTML={{ __html: title.replace('\n', '<br />') }}>
                 </h1>
                 <p className={styles.subtitle}>
-                    Regalos personalizados hechos con amor, diseñados para emocionar y perdurar en el corazón.
+                    {subtitle}
                 </p>
                 <div className={styles.ctaGroup}>
                     <Link href="/personalizar" className="btn-primary">

@@ -360,9 +360,26 @@ export default function AdminPage() {
         });
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'boxTexture' | 'gallery' | 'materialTexture' | 'logo') => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'boxTexture' | 'gallery' | 'materialTexture' | 'logo' | 'heroImages') => {
         const files = e.target.files;
         if (!files) return;
+
+        if (field === 'heroImages') {
+            const readers = Array.from(files).map(file => {
+                return new Promise<string>((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            const results = await Promise.all(readers);
+            setLocalSettings(prev => ({
+                ...prev,
+                heroImages: [...(prev.heroImages || []), ...results]
+            }));
+            return;
+        }
 
         if (field === 'gallery') {
             const newImages: any[] = [...formData.images];
@@ -847,6 +864,67 @@ export default function AdminPage() {
                                                 placeholder="#000000"
                                             />
                                         </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Hero Configuration */}
+                            <section className={styles.settingsSection}>
+                                <h3><Plus size={20} /> Portada Principal (Hero)</h3>
+                                <div className={styles.formStack}>
+                                    <div className={styles.inputGroup}>
+                                        <label>Título de la Portada</label>
+                                        <input
+                                            type="text"
+                                            value={localSettings.heroTitle || ''}
+                                            onChange={(e) => handleSettingChange('heroTitle', e.target.value)}
+                                            placeholder="Ej: Creamos cajas que cuentan historias"
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label>Subtítulo de la Portada</label>
+                                        <textarea
+                                            value={localSettings.heroSubtitle || ''}
+                                            onChange={(e) => handleSettingChange('heroSubtitle', e.target.value)}
+                                            placeholder="Ej: Regalos personalizados hechos con amor..."
+                                            rows={2}
+                                        />
+                                    </div>
+                                    <div className={styles.inputGroup}>
+                                        <label>Imágenes de Fondo (Carrusel)</label>
+                                        <div className={styles.heroImageGrid}>
+                                            {(localSettings.heroImages || []).map((img, idx) => (
+                                                <div key={idx} className={styles.heroImageItem}>
+                                                    <img src={img} alt={`Hero ${idx + 1}`} />
+                                                    <button
+                                                        type="button"
+                                                        className={styles.removeHeroBtn}
+                                                        onClick={() => {
+                                                            const newImages = [...(localSettings.heroImages || [])];
+                                                            newImages.splice(idx, 1);
+                                                            setLocalSettings(prev => ({ ...prev, heroImages: newImages }));
+                                                        }}
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <div className={styles.uploadBox} style={{ height: '100px', minWidth: '100px' }}>
+                                                <div className={styles.emptyUpload}>
+                                                    <Plus size={20} />
+                                                    <span>Añadir</span>
+                                                </div>
+                                                <input
+                                                    type="file"
+                                                    multiple
+                                                    accept="image/*"
+                                                    onChange={(e) => handleFileUpload(e, 'heroImages' as any)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem' }}>
+                                            Sube una o varias imágenes. Si subes varias, se activará un carrusel automáticamente.
+                                        </p>
                                     </div>
                                 </div>
                             </section>

@@ -40,6 +40,9 @@ export async function POST(request: Request) {
                 address: contact?.address,
                 instagram: contact?.instagram,
                 facebook: contact?.facebook,
+                heroTitle: rest?.heroTitle,
+                heroSubtitle: rest?.heroSubtitle,
+                heroImages: JSON.stringify(rest?.heroImages || []),
             },
             create: {
                 id: 'site-settings',
@@ -53,6 +56,9 @@ export async function POST(request: Request) {
                 address: contact?.address,
                 instagram: contact?.instagram,
                 facebook: contact?.facebook,
+                heroTitle: rest?.heroTitle,
+                heroSubtitle: rest?.heroSubtitle,
+                heroImages: JSON.stringify(rest?.heroImages || []),
             },
         });
 

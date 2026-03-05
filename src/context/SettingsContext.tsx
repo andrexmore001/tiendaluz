@@ -95,6 +95,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             instagram: resSettings.instagram,
                             facebook: resSettings.facebook
                         },
+                        heroTitle: resSettings.heroTitle || '',
+                        heroSubtitle: resSettings.heroSubtitle || '',
+                        heroImages: resSettings.heroImages ? JSON.parse(resSettings.heroImages) : [],
                         updatedAt: resSettings.updatedAt
                     });
                 }

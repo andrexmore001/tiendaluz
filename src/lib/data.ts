@@ -17,6 +17,9 @@ export interface SiteSettings {
         instagram: string;
         facebook: string;
     };
+    heroTitle?: string;
+    heroSubtitle?: string;
+    heroImages?: string[];
     updatedAt?: string;
 }
 
