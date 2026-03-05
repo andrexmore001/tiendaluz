@@ -6,7 +6,17 @@ import { Product, BoxShape, Collection } from '@/types/product';
 export interface Material {
     id: string;
     name: string;
-    textureUrl: string;
+
+    /* Tipo físico */
+    type: "corrugated" | "mdf" | "wood";
+
+    /* Propiedades industriales */
+    thickness_mm: number;
+    tolerance_mm: number;
+    stiffness_factor: number;
+
+    /* Visual */
+    textureUrl?: string;
     baseColor?: string;
     roughness?: number;
     metalness?: number;
@@ -45,185 +55,257 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [collections, setCollections] = useState<Collection[]>(initialCollections);
     const [boxShapes, setBoxShapes] = useState<BoxShape[]>(initialBoxShapes);
+    const [materials, setMaterials] = useState<Material[]>([]);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [storageError, setStorageError] = useState<string | null>(null);
 
-    const [materials, setMaterials] = useState<Material[]>([
-        { id: 'carton-kraft', name: 'Cartón Kraft', textureUrl: '/materials/kraft.png', baseColor: '#e3c5a8' },
-        { id: 'madera', name: 'Madera Clara', textureUrl: '/materials/wood.png', baseColor: '#f1dabf' },
-        { id: 'MDF', name: 'MDF', textureUrl: '/materials/mdf.png', baseColor: '#d9c5a3' }
-    ]);
-
-    // Initial load from localStorage
+    // Initial load from API (falling back to localStorage for migration if needed)
     useEffect(() => {
-        try {
-            const savedSettings = localStorage.getItem('artesana_settings');
-            const savedProducts = localStorage.getItem('artesana_products');
-            const savedCollections = localStorage.getItem('artesana_collections');
-            const savedBoxShapes = localStorage.getItem('artesana_box_shapes');
-            const savedMaterials = localStorage.getItem('artesana_materials');
-            const savedAuth = localStorage.getItem('is_admin_auth');
+        const loadAllData = async () => {
+            try {
+                setIsInitialLoading(true);
 
-            if (savedSettings) setSettings(JSON.parse(savedSettings));
+                // Fetch from API
+                const [resSettings, resProducts, resCollections, resMaterials, resShapes] = await Promise.all([
+                    fetch('/api/settings').then(r => r.json()),
+                    fetch('/api/products').then(r => r.json()),
+                    fetch('/api/collections').then(r => r.json()),
+                    fetch('/api/materials').then(r => r.json()),
+                    fetch('/api/box-shapes').then(r => r.json())
+                ]);
 
-            if (savedProducts) {
-                const parsed: Product[] = JSON.parse(savedProducts);
-                // Basic migration: Ensure all products have all current fields
-                const migrated = parsed.map(p => {
-                    const defaultP = initialProducts.find(ip => ip.id === p.id);
-                    return {
-                        ...defaultP, // Start with defaults if it exists in code
-                        ...p,         // Overwrite with saved data
-                        dimensions: { ...defaultP?.dimensions, ...p.dimensions }
-                    };
-                });
-                setProducts(migrated as Product[]);
-            }
-
-            if (savedCollections) {
-                const parsed = JSON.parse(savedCollections);
-                // Migration from string[] to Collection[]
-                if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-                    const migrated: Collection[] = parsed.map((name, index) => {
-                        const existing = initialCollections.find(c => c.name === name);
-                        return existing || { id: `col_${Date.now()}_${index}`, name, description: '' };
+                if (resSettings && !resSettings.error) {
+                    // Map DB format to SiteSettings
+                    setSettings({
+                        title: resSettings.title,
+                        slug: resSettings.slug,
+                        logo: resSettings.logo || '',
+                        colors: {
+                            primary: resSettings.primaryColor,
+                            secondary: resSettings.secondaryColor,
+                            accent: resSettings.accentColor,
+                            background: resSettings.backgroundColor
+                        },
+                        contact: {
+                            phone: resSettings.phone,
+                            email: resSettings.email,
+                            address: resSettings.address,
+                            instagram: resSettings.instagram,
+                            facebook: resSettings.facebook
+                        },
+                        heroTitle: resSettings.heroTitle || '',
+                        heroSubtitle: resSettings.heroSubtitle || '',
+                        heroImages: resSettings.heroImages ? JSON.parse(resSettings.heroImages) : [],
+                        updatedAt: resSettings.updatedAt
                     });
-                    setCollections(migrated);
-                } else {
-                    setCollections(parsed);
                 }
-            }
 
-            if (savedBoxShapes) {
-                const parsed: BoxShape[] = JSON.parse(savedBoxShapes);
-                const migrated = parsed.map(s => {
-                    const defaultS = initialBoxShapes.find(ds => ds.id === s.id);
-                    return { ...defaultS, ...s };
-                });
-                setBoxShapes(migrated);
-            }
-
-            if (savedMaterials) setMaterials(JSON.parse(savedMaterials));
-            if (savedAuth === 'true') setIsAuthenticated(true);
-        } catch (e) {
-            console.error("Error loading from storage", e);
-        }
-
-        // SYNC ACROSS TABS
-        const handleStorageChange = (e: StorageEvent) => {
-            if (e.key === 'artesana_products' && e.newValue) setProducts(JSON.parse(e.newValue));
-            if (e.key === 'artesana_settings' && e.newValue) setSettings(JSON.parse(e.newValue));
-            if (e.key === 'artesana_collections' && e.newValue) {
-                const parsed = JSON.parse(e.newValue);
-                // Migration in sync
-                if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-                    const migrated: Collection[] = parsed.map((name, index) => ({ id: `col_${index}`, name, description: '' }));
-                    setCollections(migrated);
-                } else {
-                    setCollections(parsed);
+                if (Array.isArray(resProducts)) {
+                    setProducts(resProducts);
                 }
+
+                if (Array.isArray(resCollections)) setCollections(resCollections);
+                if (Array.isArray(resMaterials)) setMaterials(resMaterials);
+                if (Array.isArray(resShapes)) {
+                    setBoxShapes(resShapes);
+                }
+
+                // Auth still in localStorage for simplicity in this MVP
+                const savedAuth = localStorage.getItem('is_admin_auth');
+                if (savedAuth === 'true') setIsAuthenticated(true);
+
+            } catch (e) {
+                console.error("Error loading from API", e);
+                // Fallback to localStorage logic if API fails or for first-time migration
+                const savedProducts = localStorage.getItem('artesana_products');
+                if (savedProducts) setProducts(JSON.parse(savedProducts));
+            } finally {
+                setIsLoaded(true);
+                setIsInitialLoading(false);
             }
-            if (e.key === 'artesana_box_shapes' && e.newValue) setBoxShapes(JSON.parse(e.newValue));
-            if (e.key === 'artesana_materials' && e.newValue) setMaterials(JSON.parse(e.newValue));
         };
 
-        window.addEventListener('storage', handleStorageChange);
-        setIsLoaded(true);
-
-        return () => window.removeEventListener('storage', handleStorageChange);
+        loadAllData();
     }, []);
 
-    // Separate saving to avoid clobbering states across tabs
-    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_settings', JSON.stringify(settings)); }, [settings, isLoaded]);
+    // Update document title when settings title changes
     useEffect(() => {
-        if (isLoaded) {
-            try {
-                localStorage.setItem('artesana_products', JSON.stringify(products));
-                setStorageError(null);
-            } catch (e) {
-                setStorageError("Espacio lleno. Reduce el tamaño de las fotos.");
-            }
+        if (settings.title) {
+            document.title = `${settings.title} | Cajas Personalizadas`;
         }
-    }, [products, isLoaded]);
-    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_collections', JSON.stringify(collections)); }, [collections, isLoaded]);
-    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_box_shapes', JSON.stringify(boxShapes)); }, [boxShapes, isLoaded]);
-    useEffect(() => { if (isLoaded) localStorage.setItem('artesana_materials', JSON.stringify(materials)); }, [materials, isLoaded]);
-    useEffect(() => { if (isLoaded) localStorage.setItem('is_admin_auth', isAuthenticated.toString()); }, [isAuthenticated, isLoaded]);
+    }, [settings.title]);
 
-    // Apply CSS variables to the document root whenever settings change
-    useEffect(() => {
-        const root = document.documentElement;
-        root.style.setProperty('--primary', settings.colors.primary);
-        root.style.setProperty('--primary-light', `${settings.colors.primary}15`);
-        root.style.setProperty('--primary-shadow', `${settings.colors.primary}40`);
-        root.style.setProperty('--secondary', settings.colors.secondary);
-        root.style.setProperty('--accent', settings.colors.accent);
-        root.style.setProperty('--background', settings.colors.background);
-    }, [settings]);
-
-    const updateSettings = (newSettings: Partial<SiteSettings>) => {
-        setSettings(prev => ({
-            ...prev,
-            ...newSettings,
-            colors: { ...prev.colors, ...newSettings.colors },
-            contact: { ...prev.contact, ...newSettings.contact },
-        }));
+    // Save to API instead of localStorage
+    const updateSettings = async (newSettings: Partial<SiteSettings>) => {
+        const updated = { ...settings, ...newSettings };
+        setSettings(updated);
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updated)
+            });
+        } catch (e) {
+            console.error("Error saving settings", e);
+        }
     };
 
-    const addProduct = (product: Product) => {
+    const addProduct = async (product: Product) => {
         setProducts(prev => [...prev, product]);
+        try {
+            await fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(product)
+            });
+        } catch (e) {
+            console.error("Error adding product", e);
+        }
     };
 
-    const updateProduct = (updatedProduct: Product) => {
+    const updateProduct = async (updatedProduct: Product) => {
         setProducts(prev => prev.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+        try {
+            await fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedProduct)
+            });
+        } catch (e) {
+            console.error("Error updating product", e);
+        }
     };
 
-    const deleteProduct = (id: string) => {
+    const deleteProduct = async (id: string) => {
         setProducts(prev => prev.filter(p => p.id !== id));
+        try {
+            await fetch(`/api/products?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting product", e);
+        }
     };
 
-    const addCollection = (collection: Collection) => {
+    const addCollection = async (collection: Collection) => {
         if (!collections.find(c => c.id === collection.id)) {
             setCollections(prev => [...prev, collection]);
+            try {
+                await fetch('/api/collections', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(collection)
+                });
+            } catch (e) {
+                console.error("Error adding collection", e);
+            }
         }
     };
 
-    const updateCollection = (updatedCollection: Collection) => {
+    const updateCollection = async (updatedCollection: Collection) => {
         setCollections(prev => prev.map(c => c.id === updatedCollection.id ? updatedCollection : c));
+        try {
+            await fetch('/api/collections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedCollection)
+            });
+        } catch (e) {
+            console.error("Error updating collection", e);
+        }
     };
 
-    const deleteCollection = (id: string) => {
+    const deleteCollection = async (id: string) => {
         setCollections(prev => prev.filter(c => c.id !== id));
+        try {
+            await fetch(`/api/collections?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting collection", e);
+        }
     };
 
-    const addBoxShape = (shape: BoxShape) => {
+    const addBoxShape = async (shape: BoxShape) => {
         setBoxShapes(prev => [...prev, shape]);
+        try {
+            await fetch('/api/box-shapes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(shape)
+            });
+        } catch (e) {
+            console.error("Error adding shape", e);
+        }
     };
 
-    const updateBoxShape = (updatedShape: BoxShape) => {
+    const updateBoxShape = async (updatedShape: BoxShape) => {
         setBoxShapes(prev => prev.map(s => s.id === updatedShape.id ? updatedShape : s));
+        try {
+            await fetch('/api/box-shapes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedShape)
+            });
+        } catch (e) {
+            console.error("Error updating shape", e);
+        }
     };
 
-    const deleteBoxShape = (id: string) => {
+    const deleteBoxShape = async (id: string) => {
         setBoxShapes(prev => prev.filter(s => s.id !== id));
+        try {
+            await fetch(`/api/box-shapes?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting shape", e);
+        }
     };
 
-    const addMaterial = (material: Material) => {
+    const addMaterial = async (material: Material) => {
         setMaterials(prev => [...prev, material]);
+        try {
+            await fetch('/api/materials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(material)
+            });
+        } catch (e) {
+            console.error("Error adding material", e);
+        }
     };
 
-    const updateMaterial = (updatedMaterial: Material) => {
+    const updateMaterial = async (updatedMaterial: Material) => {
         setMaterials(prev => prev.map(m => m.id === updatedMaterial.id ? updatedMaterial : m));
+        try {
+            await fetch('/api/materials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedMaterial)
+            });
+        } catch (e) {
+            console.error("Error updating material", e);
+        }
     };
 
-    const deleteMaterial = (id: string) => {
+    const deleteMaterial = async (id: string) => {
         setMaterials(prev => prev.filter(m => m.id !== id));
+        try {
+            await fetch(`/api/materials?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting material", e);
+        }
     };
 
     const login = (password: string) => {
         if (password === 'artesana2026') {
             setIsAuthenticated(true);
+            localStorage.setItem('is_admin_auth', 'true');
             return true;
         }
         return false;

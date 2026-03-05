@@ -16,6 +16,13 @@ export interface BoxShape {
     tuckFlapHeightPercent?: number; // Height of the tuck flap (0-1)
 }
 
+export interface PriceTier {
+    id: string;
+    minQty: number;
+    maxQty?: number | null;
+    unitPrice: number;
+}
+
 export interface Product {
     id: string;
     name: string;
@@ -24,6 +31,17 @@ export interface Product {
     category: string;
     image: string;      // Base image for cards
     boxTexture: string; // The texture used for the 3D model (top of the box)
+    displayMode?: 'photos' | '3d' | 'both';
+    images?: {
+        url: string;
+        isCustomizable?: boolean;
+        textConfig?: {
+            x: number;      // 0-100%
+            y: number;      // 0-100%
+            rotation: number; // degrees
+            scale: number;    // multiplier
+        }
+    }[];
     dimensions?: {
         width: number;
         height: number;
@@ -41,6 +59,7 @@ export interface Product {
     flapWidthOffset?: number;
     flapType?: 'rectangular' | 'trapezoidal';
     tuckFlapHeightPercent?: number;
+    priceTiers?: PriceTier[];
 }
 
 export interface Collection {

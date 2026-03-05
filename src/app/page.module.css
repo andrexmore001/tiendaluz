@@ -4,8 +4,19 @@
 
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+@media (max-width: 640px) {
+  .productGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .productCard {
+    max-width: 100%;
+  }
 }
 
 .productCard {
@@ -16,6 +27,13 @@
   transition: var(--transition);
   border: 1px solid rgba(0, 0, 0, 0.03);
   padding: 1rem;
+  max-width: 400px;
+}
+
+.moreActions {
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
 }
 
 .productCard:hover {

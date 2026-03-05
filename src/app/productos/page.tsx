@@ -46,8 +46,8 @@ export default function ProductosPage() {
                                 <span className={styles.category}>{product.category}</span>
                                 <h3>{product.name}</h3>
                                 <p className={styles.price}>${product.price.toLocaleString()}</p>
-                                <Link href={`/personalizar/${product.id}`} className="btn-primary" style={{ display: 'inline-block', width: '100%', textAlign: 'center' }}>
-                                    Elegir y Personalizar
+                                <Link href={`/personalizar/${product.id}`} className={styles.productBtn}>
+                                    Comprar
                                 </Link>
                             </div>
                         </div>
