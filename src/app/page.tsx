@@ -23,10 +23,10 @@ export default function Home() {
           Explora nuestras cajas más queridas, diseñadas para cada momento especial.
         </p>
         <div className={styles.productGrid}>
-          {products.map(product => (
+          {products.slice(0, 4).map(product => (
             <div key={product.id} className={styles.productCard}>
               <div className={styles.productImage}>
-                <img src={product.image} alt={product.name} />
+                <img src={product.image} alt={product.name} loading="lazy" />
               </div>
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
@@ -38,6 +38,14 @@ export default function Home() {
             </div>
           ))}
         </div>
+
+        {products.length > 4 && (
+          <div className={styles.moreActions}>
+            <Link href="/productos" className="btn-secondary">
+              Ver Todos los Productos
+            </Link>
+          </div>
+        )}
       </section>
     </main>
   );

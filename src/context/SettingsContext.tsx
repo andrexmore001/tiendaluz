@@ -94,7 +94,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             address: resSettings.address,
                             instagram: resSettings.instagram,
                             facebook: resSettings.facebook
-                        }
+                        },
+                        updatedAt: resSettings.updatedAt
                     });
                 }
 
@@ -125,6 +126,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
         loadAllData();
     }, []);
+
+    // Update document title when settings title changes
+    useEffect(() => {
+        if (settings.title) {
+            document.title = `${settings.title} | Cajas Personalizadas`;
+        }
+    }, [settings.title]);
 
     // Save to API instead of localStorage
     const updateSettings = async (newSettings: Partial<SiteSettings>) => {

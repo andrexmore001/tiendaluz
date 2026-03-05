@@ -17,6 +17,7 @@ export interface SiteSettings {
         instagram: string;
         facebook: string;
     };
+    updatedAt?: string;
 }
 
 export let siteSettings: SiteSettings = {

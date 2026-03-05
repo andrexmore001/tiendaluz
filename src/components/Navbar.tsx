@@ -3,9 +3,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ShoppingBag, Menu, X, User } from 'lucide-react';
 import styles from './Navbar.module.css';
+import { useSettings } from '@/context/SettingsContext';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const { settings } = useSettings();
 
     return (
         <nav className={styles.navbar}>
@@ -19,7 +21,11 @@ export default function Navbar() {
                 </button>
 
                 <Link href="/" className={styles.logo}>
-                    ARTESANA
+                    {settings.logo ? (
+                        <img src={settings.logo} alt={settings.title} style={{ height: '40px', objectFit: 'contain' }} />
+                    ) : (
+                        settings.title.toUpperCase()
+                    )}
                 </Link>
 
                 <div className={`${styles.links} ${isOpen ? styles.linksOpen : ''}`}>

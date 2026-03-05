@@ -153,6 +153,14 @@ export default function AdminPage() {
     };
 
     const handleSettingChange = (path: string, value: string) => {
+        if (!path.includes('.')) {
+            setLocalSettings((prev: SiteSettings) => ({
+                ...prev,
+                [path]: value
+            }));
+            return;
+        }
+
         const [section, field] = path.split('.');
         setLocalSettings((prev: SiteSettings) => ({
             ...prev,
@@ -349,7 +357,7 @@ export default function AdminPage() {
         });
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'boxTexture' | 'gallery' | 'materialTexture') => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'image' | 'boxTexture' | 'gallery' | 'materialTexture' | 'logo') => {
         const files = e.target.files;
         if (!files) return;
 
@@ -376,7 +384,11 @@ export default function AdminPage() {
                 const reader = new FileReader();
                 reader.onloadend = async () => {
                     const compressed = await compressImage(reader.result as string);
-                    setFormData(prev => ({ ...prev, [field]: compressed }));
+                    if (field === 'logo') {
+                        setLocalSettings(prev => ({ ...prev, logo: compressed }));
+                    } else {
+                        setFormData(prev => ({ ...prev, [field]: compressed }));
+                    }
                 };
                 reader.readAsDataURL(file);
             }
@@ -557,7 +569,7 @@ export default function AdminPage() {
             {/* Sidebar */}
             <aside className={styles.sidebar}>
                 <div className={styles.sidebarHeader}>
-                    <h2 className={styles.adminTitle}>Artesana Admin</h2>
+                    <h2 className={styles.adminTitle}>{settings.title} Admin</h2>
                     <p className={styles.adminUser}>Dispositivo Vinculado</p>
                 </div>
 
@@ -795,30 +807,94 @@ export default function AdminPage() {
                                 </div>
                             </section>
 
-                            {/* Contact */}
+                            {/* Identity */}
                             <section className={styles.settingsSection}>
-                                <h3><MessageCircle size={20} /> Información de Contacto</h3>
+                                <h3><Plus size={20} /> Identidad del Sitio</h3>
                                 <div className={styles.formStack}>
-                                    <div className={styles.inputGroup}>
-                                        <label>WhatsApp de Ventas</label>
-                                        <div className={styles.inputWithIcon}>
-                                            <Smartphone size={18} />
+                                    <div className={styles.formRow}>
+                                        <div className={styles.inputGroup}>
+                                            <label>Título del Sitio</label>
                                             <input
                                                 type="text"
-                                                value={localSettings.contact.phone}
-                                                onChange={(e) => handleSettingChange('contact.phone', e.target.value)}
+                                                value={localSettings.title}
+                                                onChange={(e) => handleSettingChange('title', e.target.value)}
+                                                placeholder="Ej: Artesana"
+                                            />
+                                        </div>
+                                        <div className={styles.inputGroup}>
+                                            <label>Slug (URL personalizada)</label>
+                                            <input
+                                                type="text"
+                                                value={localSettings.slug}
+                                                onChange={(e) => handleSettingChange('slug', e.target.value)}
+                                                placeholder="artesana"
                                             />
                                         </div>
                                     </div>
                                     <div className={styles.inputGroup}>
-                                        <label>Email de Soporte</label>
-                                        <div className={styles.inputWithIcon}>
-                                            <Mail size={18} />
-                                            <input
-                                                type="email"
-                                                value={localSettings.contact.email}
-                                                onChange={(e) => handleSettingChange('contact.email', e.target.value)}
-                                            />
+                                        <label>Logo de la Marca</label>
+                                        <div className={styles.fileRow} style={{ marginTop: 0 }}>
+                                            <div className={styles.uploadBox}>
+                                                {localSettings.logo ? (
+                                                    <>
+                                                        <img src={localSettings.logo} alt="Logo preview" className={styles.previewImg} />
+                                                        <button
+                                                            className={styles.deleteFileBtn}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setLocalSettings(prev => ({ ...prev, logo: '' }));
+                                                            }}
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <div className={styles.emptyUpload}>
+                                                        <Plus size={24} />
+                                                        <span>Subir Logo</span>
+                                                        <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'logo')} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
+                                                    Se recomienda un archivo PNG o SVG transparente.
+                                                </p>
+                                                <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.5rem 0 0 0' }}>
+                                                    Tamaño sugerido: 400x120px.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Contact */}
+                            <section className={styles.settingsSection}>
+                                <h3><MessageCircle size={20} /> Información de Contacto</h3>
+                                <div className={styles.formStack}>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.inputGroup}>
+                                            <label>WhatsApp de Ventas</label>
+                                            <div className={styles.inputWithIcon}>
+                                                <Smartphone size={18} />
+                                                <input
+                                                    type="text"
+                                                    value={localSettings.contact.phone}
+                                                    onChange={(e) => handleSettingChange('contact.phone', e.target.value)}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className={styles.inputGroup}>
+                                            <label>Email de Soporte</label>
+                                            <div className={styles.inputWithIcon}>
+                                                <Mail size={18} />
+                                                <input
+                                                    type="email"
+                                                    value={localSettings.contact.email}
+                                                    onChange={(e) => handleSettingChange('contact.email', e.target.value)}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                     <div className={styles.inputGroup}>
@@ -832,6 +908,56 @@ export default function AdminPage() {
                                             />
                                         </div>
                                     </div>
+                                    <div className={styles.formRow}>
+                                        <div className={styles.inputGroup}>
+                                            <label>Instagram (Usuario)</label>
+                                            <div className={styles.inputWithIcon}>
+                                                <span style={{ position: 'absolute', left: '1rem', color: '#94a3b8', fontStyle: 'italic', fontSize: '0.85rem' }}>@</span>
+                                                <input
+                                                    style={{ paddingLeft: '2rem !important' }}
+                                                    type="text"
+                                                    value={localSettings.contact.instagram}
+                                                    onChange={(e) => handleSettingChange('contact.instagram', e.target.value)}
+                                                    placeholder="artesana.detalles"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className={styles.inputGroup}>
+                                            <label>Facebook (Página)</label>
+                                            <div className={styles.inputWithIcon}>
+                                                <span style={{ position: 'absolute', left: '1rem', color: '#94a3b8', fontStyle: 'italic', fontSize: '0.85rem' }}>/</span>
+                                                <input
+                                                    style={{ paddingLeft: '2rem !important' }}
+                                                    type="text"
+                                                    value={localSettings.contact.facebook}
+                                                    onChange={(e) => handleSettingChange('contact.facebook', e.target.value)}
+                                                    placeholder="artesana.detalles"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Info */}
+                            <section className={styles.settingsSection}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                        <span style={{ color: '#64748b', fontSize: '1.2rem' }}>🕒</span>
+                                        <div>
+                                            <h4 style={{ margin: 0, fontSize: '0.9rem', color: '#1e293b' }}>Estado del Sistema</h4>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>
+                                                Última actualización: {localSettings.updatedAt ? new Date(localSettings.updatedAt).toLocaleString('es-CO') : 'Nunca'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        className="btn-secondary"
+                                        style={{ fontSize: '0.8rem', color: '#ef4444', borderColor: '#fee2e2' }}
+                                        onClick={clearAllData}
+                                    >
+                                        Borrar Caché Local
+                                    </button>
                                 </div>
                             </section>
                         </div>
