@@ -27,7 +27,7 @@ export default function Home() {
           {products.slice(0, 4).map(product => (
             <div key={product.id} className={styles.productCard}>
               <div className={styles.productImage}>
-                <img src={product.image} alt={product.name} loading="lazy" />
+                <img src={product.image || '/placeholder.png'} alt={product.name} loading="lazy" />
               </div>
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>

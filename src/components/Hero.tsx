@@ -9,8 +9,8 @@ export default function Hero() {
 
     const title = settings.heroTitle || 'Creamos cajas que cuentan historias';
     const subtitle = settings.heroSubtitle || 'Regalos personalizados hechos con amor, diseñados para emocionar y perdurar en el corazón.';
-    const images = settings.heroImages && settings.heroImages.length > 0
-        ? settings.heroImages
+    const images = settings.heroImages && settings.heroImages.filter(img => !!img).length > 0
+        ? settings.heroImages.filter(img => !!img)
         : ['/hero-banner.png'];
 
     useEffect(() => {

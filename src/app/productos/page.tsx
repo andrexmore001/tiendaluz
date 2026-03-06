@@ -40,7 +40,7 @@ export default function ProductosPage() {
                     {filteredProducts.map(product => (
                         <div key={product.id} className={styles.card}>
                             <div className={styles.imageBox}>
-                                <img src={product.image} alt={product.name} />
+                                <img src={product.image || '/placeholder.png'} alt={product.name} />
                             </div>
                             <div className={styles.info}>
                                 <span className={styles.category}>{product.category}</span>

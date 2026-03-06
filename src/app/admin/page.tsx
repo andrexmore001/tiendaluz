@@ -84,9 +84,6 @@ export default function AdminPage() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    if (status === "loading") return <div className={styles.loading}>Cargando...</div>;
-    if (!session) return null;
-
     // Box Shape Form State
     const [showShapeForm, setShowShapeForm] = useState(false);
     const [editingShape, setEditingShape] = useState<any>(null);
@@ -159,6 +156,9 @@ export default function AdminPage() {
             setCurrentStep(totalSteps);
         }
     }, [totalSteps, currentStep]);
+
+    if (status === "loading") return <div className={styles.loading}>Cargando...</div>;
+    if (!session) return null;
 
     const showToast = (msg: string) => {
         setNotification(msg);
@@ -729,7 +729,7 @@ export default function AdminPage() {
                             </div>
                             {products.length > 0 ? products.map((p: Product) => (
                                 <div key={p.id} className={styles.tableRow}>
-                                    <img src={p.image} alt={p.name} className={styles.miniImg} />
+                                    <img src={p.image || '/placeholder.png'} alt={p.name} className={styles.miniImg} />
                                     <span className={styles.pName}>{p.name}</span>
                                     <span className={styles.pPrice}>${p.price.toLocaleString()}</span>
                                     <div className={styles.rowActions}>
@@ -917,7 +917,7 @@ export default function AdminPage() {
                                         <div className={styles.heroImageGrid}>
                                             {(localSettings.heroImages || []).map((img, idx) => (
                                                 <div key={idx} className={styles.heroImageItem}>
-                                                    <img src={img} alt={`Hero ${idx + 1}`} />
+                                                    <img src={img || '/placeholder.png'} alt={`Hero ${idx + 1}`} />
                                                     <button
                                                         type="button"
                                                         className={styles.removeHeroBtn}
@@ -1526,7 +1526,7 @@ export default function AdminPage() {
                                                 <div className={styles.galleryGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
                                                     {formData.images.map((img: any, idx: number) => (
                                                         <div key={idx} className={styles.galleryItem} style={{ position: 'relative', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                                            <img src={img.url || img} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            <img src={(img.url || img) || '/placeholder.png'} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                             {img.textConfig && (
                                                                 <div
                                                                     style={{

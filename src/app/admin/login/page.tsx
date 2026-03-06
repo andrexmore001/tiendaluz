@@ -42,11 +42,6 @@ export default function AdminLogin() {
                 <div className={styles.brandSide}>
                     <h1 className={styles.logo}>ARTESANA</h1>
                     <p className={styles.tagline}>Panel de Gestión Artesanal</p>
-
-                    <div className={styles.premiumBadge}>
-                        <Lock size={14} /> Sistema Seguro
-                    </div>
-
                     <p style={{ marginTop: '2rem', fontSize: '0.9rem', opacity: 0.8 }}>
                         Acceso exclusivo para administradores de la marca.
                         Por favor, ingresa tus credenciales para continuar.
@@ -58,12 +53,12 @@ export default function AdminLogin() {
                         <h2>Bienvenido de nuevo</h2>
 
                         <div className={styles.inputGroup}>
-                            <label><User size={16} /> Usuario (Email)</label>
+                            <label><User size={16} /> Usuario</label>
                             <input
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                placeholder="nombre@artesana.com"
+                                placeholder="user"
                                 required
                             />
                         </div>
