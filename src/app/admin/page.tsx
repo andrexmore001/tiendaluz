@@ -22,6 +22,8 @@ import {
     User,
     Lock,
     RefreshCw,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import { useSession, signOut } from 'next-auth/react';
@@ -45,7 +47,6 @@ export default function AdminPage() {
         deleteCollection,
         materials,
         storageError,
-        clearAllData,
         boxShapes,
         addBoxShape,
         updateBoxShape,
@@ -58,11 +59,14 @@ export default function AdminPage() {
     const { data: session, status } = useSession();
     const [activeTab, setActiveTab] = useState('products');
     const [localSettings, setLocalSettings] = useState(settings);
+    const [showProductForm, setShowProductForm] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [notification, setNotification] = useState<string | null>(null);
+    const [isOpen, setIsOpen] = useState(false); // Global open state for previews
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [isMobileView, setIsMobileView] = useState(false);
 
     // Initial redirect handled by middleware, but we can keep a safety check or loading state
-    if (status === "loading") return <div className={styles.loading}>Cargando...</div>;
-    if (!session) return null;
-
     // PREVENT STALE SETTINGS: Update localSettings when global settings load from localStorage
     useEffect(() => {
         if (settings) {
@@ -70,12 +74,18 @@ export default function AdminPage() {
         }
     }, [settings]);
 
+    // Handle isMobileView only after hydration to avoid mismatches
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobileView(window.innerWidth <= 992);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
-    const [showProductForm, setShowProductForm] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [notification, setNotification] = useState<string | null>(null);
-    const [isOpen, setIsOpen] = useState(false); // Global open state for previews
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    if (status === "loading") return <div className={styles.loading}>Cargando...</div>;
+    if (!session) return null;
 
     // Box Shape Form State
     const [showShapeForm, setShowShapeForm] = useState(false);
@@ -140,11 +150,23 @@ export default function AdminPage() {
 
     const [editingImageConfig, setEditingImageConfig] = useState<number | null>(null);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [currentStep, setCurrentStep] = useState(1);
+    const totalSteps = formData.displayMode === 'photos' ? 2 : 3;
+
+    // Reset currentStep if it exceeds totalSteps when mode changes
+    useEffect(() => {
+        if (currentStep > totalSteps) {
+            setCurrentStep(totalSteps);
+        }
+    }, [totalSteps, currentStep]);
 
     const showToast = (msg: string) => {
         setNotification(msg);
         setTimeout(() => setNotification(null), 3000);
     };
+
+    const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, totalSteps));
+    const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
     const handleSave = () => {
         setIsSaving(true);
@@ -679,12 +701,6 @@ export default function AdminPage() {
 
             {/* Main Content */}
             <main className={styles.content}>
-                {storageError && (
-                    <div className={styles.storageWarning}>
-                        <p>⚠️ {storageError}</p>
-                        <button onClick={clearAllData} className={styles.resetLink}>Reiniciar Datos</button>
-                    </div>
-                )}
                 {/* TAB: PRODUCTS */}
                 {activeTab === 'products' && (
                     <div className={styles.tabContent}>
@@ -715,7 +731,6 @@ export default function AdminPage() {
                                 <div key={p.id} className={styles.tableRow}>
                                     <img src={p.image} alt={p.name} className={styles.miniImg} />
                                     <span className={styles.pName}>{p.name}</span>
-                                    <span className={styles.pCat}>{p.category}</span>
                                     <span className={styles.pPrice}>${p.price.toLocaleString()}</span>
                                     <div className={styles.rowActions}>
                                         <button className={styles.iconBtn} onClick={() => handleEditProduct(p)}><Edit size={16} /></button>
@@ -1080,13 +1095,6 @@ export default function AdminPage() {
                                             </p>
                                         </div>
                                     </div>
-                                    <button
-                                        className="btn-secondary"
-                                        style={{ fontSize: '0.8rem', color: '#ef4444', borderColor: '#fee2e2' }}
-                                        onClick={clearAllData}
-                                    >
-                                        Borrar Caché Local
-                                    </button>
                                 </div>
                             </section>
                         </div>
@@ -1184,8 +1192,19 @@ export default function AdminPage() {
                                 <button onClick={() => setShowProductForm(false)}>×</button>
                             </div>
 
+                            {isMobileView && (
+                                <div className={styles.stepIndicator}>
+                                    <div className={styles.stepText}>Paso {currentStep} de {totalSteps}</div>
+                                    <div className={styles.stepDots}>
+                                        {Array.from({ length: totalSteps }, (_, i) => i + 1).map(s => (
+                                            <div key={s} className={`${styles.stepDot} ${currentStep === s ? styles.stepDotActive : ''}`} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className={styles.modalBody}>
-                                <div className={styles.previewSection}>
+                                <div className={`${styles.previewSection} ${(isMobileView && currentStep !== 1) ? styles.hideOnMobile : ''}`}>
                                     <div className={styles.typeSelector}>
                                         <label>Modo de Visualización</label>
                                         <div className={styles.typeToggle} style={{ marginBottom: '1.5rem' }}>
@@ -1277,233 +1296,200 @@ export default function AdminPage() {
                                     </div>
                                 </div>
 
-                                <form className={styles.form} onSubmit={handleSubmitProduct}>
-                                    <div className={styles.formGrid}>
+                                <form id="productForm" className={styles.form} onClick={(e) => e.stopPropagation()} onSubmit={handleSubmitProduct}>
+                                    {/* STEP 1: BASIC INFO */}
+                                    <div className={`${styles.formGroup} ${styles.slideContent} ${(isMobileView && currentStep !== 1) ? styles.hideOnMobile : ''}`}>
+                                        <h3 className={styles.formGroupTitle}>Información Básica</h3>
+                                        <div className={styles.formGrid}>
+                                            <div className={styles.inputGroup}>
+                                                <label>Nombre del Producto</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.name}
+                                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                                    required
+                                                    placeholder="Ej: Caja de Regalo Premium"
+                                                />
+                                            </div>
+                                            <div className={styles.inputGroup}>
+                                                <label>Categoría</label>
+                                                <select
+                                                    value={formData.category}
+                                                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                                >
+                                                    {collections.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
+                                                </select>
+                                            </div>
+                                            <div className={styles.inputGroup}>
+                                                <label>Precio Base</label>
+                                                <input
+                                                    type="number"
+                                                    value={formData.price}
+                                                    onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
+                                                    required
+                                                />
+                                            </div>
+                                            <div className={styles.inputGroup}>
+                                                <label>Material Predeterminado</label>
+                                                <select
+                                                    value={formData.materialId}
+                                                    onChange={(e) => setFormData({ ...formData, materialId: e.target.value })}
+                                                >
+                                                    {materials.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
                                         <div className={styles.inputGroup}>
-                                            <label>Nombre</label>
-                                            <input
-                                                type="text"
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                required
+                                            <label>Descripción</label>
+                                            <textarea
+                                                value={formData.description}
+                                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                                rows={3}
+                                                placeholder="Describe las características del producto..."
                                             />
                                         </div>
-                                        <div className={styles.inputGroup}>
-                                            <label>Material</label>
-                                            <select
-                                                value={formData.materialId}
-                                                onChange={(e) => setFormData({ ...formData, materialId: e.target.value })}
-                                            >
-                                                {materials.map((m: any) => <option key={m.id} value={m.id}>{m.name}</option>)}
-                                            </select>
-                                        </div>
-                                        <div className={styles.inputGroup}>
-                                            <label>Precio</label>
-                                            <input
-                                                type="number"
-                                                value={formData.price}
-                                                onChange={(e) => setFormData({ ...formData, price: parseInt(e.target.value) })}
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className={styles.inputGroup}>
-                                        <label>Categoría</label>
-                                        <select
-                                            value={formData.category}
-                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        >
-                                            {collections.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className={styles.inputGroup}>
-                                        <label>Descripción</label>
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            rows={2}
-                                        />
                                     </div>
 
+                                    {/* STEP 2: 3D MECHANICS */}
                                     {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
-                                        <div className={styles.dimensionsRow}>
-                                            <div className={styles.inputGroup}>
-                                                <label>Ancho (cm)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.width}
-                                                    onChange={(e) => setFormData({ ...formData, width: parseInt(e.target.value) || 0 })}
-                                                />
+                                        <div className={`${styles.formGroup} ${styles.slideContent} ${(isMobileView && currentStep !== 2) ? styles.hideOnMobile : ''}`}>
+                                            <h3 className={styles.formGroupTitle}>Dimensiones y Mecánica (3D)</h3>
+                                            <div className={styles.dimensionsRow}>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Ancho (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={formData.width}
+                                                        onChange={(e) => setFormData({ ...formData, width: parseInt(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Alto (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={formData.height}
+                                                        onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) || 0 })}
+                                                    />
+                                                </div>
+                                                <div className={styles.inputGroup}>
+                                                    <label>Largo (cm)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={formData.depth}
+                                                        onChange={(e) => setFormData({ ...formData, depth: parseInt(e.target.value) || 0 })}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className={styles.inputGroup}>
-                                                <label>Alto (cm)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.height}
-                                                    onChange={(e) => setFormData({ ...formData, height: parseInt(e.target.value) || 0 })}
-                                                />
-                                            </div>
-                                            <div className={styles.inputGroup}>
-                                                <label>Largo (cm)</label>
-                                                <input
-                                                    type="number"
-                                                    value={formData.depth}
-                                                    onChange={(e) => setFormData({ ...formData, depth: parseInt(e.target.value) || 0 })}
-                                                />
-                                            </div>
+
+                                            {formData.boxType === 'standard' && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '0.5rem' }}>
+                                                    <div className={styles.inputGroup}>
+                                                        <label>Ubicación de la Bisagra</label>
+                                                        <div className={styles.typeToggle}>
+                                                            <button
+                                                                type="button"
+                                                                className={formData.hingeEdge === 'long' ? styles.typeBtnActive : styles.typeBtn}
+                                                                onClick={() => setFormData({ ...formData, hingeEdge: 'long' })}
+                                                            >Lado Largo</button>
+                                                            <button
+                                                                type="button"
+                                                                className={formData.hingeEdge === 'short' ? styles.typeBtnActive : styles.typeBtn}
+                                                                onClick={() => setFormData({ ...formData, hingeEdge: 'short' })}
+                                                            >Lado Corto</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={styles.inputGroup}>
+                                                        <label>Aletas de Cierre</label>
+                                                        <div className={styles.typeToggle}>
+                                                            <button
+                                                                type="button"
+                                                                className={formData.flapsLocation === 'base' ? styles.typeBtnActive : styles.typeBtn}
+                                                                onClick={() => {
+                                                                    setFormData({ ...formData, flapsLocation: 'base' });
+                                                                    setIsOpen(true);
+                                                                }}
+                                                            >En la Caja</button>
+                                                            <button
+                                                                type="button"
+                                                                className={formData.flapsLocation === 'lid' ? styles.typeBtnActive : styles.typeBtn}
+                                                                onClick={() => {
+                                                                    setFormData({ ...formData, flapsLocation: 'lid' });
+                                                                    setIsOpen(true);
+                                                                }}
+                                                            >En la Tapa</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className={styles.dimensionsRow}>
+                                                        <div className={styles.inputGroup}>
+                                                            <label>Alto Aleta (%)</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.05"
+                                                                value={formData.flapHeightPercent}
+                                                                onChange={(e) => setFormData({ ...formData, flapHeightPercent: parseFloat(e.target.value) || 0 })}
+                                                            />
+                                                        </div>
+                                                        <div className={styles.inputGroup}>
+                                                            <label>Ajuste Ancho</label>
+                                                            <input
+                                                                type="number"
+                                                                step="0.1"
+                                                                value={formData.flapWidthOffset}
+                                                                onChange={(e) => setFormData({ ...formData, flapWidthOffset: parseFloat(e.target.value) || 0 })}
+                                                            />
+                                                        </div>
+                                                        <div className={styles.inputGroup}>
+                                                            <label>Forma Aleta</label>
+                                                            <select
+                                                                value={formData.flapType}
+                                                                onChange={(e) => setFormData({ ...formData, flapType: e.target.value as any })}
+                                                                style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                                            >
+                                                                <option value="rectangular">Rectangular</option>
+                                                                <option value="trapezoidal">Trapecio</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 
-                                    {(formData.displayMode === '3d' || formData.displayMode === 'both') && formData.boxType === 'standard' && (
-                                        <>
-                                            <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
-                                                <label>Ubicación de la Bisagra</label>
-                                                <div className={styles.typeToggle}>
-                                                    <button
-                                                        type="button"
-                                                        className={formData.hingeEdge === 'long' ? styles.typeBtnActive : styles.typeBtn}
-                                                        onClick={() => setFormData({ ...formData, hingeEdge: 'long' })}
-                                                    >Lado Largo</button>
-                                                    <button
-                                                        type="button"
-                                                        className={formData.hingeEdge === 'short' ? styles.typeBtnActive : styles.typeBtn}
-                                                        onClick={() => setFormData({ ...formData, hingeEdge: 'short' })}
-                                                    >Lado Corto</button>
-                                                </div>
-                                            </div>
-
-                                            <div className={styles.inputGroup} style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-                                                <label>Ubicación de Aletas de Cierre (Aristas)</label>
-                                                <div className={styles.typeToggle}>
-                                                    <button
-                                                        type="button"
-                                                        className={formData.flapsLocation === 'base' ? styles.typeBtnActive : styles.typeBtn}
-                                                        onClick={() => {
-                                                            setFormData({ ...formData, flapsLocation: 'base' });
-                                                            setIsOpen(true);
-                                                        }}
-                                                    >En la Caja</button>
-                                                    <button
-                                                        type="button"
-                                                        className={formData.flapsLocation === 'lid' ? styles.typeBtnActive : styles.typeBtn}
-                                                        onClick={() => {
-                                                            setFormData({ ...formData, flapsLocation: 'lid' });
-                                                            setIsOpen(true);
-                                                        }}
-                                                    >En la Tapa</button>
-                                                </div>
-                                            </div>
-
-                                            <div className={styles.dimensionsRow} style={{ marginTop: '1rem' }}>
-                                                <div className={styles.inputGroup}>
-                                                    <label>Alto Aleta (% 0-1)</label>
+                                    {/* STEP 3 (or 2): IMAGES & GALLERY */}
+                                    <div className={`${styles.formGroup} ${styles.slideContent} ${(isMobileView && currentStep !== totalSteps) ? styles.hideOnMobile : ''}`}>
+                                        <h3 className={styles.formGroupTitle}>Imágenes y Diseño</h3>
+                                        <div className={styles.fileRow}>
+                                            <div className={styles.inputGroup}>
+                                                <label>Foto de Portada</label>
+                                                <div className={styles.uploadBox}>
+                                                    {formData.image ? (
+                                                        <>
+                                                            <img src={formData.image} alt="Preview" className={styles.previewImg} />
+                                                            <button
+                                                                type="button"
+                                                                className={styles.deleteFileBtn}
+                                                                onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <div className={styles.emptyUpload}>
+                                                            <Plus size={20} />
+                                                            <span>Subir Foto</span>
+                                                        </div>
+                                                    )}
                                                     <input
-                                                        type="number"
-                                                        step="0.05"
-                                                        min="0"
-                                                        max="1"
-                                                        value={formData.flapHeightPercent}
-                                                        onChange={(e) => setFormData({ ...formData, flapHeightPercent: parseFloat(e.target.value) || 0 })}
-                                                    />
-                                                </div>
-                                                <div className={styles.inputGroup}>
-                                                    <label>Ajuste Ancho (cm)</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.1"
-                                                        value={formData.flapWidthOffset}
-                                                        onChange={(e) => setFormData({ ...formData, flapWidthOffset: parseFloat(e.target.value) || 0 })}
-                                                    />
-                                                </div>
-                                                <div className={styles.inputGroup}>
-                                                    <label>Alto Cierre (Tuck %)</label>
-                                                    <input
-                                                        type="number"
-                                                        step="0.05"
-                                                        min="0"
-                                                        max="1"
-                                                        value={formData.tuckFlapHeightPercent}
-                                                        onChange={(e) => setFormData({ ...formData, tuckFlapHeightPercent: parseFloat(e.target.value) || 0 })}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handleFileUpload(e, 'image')}
                                                     />
                                                 </div>
                                             </div>
 
-                                            <div className={styles.inputGroup} style={{ marginTop: '1rem', marginBottom: '1.5rem' }}>
-                                                <label>Forma de la Aleta</label>
-                                                <div className={styles.typeToggle}>
-                                                    <button
-                                                        type="button"
-                                                        className={formData.flapType === 'rectangular' ? styles.typeBtnActive : styles.typeBtn}
-                                                        onClick={() => setFormData({ ...formData, flapType: 'rectangular' })}
-                                                    >Rectangular</button>
-                                                    <button
-                                                        type="button"
-                                                        className={formData.flapType === 'trapezoidal' ? styles.typeBtnActive : styles.typeBtn}
-                                                        onClick={() => setFormData({ ...formData, flapType: 'trapezoidal' })}
-                                                    >Trapecio</button>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-
-                                    <div className={styles.fileRow}>
-                                        <div className={styles.inputGroup}>
-                                            <label>Foto Catálogo (Principal)</label>
-                                            <div className={styles.uploadBox}>
-                                                {formData.image ? (
-                                                    <>
-                                                        <img src={formData.image} alt="Preview" className={styles.previewImg} />
-                                                        <button
-                                                            type="button"
-                                                            className={styles.deleteFileBtn}
-                                                            onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    </>
-                                                ) : (
-                                                    <div className={styles.emptyUpload}>
-                                                        <Plus size={20} />
-                                                        <span>Subir Foto</span>
-                                                    </div>
-                                                )}
-                                                <input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handleFileUpload(e, 'image')}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
-                                            <>
-                                                <div className={styles.inputGroup}>
-                                                    <label>Textura Material</label>
-                                                    <div className={styles.uploadBox}>
-                                                        {formData.materialTexture ? (
-                                                            <>
-                                                                <img src={formData.materialTexture} alt="Preview" className={styles.previewImg} />
-                                                                <button
-                                                                    type="button"
-                                                                    className={styles.deleteFileBtn}
-                                                                    onClick={() => setFormData(prev => ({ ...prev, materialTexture: '' }))}
-                                                                >
-                                                                    <Trash2 size={14} />
-                                                                </button>
-                                                            </>
-                                                        ) : (
-                                                            <div className={styles.emptyUpload}>
-                                                                <Box size={20} />
-                                                                <span>Subir Textura</span>
-                                                            </div>
-                                                        )}
-                                                        <input
-                                                            type="file"
-                                                            accept="image/*"
-                                                            onChange={(e) => handleFileUpload(e, 'materialTexture' as any)}
-                                                        />
-                                                    </div>
-                                                </div>
+                                            {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
                                                 <div className={styles.inputGroup}>
                                                     <label>Diseño 3D (Arte)</label>
                                                     <div className={styles.uploadBox}>
@@ -1531,103 +1517,103 @@ export default function AdminPage() {
                                                         />
                                                     </div>
                                                 </div>
-                                            </>
-                                        )}
-                                    </div>
+                                            )}
+                                        </div>
 
-                                    {(formData.displayMode === 'photos' || formData.displayMode === 'both') && (
-                                        <div className={styles.gallerySection} style={{ marginTop: '2rem' }}>
-                                            <label>Galería de Imágenes (Mínimo 2 para modo fotos)</label>
-                                            <div className={styles.galleryGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-                                                {formData.images.map((img: any, idx: number) => (
-                                                    <div key={idx} className={styles.galleryItem} style={{ position: 'relative', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                                        <img src={img.url || img} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                        {img.textConfig && (
-                                                            <div
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    top: `${img.textConfig.y}%`,
-                                                                    left: `${img.textConfig.x}%`,
-                                                                    width: '4px',
-                                                                    height: '4px',
-                                                                    background: '#ff4d4f',
-                                                                    borderRadius: '50%',
-                                                                    transform: 'translate(-50%, -50%)',
-                                                                    boxShadow: '0 0 0 1px white',
-                                                                    pointerEvents: 'none'
-                                                                }}
-                                                            />
-                                                        )}
-                                                        <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '4px' }}>
-                                                            {img.isCustomizable && (
+                                        {(formData.displayMode === 'photos' || formData.displayMode === 'both') && (
+                                            <div className={styles.gallerySection} style={{ marginTop: '2rem' }}>
+                                                <label>Galería de Imágenes (Mínimo 2 para modo fotos)</label>
+                                                <div className={styles.galleryGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                                                    {formData.images.map((img: any, idx: number) => (
+                                                        <div key={idx} className={styles.galleryItem} style={{ position: 'relative', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+                                                            <img src={img.url || img} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                            {img.textConfig && (
+                                                                <div
+                                                                    style={{
+                                                                        position: 'absolute',
+                                                                        top: `${img.textConfig.y}%`,
+                                                                        left: `${img.textConfig.x}%`,
+                                                                        width: '4px',
+                                                                        height: '4px',
+                                                                        background: '#ff4d4f',
+                                                                        borderRadius: '50%',
+                                                                        transform: 'translate(-50%, -50%)',
+                                                                        boxShadow: '0 0 0 1px white',
+                                                                        pointerEvents: 'none'
+                                                                    }}
+                                                                />
+                                                            )}
+                                                            <div style={{ position: 'absolute', top: '5px', right: '5px', display: 'flex', gap: '4px' }}>
+                                                                {img.isCustomizable && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setEditingImageConfig(idx)}
+                                                                        style={{
+                                                                            background: 'rgba(59, 130, 246, 0.95)',
+                                                                            color: 'white',
+                                                                            border: 'none',
+                                                                            borderRadius: '6px',
+                                                                            padding: '6px',
+                                                                            cursor: 'pointer',
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            justifyContent: 'center'
+                                                                        }}
+                                                                        title="Configurar Texto"
+                                                                    >
+                                                                        <Settings size={16} />
+                                                                    </button>
+                                                                )}
+
                                                                 <button
                                                                     type="button"
-                                                                    onClick={() => setEditingImageConfig(idx)}
+                                                                    onClick={() => toggleImageCustomization(idx)}
                                                                     style={{
-                                                                        background: 'rgba(59, 130, 246, 0.95)',
-                                                                        color: 'white',
+                                                                        background: img.isCustomizable ? 'var(--primary)' : 'rgba(255, 255, 255, 0.9)',
+                                                                        color: img.isCustomizable ? 'white' : '#666',
                                                                         border: 'none',
                                                                         borderRadius: '6px',
                                                                         padding: '6px',
                                                                         cursor: 'pointer',
                                                                         display: 'flex',
                                                                         alignItems: 'center',
-                                                                        justifyContent: 'center'
+                                                                        justifyContent: 'center',
+                                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                                                     }}
-                                                                    title="Configurar Texto"
+                                                                    title={img.isCustomizable ? "Desactivar Personalización" : "Activar Personalización"}
                                                                 >
-                                                                    <Settings size={16} />
+                                                                    <Type size={16} />
                                                                 </button>
-                                                            )}
 
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => toggleImageCustomization(idx)}
-                                                                style={{
-                                                                    background: img.isCustomizable ? 'var(--primary)' : 'rgba(255, 255, 255, 0.9)',
-                                                                    color: img.isCustomizable ? 'white' : '#666',
-                                                                    border: 'none',
-                                                                    borderRadius: '6px',
-                                                                    padding: '6px',
-                                                                    cursor: 'pointer',
-                                                                    display: 'flex',
-                                                                    alignItems: 'center',
-                                                                    justifyContent: 'center',
-                                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                                }}
-                                                                title={img.isCustomizable ? "Desactivar Personalización" : "Activar Personalización"}
-                                                            >
-                                                                <Type size={16} />
-                                                            </button>
-
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => removeGalleryImage(idx)}
-                                                                style={{ background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}
-                                                            >
-                                                                <Trash2 size={12} />
-                                                            </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeGalleryImage(idx)}
+                                                                    style={{ background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '4px', padding: '4px', cursor: 'pointer' }}
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                </button>
+                                                            </div>
                                                         </div>
+                                                    ))}
+                                                    <div className={styles.uploadBox} style={{ height: '100px' }}>
+                                                        <div className={styles.emptyUpload}>
+                                                            <Plus size={20} />
+                                                            <span>Añadir</span>
+                                                        </div>
+                                                        <input
+                                                            type="file"
+                                                            multiple
+                                                            accept="image/*"
+                                                            onChange={(e) => handleFileUpload(e, 'gallery')}
+                                                        />
                                                     </div>
-                                                ))}
-                                                <div className={styles.uploadBox} style={{ height: '100px' }}>
-                                                    <div className={styles.emptyUpload}>
-                                                        <Plus size={20} />
-                                                        <span>Añadir</span>
-                                                    </div>
-                                                    <input
-                                                        type="file"
-                                                        multiple
-                                                        accept="image/*"
-                                                        onChange={(e) => handleFileUpload(e, 'gallery')}
-                                                    />
                                                 </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
 
-                                    {/* SECTION: PRECIOS POR VOLUMEN */}
-                                    <div className={styles.sectionDivider} style={{ margin: '2rem 0', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
+                                    {/* SHARED: VOLUME PRICING (Always on last step or visible on desktop) */}
+                                    <div className={`${styles.sectionDivider} ${styles.slideContent} ${(isMobileView && currentStep !== totalSteps) ? styles.hideOnMobile : ''}`} style={{ margin: '2rem 0', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                             <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>Precios por Volumen (Escalas)</h3>
                                             <button
@@ -1699,28 +1685,68 @@ export default function AdminPage() {
                                                 })}
                                             </div>
                                         ) : (
-                                            <div style={{ textAlign: 'center', padding: '2rem', border: '1px dashed #cbd5e1', borderRadius: '12px', background: '#f8fafc' }}>
-                                                <p style={{ color: '#94a3b8', fontSize: '0.9rem', margin: 0 }}>No hay escalas de precio definidas para este producto.</p>
+                                            <div style={{ textAlign: 'center', padding: '1.5rem', border: '1px dashed #cbd5e1', borderRadius: '12px' }}>
+                                                <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0 }}>Sin escalas de precio.</p>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className={styles.formActions}>
-                                        <button type="button" onClick={() => setShowProductForm(false)}>Cancelar</button>
-                                        <button type="submit" className="btn-primary">
-                                            {editingProduct ? 'Guardar Cambios' : 'Añadir Producto'}
-                                        </button>
+                                    <div className={styles.modalFooter}>
+                                        <div className={styles.footerLeft}>
+                                            <button
+                                                type="button"
+                                                className="btn-secondary"
+                                                onClick={() => setShowProductForm(false)}
+                                            >
+                                                Cancelar
+                                            </button>
+                                        </div>
+                                        <div className={styles.footerRight}>
+                                            {isMobileView ? (
+                                                <>
+                                                    {currentStep > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            className="btn-secondary"
+                                                            onClick={prevStep}
+                                                        >
+                                                            <ChevronLeft size={18} /> Anterior
+                                                        </button>
+                                                    )}
+
+                                                    {currentStep < totalSteps ? (
+                                                        <button
+                                                            type="button"
+                                                            className="btn-primary"
+                                                            onClick={nextStep}
+                                                        >
+                                                            Siguiente <ChevronRight size={18} />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            type="submit"
+                                                            form="productForm"
+                                                            className="btn-primary"
+                                                        >
+                                                            {editingProduct ? 'Guardar Cambios' : 'Añadir Producto'}
+                                                        </button>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <button
+                                                    id="desktopSaveBtn"
+                                                    type="submit"
+                                                    form="productForm"
+                                                    className="btn-primary"
+                                                >
+                                                    {editingProduct ? 'Guardar Cambios' : 'Añadir Producto'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 </form>
                             </div>
 
-                            <div className={styles.dangerZone}>
-                                <h3>ZONA DE PELIGRO</h3>
-                                <button onClick={clearAllData} className={styles.deleteBtn}>
-                                    <Trash2 size={16} /> Resetear Todo el Sitio
-                                </button>
-                                <p className={styles.dangerText}>Usa esto solo si tienes problemas graves con las fotos o productos que no se guardan.</p>
-                            </div>
                         </div>
                     </div>
                 )}
@@ -1854,8 +1880,28 @@ export default function AdminPage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className={styles.formActions} style={{ marginTop: '2rem' }}>
-                                    <button type="button" onClick={() => setShowShapeForm(false)}>Cancelar</button>
+                                <div className={styles.modalFooter} style={{
+                                    position: 'sticky',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    padding: '1.5rem 2.5rem',
+                                    background: 'rgba(255, 255, 255, 0.9)',
+                                    backdropFilter: 'blur(8px)',
+                                    borderTop: '1px solid #f1f5f9',
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    gap: '1rem',
+                                    zIndex: 100,
+                                    marginTop: 'auto'
+                                }}>
+                                    <button
+                                        type="button"
+                                        className="btn-secondary"
+                                        onClick={() => setShowShapeForm(false)}
+                                    >
+                                        Cancelar
+                                    </button>
                                     <button type="submit" className="btn-primary">
                                         {editingShape ? 'Actualizar' : 'Crear'}
                                     </button>
