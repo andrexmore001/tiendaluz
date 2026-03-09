@@ -751,7 +751,15 @@ export default function AdminPage() {
                 {activeTab === 'collections' && (
                     <div className={styles.tabContent}>
                         <header className={styles.header}>
-                            <h1>Colecciones / Categorías</h1>
+                            <div className={styles.headerTitleGroup}>
+                                <button
+                                    className={styles.mobileMenuToggle}
+                                    onClick={() => setMobileMenuOpen(true)}
+                                >
+                                    <Menu size={24} />
+                                </button>
+                                <h1>Colecciones / Categorías</h1>
+                            </div>
                             <button className="btn-primary" onClick={handleAddCollection}>
                                 <Plus size={20} /> Nueva Colección
                             </button>
@@ -783,7 +791,15 @@ export default function AdminPage() {
                 {activeTab === 'settings' && (
                     <div className={styles.tabContent}>
                         <header className={styles.header}>
-                            <h1>Configuración del Sitio</h1>
+                            <div className={styles.headerTitleGroup}>
+                                <button
+                                    className={styles.mobileMenuToggle}
+                                    onClick={() => setMobileMenuOpen(true)}
+                                >
+                                    <Menu size={24} />
+                                </button>
+                                <h1>Configuración del Sitio</h1>
+                            </div>
                             <button
                                 className="btn-primary"
                                 style={{ background: '#25D366', borderColor: '#25D366' }}
@@ -1105,7 +1121,15 @@ export default function AdminPage() {
                 {activeTab === 'materials' && (
                     <div className={styles.tabContent}>
                         <header className={styles.header}>
-                            <h1>Gestión de Materiales</h1>
+                            <div className={styles.headerTitleGroup}>
+                                <button
+                                    className={styles.mobileMenuToggle}
+                                    onClick={() => setMobileMenuOpen(true)}
+                                >
+                                    <Menu size={24} />
+                                </button>
+                                <h1>Gestión de Materiales</h1>
+                            </div>
                             <button className="btn-primary" onClick={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '', baseColor: '#e3c5a8' }); setShowMaterialForm(true); }}>
                                 <Plus size={20} /> Nuevo Material
                             </button>
@@ -1137,7 +1161,15 @@ export default function AdminPage() {
                 {activeTab === 'shapes' && (
                     <div className={styles.tabContent}>
                         <header className={styles.header}>
-                            <h1>Formas de Caja Corporativas</h1>
+                            <div className={styles.headerTitleGroup}>
+                                <button
+                                    className={styles.mobileMenuToggle}
+                                    onClick={() => setMobileMenuOpen(true)}
+                                >
+                                    <Menu size={24} />
+                                </button>
+                                <h1>Formas de Caja Corporativas</h1>
+                            </div>
                             <button className="btn-primary" onClick={() => {
                                 setEditingShape(null);
                                 setShapeFormData({
@@ -2133,7 +2165,15 @@ export default function AdminPage() {
                 {activeTab === 'account' && (
                     <div className={styles.tabContent}>
                         <header className={styles.header}>
-                            <h1>Administración de Cuenta</h1>
+                            <div className={styles.headerTitleGroup}>
+                                <button
+                                    className={styles.mobileMenuToggle}
+                                    onClick={() => setMobileMenuOpen(true)}
+                                >
+                                    <Menu size={24} />
+                                </button>
+                                <h1>Administración de Cuenta</h1>
+                            </div>
                         </header>
 
                         <div className={styles.settingsGrid}>
