@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Artesana | Cajas que cuentan historias",
+  title: "Artesana | Cajas que cuentan historias.",
   description: "Marca femenina dedicada a la venta de cajas personalizadas y regalos especiales. Detalles hechos con amor.",
 };
 
