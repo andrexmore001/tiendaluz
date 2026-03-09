@@ -10,7 +10,11 @@ import {
     ChevronLeft,
     ChevronRight
 } from 'lucide-react';
-import Box3D from '@/components/Three/Box3D';
+import dynamic from 'next/dynamic';
+const Box3D = dynamic(() => import('@/components/Three/Box3D'), {
+    ssr: false,
+    loading: () => <div className={styles.emptyState} style={{ height: '350px' }}>Cargando Vista 3D...</div>
+});
 import styles from '../admin.module.css';
 
 interface ModalProductProps {

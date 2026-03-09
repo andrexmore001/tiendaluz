@@ -2,7 +2,11 @@
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import Features from '@/components/Features';
-import Home3DSection from '@/components/HomeVisualizer/Home3DSection';
+import dynamic from 'next/dynamic';
+const Home3DSection = dynamic(() => import('@/components/HomeVisualizer/Home3DSection'), {
+  ssr: false,
+  loading: () => <div className="section-padding container text-center">Cargando visualizador...</div>
+});
 import Footer from '@/components/Footer';
 import { useSettings } from '@/context/SettingsContext';
 import Link from 'next/link';

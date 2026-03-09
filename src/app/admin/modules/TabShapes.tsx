@@ -7,17 +7,17 @@ import EmptyState from './EmptyState';
 
 interface TabShapesProps {
     boxShapes: any[];
-    onNew: () => void;
+    onAdd: () => void;
     onEdit: (s: any) => void;
     onDelete: (id: string) => void;
     onMenuClick: () => void;
 }
 
-const TabShapes: React.FC<TabShapesProps> = ({ boxShapes, onNew, onEdit, onDelete, onMenuClick }) => {
+const TabShapes: React.FC<TabShapesProps> = ({ boxShapes, onAdd, onEdit, onDelete, onMenuClick }) => {
     return (
         <div className={styles.tabContent}>
             <TabHeader title="Formas de Caja Corporativas" onMenuClick={onMenuClick}>
-                <button className="btn-primary" onClick={onNew}>
+                <button className="btn-primary" onClick={onAdd}>
                     <Plus size={20} /> Nueva Forma
                 </button>
             </TabHeader>

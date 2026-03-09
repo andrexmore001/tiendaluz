@@ -7,17 +7,17 @@ import TabHeader from './TabHeader';
 
 interface TabProductsProps {
     products: Product[];
-    onNew: () => void;
+    onAdd: () => void;
     onEdit: (p: Product) => void;
     onDelete: (id: string) => void;
     onMenuClick: () => void;
 }
 
-const TabProducts: React.FC<TabProductsProps> = ({ products, onNew, onEdit, onDelete, onMenuClick }) => {
+const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDelete, onMenuClick }) => {
     return (
         <div className={styles.tabContent}>
             <TabHeader title="Gestión de Productos" onMenuClick={onMenuClick}>
-                <button className="btn-primary" onClick={onNew}>
+                <button className="btn-primary" onClick={onAdd}>
                     <Plus size={20} /> Agregar Producto
                 </button>
             </TabHeader>

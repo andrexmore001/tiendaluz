@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { useSettings } from '@/context/SettingsContext';
 import styles from './Hero.module.css';
 
+import Image from 'next/image';
+
 export default function Hero() {
     const { settings } = useSettings();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -12,6 +14,8 @@ export default function Hero() {
     const images = settings.heroImages && settings.heroImages.filter(img => !!img).length > 0
         ? settings.heroImages.filter(img => !!img)
         : ['/hero-banner.png'];
+
+    const firstImage = images[0];
 
     useEffect(() => {
         if (images.length <= 1) return;
@@ -30,11 +34,19 @@ export default function Hero() {
                     key={idx}
                     className={styles.heroSlide}
                     style={{
-                        backgroundImage: `url(${img})`,
                         opacity: idx === currentImageIndex ? 1 : 0,
                         transition: 'opacity 1s ease-in-out'
                     }}
-                />
+                >
+                    <Image
+                        src={img}
+                        alt={`Hero background ${idx}`}
+                        fill
+                        priority={idx === 0}
+                        style={{ objectFit: 'cover' }}
+                        sizes="100vw"
+                    />
+                </div>
             ))}
             <div className={styles.overlay}></div>
             <div className={`${styles.content} container`}>

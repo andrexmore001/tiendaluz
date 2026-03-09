@@ -6,17 +6,17 @@ import TabHeader from './TabHeader';
 
 interface TabMaterialsProps {
     materials: any[];
-    onNew: () => void;
+    onAdd: () => void;
     onEdit: (m: any) => void;
     onDelete: (id: string) => void;
     onMenuClick: () => void;
 }
 
-const TabMaterials: React.FC<TabMaterialsProps> = ({ materials, onNew, onEdit, onDelete, onMenuClick }) => {
+const TabMaterials: React.FC<TabMaterialsProps> = ({ materials, onAdd, onEdit, onDelete, onMenuClick }) => {
     return (
         <div className={styles.tabContent}>
             <TabHeader title="Gestión de Materiales" onMenuClick={onMenuClick}>
-                <button className="btn-primary" onClick={onNew}>
+                <button className="btn-primary" onClick={onAdd}>
                     <Plus size={20} /> Nuevo Material
                 </button>
             </TabHeader>

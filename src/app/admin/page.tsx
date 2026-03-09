@@ -16,18 +16,20 @@ import { useSession, signOut } from 'next-auth/react';
 import { Product } from '@/types/product';
 import styles from './admin.module.css';
 
-// Modularized Components
-import TabProducts from './modules/TabProducts';
-import TabCollections from './modules/TabCollections';
-import TabSettings from './modules/TabSettings';
-import TabMaterials from './modules/TabMaterials';
-import TabShapes from './modules/TabShapes';
-import TabAccount from './modules/TabAccount';
-import ModalProduct from './modules/ModalProduct';
-import ModalShape from './modules/ModalShape';
-import ModalMaterial from './modules/ModalMaterial';
-import ModalCollection from './modules/ModalCollection';
-import ModalTextConfig from './modules/ModalTextConfig';
+import dynamic from 'next/dynamic';
+
+// Modularized Components (Dynamic for performance)
+const TabProducts = dynamic(() => import('./modules/TabProducts'));
+const TabCollections = dynamic(() => import('./modules/TabCollections'));
+const TabSettings = dynamic(() => import('./modules/TabSettings'));
+const TabMaterials = dynamic(() => import('./modules/TabMaterials'));
+const TabShapes = dynamic(() => import('./modules/TabShapes'));
+const TabAccount = dynamic(() => import('./modules/TabAccount'));
+const ModalProduct = dynamic(() => import('./modules/ModalProduct'));
+const ModalShape = dynamic(() => import('./modules/ModalShape'));
+const ModalMaterial = dynamic(() => import('./modules/ModalMaterial'));
+const ModalCollection = dynamic(() => import('./modules/ModalCollection'));
+const ModalTextConfig = dynamic(() => import('./modules/ModalTextConfig'));
 
 export default function AdminPage() {
     const router = useRouter();
@@ -330,7 +332,7 @@ export default function AdminPage() {
             </aside>
 
             <main className={styles.content}>
-                {activeTab === 'products' && <TabProducts products={products} onNew={handleNewProduct} onEdit={handleEditProduct} onDelete={id => { if (confirm('¿Eliminar?')) { deleteProduct(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'products' && <TabProducts products={products} onAdd={handleNewProduct} onEdit={handleEditProduct} onDelete={id => { if (confirm('¿Eliminar?')) { deleteProduct(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'collections' && <TabCollections collections={collections} onAdd={() => { setEditingCollection(null); setCollectionFormData({ name: '', description: '' }); setShowCollectionForm(true); }} onEdit={col => { setEditingCollection(col); setCollectionFormData({ name: col.name, description: col.description || '' }); setShowCollectionForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteCollection(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'settings' && (
                     <TabSettings
