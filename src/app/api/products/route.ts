@@ -126,6 +126,7 @@ export async function POST(request: Request) {
         });
 
         revalidatePath('/api/products');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json(product);
     } catch (error) {
         console.error('Error saving product:', error);
@@ -147,6 +148,7 @@ export async function DELETE(request: Request) {
         });
 
         revalidatePath('/api/products');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting product:', error);

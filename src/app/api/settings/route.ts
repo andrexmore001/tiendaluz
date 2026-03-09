@@ -71,6 +71,7 @@ export async function POST(request: Request) {
         });
 
         revalidatePath('/api/settings');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json(settings);
     } catch (error) {
         console.error('Error saving settings:', error);

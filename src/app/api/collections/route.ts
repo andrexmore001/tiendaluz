@@ -30,6 +30,7 @@ export async function POST(request: Request) {
         });
 
         revalidatePath('/api/collections');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json(collection);
     } catch (error) {
         return NextResponse.json({ error: 'Error saving collection' }, { status: 500 });
@@ -50,6 +51,7 @@ export async function DELETE(request: Request) {
         });
 
         revalidatePath('/api/collections');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting collection:', error);

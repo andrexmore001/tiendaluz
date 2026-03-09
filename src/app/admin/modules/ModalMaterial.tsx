@@ -10,6 +10,7 @@ interface ModalMaterialProps {
     materialFormData: any;
     setMaterialFormData: (data: any) => void | React.Dispatch<React.SetStateAction<any>>;
     handleSubmitMaterial: (e: React.FormEvent) => void;
+    onFileUpload: (e: React.ChangeEvent<HTMLInputElement>, field: string) => void;
 }
 
 const ModalMaterial: React.FC<ModalMaterialProps> = ({
@@ -18,7 +19,8 @@ const ModalMaterial: React.FC<ModalMaterialProps> = ({
     editingMaterial,
     materialFormData,
     setMaterialFormData,
-    handleSubmitMaterial
+    handleSubmitMaterial,
+    onFileUpload
 }) => {
     if (!showMaterialForm) return null;
 
@@ -61,7 +63,15 @@ const ModalMaterial: React.FC<ModalMaterialProps> = ({
                             <label>Imagen de Textura</label>
                             <div className={styles.uploadBox}>
                                 {materialFormData.textureUrl ? (
-                                    <img src={materialFormData.textureUrl} alt="Preview" className={styles.previewImg} />
+                                    <div style={{ position: 'relative' }}>
+                                        <img src={materialFormData.textureUrl} alt="Preview" className={styles.previewImg} />
+                                        <button
+                                            type="button"
+                                            className={styles.deleteFileBtn}
+                                            onClick={() => setMaterialFormData((prev: any) => ({ ...prev, textureUrl: '' }))}
+                                            style={{ top: '5px', right: '5px' }}
+                                        >×</button>
+                                    </div>
                                 ) : (
                                     <div className={styles.emptyUpload}>
                                         <Box size={20} />
@@ -71,16 +81,7 @@ const ModalMaterial: React.FC<ModalMaterialProps> = ({
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => {
-                                                setMaterialFormData((prev: any) => ({ ...prev, textureUrl: reader.result as string }));
-                                            };
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }}
+                                    onChange={(e) => onFileUpload(e, 'textureUrl')}
                                 />
                             </div>
                         </div>

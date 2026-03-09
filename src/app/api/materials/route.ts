@@ -30,6 +30,7 @@ export async function POST(request: Request) {
         });
 
         revalidatePath('/api/materials');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json(material);
     } catch (error) {
         return NextResponse.json({ error: 'Error saving material' }, { status: 500 });
@@ -50,6 +51,7 @@ export async function DELETE(request: Request) {
         });
 
         revalidatePath('/api/materials');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting material:', error);

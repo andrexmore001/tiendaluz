@@ -63,54 +63,47 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             try {
                 setIsInitialLoading(true);
 
-                // Fetch from API
-                const [resSettings, resProducts, resCollections, resMaterials, resShapes] = await Promise.all([
-                    fetch('/api/settings').then(r => r.json()),
-                    fetch('/api/products').then(r => r.json()),
-                    fetch('/api/collections').then(r => r.json()),
-                    fetch('/api/materials').then(r => r.json()),
-                    fetch('/api/box-shapes').then(r => r.json())
-                ]);
+                // Fetch everything in ONE call
+                const response = await fetch('/api/bootstrap');
+                const data = await response.json();
 
-                if (resSettings && !resSettings.error) {
-                    // Map DB format to SiteSettings
-                    setSettings({
-                        title: resSettings.title,
-                        slug: resSettings.slug,
-                        logo: resSettings.logo || '',
-                        colors: {
-                            primary: resSettings.primaryColor,
-                            secondary: resSettings.secondaryColor,
-                            accent: resSettings.accentColor,
-                            background: resSettings.backgroundColor
-                        },
-                        contact: {
-                            phone: resSettings.phone,
-                            email: resSettings.email,
-                            address: resSettings.address,
-                            instagram: resSettings.instagram,
-                            facebook: resSettings.facebook
-                        },
-                        heroTitle: resSettings.heroTitle || '',
-                        heroSubtitle: resSettings.heroSubtitle || '',
-                        heroImages: resSettings.heroImages ? JSON.parse(resSettings.heroImages) : [],
-                        updatedAt: resSettings.updatedAt
-                    });
-                }
+                if (data && !data.error) {
+                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials, boxShapes: resShapes } = data;
 
-                if (Array.isArray(resProducts)) {
-                    setProducts(resProducts);
-                }
+                    if (resSettings) {
+                        setSettings({
+                            title: resSettings.title,
+                            slug: resSettings.slug,
+                            logo: resSettings.logo || '',
+                            colors: {
+                                primary: resSettings.primaryColor,
+                                secondary: resSettings.secondaryColor,
+                                accent: resSettings.accentColor,
+                                background: resSettings.backgroundColor
+                            },
+                            contact: {
+                                phone: resSettings.phone,
+                                email: resSettings.email,
+                                address: resSettings.address,
+                                instagram: resSettings.instagram,
+                                facebook: resSettings.facebook
+                            },
+                            heroTitle: resSettings.heroTitle || '',
+                            heroSubtitle: resSettings.heroSubtitle || '',
+                            heroImages: resSettings.heroImages ? JSON.parse(resSettings.heroImages) : [],
+                            updatedAt: resSettings.updatedAt
+                        });
+                    }
 
-                if (Array.isArray(resCollections)) setCollections(resCollections);
-                if (Array.isArray(resMaterials)) setMaterials(resMaterials);
-                if (Array.isArray(resShapes)) {
-                    setBoxShapes(resShapes);
+                    if (Array.isArray(resProducts)) setProducts(resProducts);
+                    if (Array.isArray(resCollections)) setCollections(resCollections);
+                    if (Array.isArray(resMaterials)) setMaterials(resMaterials);
+                    if (Array.isArray(resShapes)) setBoxShapes(resShapes);
                 }
 
             } catch (e) {
-                console.error("Error loading from API", e);
-                // Fallback to localStorage logic if API fails or for first-time migration
+                console.error("Error loading bootstrap data", e);
+                // Fallback to localStorage logic if API fails
                 const savedProducts = localStorage.getItem('artesana_products');
                 if (savedProducts) setProducts(JSON.parse(savedProducts));
             } finally {

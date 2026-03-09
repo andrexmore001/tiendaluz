@@ -107,22 +107,6 @@ export default function AdminPage() {
         setTimeout(() => setNotification(null), 3000);
     };
 
-    const compressImage = (base64Str: string, maxWidth = 1200, maxHeight = 1200): Promise<string> => {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.src = base64Str;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let { width, height } = img;
-                if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } }
-                else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
-                canvas.width = width; canvas.height = height;
-                canvas.getContext('2d')?.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', 0.7));
-            };
-        });
-    };
-
     // --- HANDLERS ---
     const handleSettingChange = (path: string, value: any) => {
         if (!path.includes('.')) {
@@ -207,35 +191,48 @@ export default function AdminPage() {
     };
 
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-        const files = e.target.files; if (!files) return;
-        if (field === 'heroImages') {
-            const results = await Promise.all(Array.from(files).map(file => new Promise<string>((resolve) => {
-                const reader = new FileReader(); reader.onloadend = () => resolve(reader.result as string); reader.readAsDataURL(file);
-            })));
-            setLocalSettings(prev => ({ ...prev, heroImages: [...(prev.heroImages || []), ...results] }));
-            return;
-        }
-        if (field === 'gallery') {
-            const newImages = [...formData.images];
-            for (const file of Array.from(files)) {
-                await new Promise<void>((resolve) => {
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                        const comp = await compressImage(reader.result as string);
-                        newImages.push({ url: comp, isCustomizable: false });
-                        setFormData(prev => ({ ...prev, images: [...newImages] })); resolve();
-                    };
-                    reader.readAsDataURL(file);
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        showToast("Subiendo imagen...");
+
+        try {
+            if (field === 'heroImages' || field === 'gallery') {
+                const uploadPromises = Array.from(files).map(async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    return data.url;
                 });
+
+                const urls = await Promise.all(uploadPromises);
+                const validUrls = urls.filter(url => !!url);
+
+                if (field === 'heroImages') {
+                    setLocalSettings(prev => ({ ...prev, heroImages: [...(prev.heroImages || []), ...validUrls] }));
+                } else {
+                    setFormData(prev => ({
+                        ...prev,
+                        images: [...prev.images, ...validUrls.map(url => ({ url, isCustomizable: false }))]
+                    }));
+                }
+            } else {
+                const formData = new FormData();
+                formData.append('file', files[0]);
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+
+                if (data.url) {
+                    if (field === 'logo') setLocalSettings(prev => ({ ...prev, logo: data.url }));
+                    else if (field === 'textureUrl') setMaterialFormData(prev => ({ ...prev, [field]: data.url }));
+                    else setFormData(prev => ({ ...prev, [field]: data.url }));
+                }
             }
-        } else {
-            const reader = new FileReader();
-            reader.onloadend = async () => {
-                const comp = await compressImage(reader.result as string);
-                if (field === 'logo') setLocalSettings(prev => ({ ...prev, logo: comp }));
-                else setFormData(prev => ({ ...prev, [field]: comp }));
-            };
-            reader.readAsDataURL(files[0]);
+            showToast("Imagen subida con éxito");
+        } catch (error) {
+            console.error("Error uploading to Cloudinary:", error);
+            showToast("Error al subir imagen");
         }
     };
 
@@ -357,7 +354,7 @@ export default function AdminPage() {
                 removeGalleryImage={idx => setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))} setEditingImageConfig={setEditingImageConfig}
             />
             <ModalShape showShapeForm={showShapeForm} setShowShapeForm={setShowShapeForm} editingShape={editingShape} shapeFormData={shapeFormData} setShapeFormData={setShapeFormData} handleSubmitShape={handleSubmitShape} />
-            <ModalMaterial showMaterialForm={showMaterialForm} setShowMaterialForm={setShowMaterialForm} editingMaterial={editingMaterial} materialFormData={materialFormData} setMaterialFormData={setMaterialFormData} handleSubmitMaterial={handleSubmitMaterial} />
+            <ModalMaterial showMaterialForm={showMaterialForm} setShowMaterialForm={setShowMaterialForm} editingMaterial={editingMaterial} materialFormData={materialFormData} setMaterialFormData={setMaterialFormData} handleSubmitMaterial={handleSubmitMaterial} onFileUpload={handleFileUpload} />
             <ModalCollection showCollectionForm={showCollectionForm} setShowCollectionForm={setShowCollectionForm} editingCollection={editingCollection} collectionFormData={collectionFormData} setCollectionFormData={setCollectionFormData} handleSubmitCollection={handleSubmitCollection} />
             <ModalTextConfig editingImageConfig={editingImageConfig} formData={formData} setEditingImageConfig={setEditingImageConfig} handleConfigChange={handleConfigChange} />
         </div>
