@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+
+export const revalidate = 3600; // Recache every hour
 
 export async function GET() {
     try {
@@ -117,6 +120,7 @@ export async function POST(request: Request) {
             }
         });
 
+        revalidatePath('/api/products');
         return NextResponse.json(product);
     } catch (error) {
         console.error('Error saving product:', error);
@@ -137,6 +141,7 @@ export async function DELETE(request: Request) {
             where: { id },
         });
 
+        revalidatePath('/api/products');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting product:', error);

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+
+export const revalidate = 3600; // Recache every hour
 
 export async function GET() {
     try {
@@ -42,6 +45,7 @@ export async function POST(request: Request) {
             },
         });
 
+        revalidatePath('/api/box-shapes');
         return NextResponse.json(shape);
     } catch (error) {
         return NextResponse.json({ error: 'Error saving shape' }, { status: 500 });
@@ -61,6 +65,7 @@ export async function DELETE(request: Request) {
             where: { id },
         });
 
+        revalidatePath('/api/box-shapes');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting shape:', error);
