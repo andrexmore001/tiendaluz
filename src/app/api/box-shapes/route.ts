@@ -17,7 +17,12 @@ export async function GET() {
             };
         });
 
-        return NextResponse.json(mappedShapes);
+        return new NextResponse(JSON.stringify(mappedShapes), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59',
+            },
+        });
     } catch (error) {
         return NextResponse.json({ error: 'Error fetching shapes' }, { status: 500 });
     }

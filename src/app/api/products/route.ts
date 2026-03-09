@@ -38,7 +38,12 @@ export async function GET() {
             };
         });
 
-        return NextResponse.json(mappedProducts);
+        return new NextResponse(JSON.stringify(mappedProducts), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59',
+            },
+        });
     } catch (error) {
         console.error('Error fetching products:', error);
         return NextResponse.json({ error: 'Error al obtener productos' }, { status: 500 });

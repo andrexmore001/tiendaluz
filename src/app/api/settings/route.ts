@@ -18,7 +18,12 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json(settings);
+        return new NextResponse(JSON.stringify(settings), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59',
+            },
+        });
     } catch (error) {
         console.error('Error fetching settings:', error);
         return NextResponse.json({ error: 'Error al obtener configuraciones' }, { status: 500 });
@@ -65,6 +70,7 @@ export async function POST(request: Request) {
             },
         });
 
+        revalidatePath('/api/settings');
         return NextResponse.json(settings);
     } catch (error) {
         console.error('Error saving settings:', error);

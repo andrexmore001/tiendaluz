@@ -7,7 +7,12 @@ export const revalidate = 3600; // Recache every hour
 export async function GET() {
     try {
         const collections = await prisma.collection.findMany();
-        return NextResponse.json(collections);
+        return new NextResponse(JSON.stringify(collections), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59',
+            },
+        });
     } catch (error) {
         return NextResponse.json({ error: 'Error fetching collections' }, { status: 500 });
     }
