@@ -1,4 +1,4 @@
-import { Product, BoxShape, Collection } from '@/types/product';
+import { Product, Collection } from '@/types/product';
 
 export interface SiteSettings {
     title: string;
@@ -44,7 +44,7 @@ export let siteSettings: SiteSettings = {
 
 export const collections: Collection[] = [];
 
-export const boxShapes: BoxShape[] = [];
+
 
 export let products: Product[] = [];
 
