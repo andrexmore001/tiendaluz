@@ -9,7 +9,8 @@ import {
     X,
     Palette,
     User,
-    LogOut
+    LogOut,
+    FileText
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import { useSession, signOut } from 'next-auth/react';
@@ -25,6 +26,7 @@ const TabSettings = dynamic(() => import('./modules/TabSettings'));
 const TabMaterials = dynamic(() => import('./modules/TabMaterials'));
 const TabShapes = dynamic(() => import('./modules/TabShapes'));
 const TabAccount = dynamic(() => import('./modules/TabAccount'));
+const TabQuotes = dynamic(() => import('./modules/TabQuotes'));
 const ModalProduct = dynamic(() => import('./modules/ModalProduct'));
 const ModalShape = dynamic(() => import('./modules/ModalShape'));
 const ModalMaterial = dynamic(() => import('./modules/ModalMaterial'));
@@ -323,6 +325,7 @@ export default function AdminPage() {
                     <button className={activeTab === 'settings' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}><SettingsIcon size={20} /><span>Configuración</span></button>
                     <button className={activeTab === 'materials' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}><Palette size={20} /><span>Materiales</span></button>
                     <button className={activeTab === 'shapes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('shapes'); setMobileMenuOpen(false); }}><Box size={20} /><span>Formas 3D</span></button>
+                    <button className={activeTab === 'quotes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('quotes'); setMobileMenuOpen(false); }}><FileText size={20} /><span>Cotizaciones</span></button>
                     <button className={activeTab === 'account' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('account'); setMobileMenuOpen(false); }}><User size={20} /><span>Cuenta</span></button>
                     <button className={styles.navItem} onClick={() => signOut()} style={{ marginTop: 'auto', color: '#ef4444' }}><LogOut size={20} /><span>Cerrar Sesión</span></button>
                 </nav>
@@ -340,6 +343,7 @@ export default function AdminPage() {
                 {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '', baseColor: '#FFFFFF' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl, baseColor: m.baseColor || '#FFFFFF' }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'shapes' && <TabShapes boxShapes={boxShapes} onAdd={() => { setEditingShape(null); setShapeFormData({ name: '', type: 'standard', width: 4, height: 2, depth: 4, hingeEdge: 'long', flapsLocation: 'base', flapHeightPercent: 0.25, flapWidthOffset: -0.2, flapType: 'rectangular', tuckFlapHeightPercent: 0.15 }); setShowShapeForm(true); }} onEdit={s => { setEditingShape(s); setShapeFormData({ name: s.name, type: s.type, width: s.defaultDimensions.width, height: s.defaultDimensions.height, depth: s.defaultDimensions.depth, hingeEdge: s.hingeEdge || 'long', flapsLocation: s.flapsLocation || 'base', flapHeightPercent: s.flapHeightPercent || 0.25, flapWidthOffset: s.flapWidthOffset || -0.2, flapType: s.flapType || 'rectangular', tuckFlapHeightPercent: s.tuckFlapHeightPercent || 0.15 }); setShowShapeForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteBoxShape(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
             </main>
 
             <ModalProduct
