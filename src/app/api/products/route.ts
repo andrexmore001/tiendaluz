@@ -54,6 +54,7 @@ export async function POST(request: Request) {
             depth: Number(dimensions?.depth || rest.depth || 4),
             materialId: rest.materialId || 'carton-kraft',
             baseColor: rest.baseColor || '#F9F1E7',
+            modelUrl: rest.modelUrl || '',
             images: images || [], // Now a JSON field
         };
 

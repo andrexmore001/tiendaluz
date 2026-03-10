@@ -11,9 +11,9 @@ import {
     ChevronRight
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-const Box3D = dynamic(() => import('@/components/Three/Box3D'), {
+const ProductModel = dynamic(() => import('@/components/Three/ProductModel'), {
     ssr: false,
-    loading: () => <div className={styles.emptyState} style={{ height: '350px' }}>Cargando Vista 3D...</div>
+    loading: () => <div className={styles.emptyState} style={{ height: '350px' }}>Cargando Modelo 3D...</div>
 });
 import styles from '../admin.module.css';
 
@@ -28,8 +28,6 @@ interface ModalProductProps {
     totalSteps: number;
     materials: any[];
     collections: any[];
-    isBoxOpen: boolean;
-    setIsBoxOpen: (open: boolean) => void;
     handleSubmitProduct: (e: React.FormEvent) => void;
     handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, field: any) => void;
     handleAddTier: () => void;
@@ -53,8 +51,6 @@ const ModalProduct: React.FC<ModalProductProps> = ({
     totalSteps,
     materials,
     collections,
-    isBoxOpen,
-    setIsBoxOpen,
     handleSubmitProduct,
     handleFileUpload,
     handleAddTier,
@@ -93,32 +89,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                         {(formData.displayMode === '3d' || formData.displayMode === 'both') ? (
                             <>
                                 <div className={styles.adminBoxPreview}>
-                                    {(() => {
-                                        const selectedMaterial = materials.find(
-                                            (m: any) => m.id === formData.materialId
-                                        );
-
-                                        return (
-                                            <Box3D
-                                                width={Number(formData.width)}
-                                                height={Number(formData.height)}
-                                                depth={Number(formData.depth)}
-                                                materialData={selectedMaterial}
-                                                baseColor={formData.baseColor}
-                                                isOpen={isBoxOpen}
-                                                tuckFlapHeightPercent={0.15}
-                                            />
-                                        );
-                                    })()}
-                                </div>
-                                <div className={styles.previewControls}>
-                                    <button
-                                        type="button"
-                                        className={styles.pBtn}
-                                        onClick={() => setIsBoxOpen(!isBoxOpen)}
-                                    >
-                                        {isBoxOpen ? 'Cerrar Caja' : 'Abrir Caja'}
-                                    </button>
+                                    <ProductModel modelUrl={formData.modelUrl} />
                                 </div>
                             </>
                         ) : (
@@ -234,6 +205,37 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                             type="number"
                                             value={formData.depth}
                                             onChange={(e) => setFormData((prev: any) => ({ ...prev, depth: parseInt(e.target.value) || 0 }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className={styles.inputGroup} style={{ marginTop: '1.5rem' }}>
+                                    <label>Archivo de Modelo 3D (.glb, .gltf)</label>
+                                    <div className={styles.uploadBox}>
+                                        {formData.modelUrl ? (
+                                            <>
+                                                <div className={styles.fileInfo}>
+                                                    <Layers size={20} />
+                                                    <span>Modelo Cargado</span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    className={styles.deleteFileBtn}
+                                                    onClick={() => setFormData((prev: any) => ({ ...prev, modelUrl: '' }))}
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <div className={styles.emptyUpload}>
+                                                <Plus size={20} />
+                                                <span>Subir Modelo 3D</span>
+                                            </div>
+                                        )}
+                                        <input
+                                            type="file"
+                                            accept=".glb,.gltf"
+                                            onChange={(e) => handleFileUpload(e, 'modelUrl')}
                                         />
                                     </div>
                                 </div>

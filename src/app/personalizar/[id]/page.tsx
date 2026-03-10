@@ -2,7 +2,7 @@
 import { useState, use } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Box3D from "@/components/Three/Box3D";
+import ProductModel from "@/components/Three/ProductModel";
 import { useSettings } from "@/context/SettingsContext";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { Type, Image as ImageIcon, MessageCircle } from "lucide-react";
@@ -19,9 +19,7 @@ export default function CustomizerPage({
   const product = products.find((p) => p.id === id) || products[0];
 
   const [text, setText] = useState("");
-  const [includeImage, setIncludeImage] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [isOpen, setIsOpen] = useState(false); // 🔥 ESTADO NUEVO
 
   const currentMaterial =
     materials.find((m) => m.id === product.materialId) ||
@@ -56,7 +54,6 @@ Producto: ${product.name}
 Cantidad: ${quantity}
 Precio Unitario: $${currentUnitPrice.toLocaleString()}
 Texto personalizado: ${text || "Sin texto"}
-Incluye imagen personalizada: ${includeImage ? "Sí" : "No"}
 Total: $${total.toLocaleString()}
 `;
     const encodedMessage = encodeURIComponent(message);
@@ -75,15 +72,7 @@ Total: $${total.toLocaleString()}
 
           {currentView === '3d' ? (
             <div style={{ width: '100%', height: '400px' }}>
-              <Box3D
-                width={product.dimensions?.width || 30}
-                height={product.dimensions?.height || 20}
-                depth={product.dimensions?.depth || 30}
-                materialData={currentMaterial}
-                baseColor={product.baseColor}
-                isOpen={isOpen}
-                text={text}
-              />
+              <ProductModel modelUrl={product.modelUrl} />
             </div>
           ) : (
             <div className={styles.photoGallery}>
@@ -121,14 +110,6 @@ Total: $${total.toLocaleString()}
           )}
 
           <div className={styles.visualizerControls} style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center' }}>
-            {currentView === '3d' && (
-              <button
-                className={styles.toggleOpen}
-                onClick={() => setIsOpen((prev) => !prev)}
-              >
-                {isOpen ? "Cerrar Caja" : "Abrir Caja"}
-              </button>
-            )}
 
             {product.displayMode === 'both' && (
               <button

@@ -30,6 +30,7 @@ export interface Product {
     };
     materialId?: string;
     baseColor?: string;
+    modelUrl?: string;
     priceTiers?: PriceTier[];
 }
 

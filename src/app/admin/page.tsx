@@ -47,7 +47,6 @@ export default function AdminPage() {
     const [showProductForm, setShowProductForm] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [notification, setNotification] = useState<string | null>(null);
-    const [isBoxOpen, setIsBoxOpen] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isMobileView, setIsMobileView] = useState(false);
 
@@ -79,7 +78,7 @@ export default function AdminPage() {
         name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
         image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
         images: [] as any[], width: 4, height: 2, depth: 4,
-        materialId: 'carton-kraft', baseColor: '#F9F1E7',
+        materialId: 'carton-kraft', baseColor: '#F9F1E7', modelUrl: '',
         priceTiers: [] as any[]
     });
 
@@ -140,7 +139,7 @@ export default function AdminPage() {
         setFormData({
             ...formData,
             name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
-            image: '', displayMode: '3d', images: [], priceTiers: []
+            image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: ''
         });
         setCurrentStep(1); setShowProductForm(true);
     };
@@ -153,6 +152,7 @@ export default function AdminPage() {
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
             width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
             materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
+            modelUrl: p.modelUrl || '',
             priceTiers: p.priceTiers || []
         });
         setCurrentStep(1); setShowProductForm(true);
@@ -322,7 +322,7 @@ export default function AdminPage() {
             <ModalProduct
                 showProductForm={showProductForm} setShowProductForm={setShowProductForm} editingProduct={editingProduct}
                 formData={formData} setFormData={setFormData} isMobileView={isMobileView} currentStep={currentStep} totalSteps={totalSteps}
-                materials={materials} collections={collections} isBoxOpen={isBoxOpen} setIsBoxOpen={setIsBoxOpen}
+                materials={materials} collections={collections}
                 handleSubmitProduct={handleSubmitProduct} handleFileUpload={handleFileUpload}
                 handleAddTier={() => setFormData(prev => ({ ...prev, priceTiers: [...prev.priceTiers, { minQty: 1, maxQty: null, unitPrice: prev.price }] }))}
                 handleRemoveTier={idx => setFormData(prev => ({ ...prev, priceTiers: prev.priceTiers.filter((_, i) => i !== idx) }))}
