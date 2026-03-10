@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSettings } from '@/context/SettingsContext';
+import { getOptimizedUrl } from '@/lib/cloudinary';
 import styles from './Hero.module.css';
 
 import Image from 'next/image';
@@ -39,7 +40,7 @@ export default function Hero() {
                     }}
                 >
                     <Image
-                        src={img}
+                        src={getOptimizedUrl(img, 1200)}
                         alt={`Hero background ${idx}`}
                         fill
                         priority={idx === 0}

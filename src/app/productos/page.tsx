@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useSettings } from '@/context/SettingsContext';
+import { getOptimizedUrl } from '@/lib/cloudinary';
 import Link from 'next/link';
 import styles from './productos.module.css';
 
@@ -40,7 +41,7 @@ export default function ProductosPage() {
                     {filteredProducts.map(product => (
                         <div key={product.id} className={styles.card}>
                             <div className={styles.imageBox}>
-                                <img src={product.image || '/placeholder.png'} alt={product.name} />
+                                <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} />
                             </div>
                             <div className={styles.info}>
                                 <span className={styles.category}>{product.category}</span>

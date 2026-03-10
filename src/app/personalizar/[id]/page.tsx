@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Box3D from "@/components/Three/Box3D";
 import { useSettings } from "@/context/SettingsContext";
+import { getOptimizedUrl } from "@/lib/cloudinary";
 import { Type, Image as ImageIcon, MessageCircle } from "lucide-react";
 import styles from "./customizer.module.css";
 
@@ -90,7 +91,7 @@ Total: $${total.toLocaleString()}
             <div className={styles.photoGallery}>
               <div className={styles.mainPhotoWrapper}>
                 <div className={styles.imageRelativeWrapper}>
-                  <img src={displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || '')} alt={product.name} />
+                  <img src={getOptimizedUrl(displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || ''), 800)} alt={product.name} />
                   {text && displayPhotos[activePhotoIdx] && (displayPhotos[activePhotoIdx] as any).isCustomizable && (
                     <div
                       className={styles.textOverlay}
@@ -109,7 +110,7 @@ Total: $${total.toLocaleString()}
                 {displayPhotos.map((img: any, idx) => (
                   <img
                     key={idx}
-                    src={typeof img === 'string' ? img : img.url}
+                    src={getOptimizedUrl(typeof img === 'string' ? img : img.url, 150)}
                     alt={`Thumb ${idx}`}
                     onClick={() => setActivePhotoIdx(idx)}
                     style={{

@@ -9,6 +9,7 @@ const Home3DSection = dynamic(() => import('@/components/HomeVisualizer/Home3DSe
 });
 import Footer from '@/components/Footer';
 import { useSettings } from '@/context/SettingsContext';
+import { getOptimizedUrl } from '@/lib/cloudinary';
 import Link from 'next/link';
 import styles from './page.module.css';
 
@@ -31,7 +32,7 @@ export default function Home() {
           {products.slice(0, 4).map(product => (
             <div key={product.id} className={styles.productCard}>
               <div className={styles.productImage}>
-                <img src={product.image || '/placeholder.png'} alt={product.name} loading="lazy" />
+                <img src={getOptimizedUrl(product.image, 500) || '/placeholder.png'} alt={product.name} loading="lazy" />
               </div>
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
