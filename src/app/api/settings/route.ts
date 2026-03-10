@@ -39,6 +39,7 @@ export async function POST(request: Request) {
             where: { id: 'site-settings' },
             update: {
                 ...rest,
+                logo: rest?.logo,
                 primaryColor: colors?.primary,
                 secondaryColor: colors?.secondary,
                 accentColor: colors?.accent,
@@ -55,6 +56,7 @@ export async function POST(request: Request) {
             create: {
                 id: 'site-settings',
                 ...rest,
+                logo: rest?.logo,
                 primaryColor: colors?.primary,
                 secondaryColor: colors?.secondary,
                 accentColor: colors?.accent,
