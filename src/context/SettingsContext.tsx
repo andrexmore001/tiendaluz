@@ -9,6 +9,15 @@ export interface Material {
     textureUrl?: string;
 }
 
+export interface ContactMessage {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    read: boolean;
+    createdAt: string;
+}
+
 interface SettingsContextType {
     settings: SiteSettings;
     products: Product[];
@@ -24,6 +33,10 @@ interface SettingsContextType {
     addMaterial: (material: Material) => void;
     updateMaterial: (material: Material) => void;
     deleteMaterial: (id: string) => void;
+    messages: ContactMessage[];
+    deleteMessage: (id: string) => void;
+    markMessageAsRead: (id: string) => void;
+    refreshMessages: () => Promise<void>;
     storageError: string | null;
     clearAllData: () => void;
 }
@@ -35,6 +48,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [collections, setCollections] = useState<Collection[]>(initialCollections);
     const [materials, setMaterials] = useState<Material[]>([]);
+    const [messages, setMessages] = useState<ContactMessage[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [storageError, setStorageError] = useState<string | null>(null);
@@ -80,6 +94,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                     if (Array.isArray(resProducts)) setProducts(resProducts);
                     if (Array.isArray(resCollections)) setCollections(resCollections);
                     if (Array.isArray(resMaterials)) setMaterials(resMaterials);
+                    if (Array.isArray(data.messages)) setMessages(data.messages);
                 }
 
             } catch (e) {
@@ -232,6 +247,49 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const deleteMessage = async (id: string) => {
+        setMessages(prev => prev.filter(m => m.id !== id));
+        try {
+            await fetch(`/api/contact/${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting message", e);
+        }
+    };
+
+    const markMessageAsRead = async (id: string) => {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, read: true } : m));
+        try {
+            await fetch(`/api/contact/${id}/read`, {
+                method: 'PATCH',
+            });
+        } catch (e) {
+            console.error("Error marking message as read", e);
+        }
+    };
+
+    const refreshMessages = async () => {
+        try {
+            const res = await fetch('/api/contact');
+            if (res.ok) {
+                const data = await res.json();
+                setMessages(data);
+            }
+        } catch (e) {
+            console.error("Error refreshing messages", e);
+        }
+    };
+
+    // Auto-refresh messages every 30 minutes if in admin panel (or just always if safe)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            // We could check for session here, but refreshMessages already checks auth on server
+            refreshMessages();
+        }, 1800000); // 30 minutes
+        return () => clearInterval(interval);
+    }, []);
+
     const clearAllData = () => {
         if (confirm('¿Estás seguro de resetear todos los datos? Se borrarán tus productos y configuraciones personalizadas.')) {
             localStorage.clear();
@@ -258,6 +316,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             addMaterial,
             updateMaterial,
             deleteMaterial,
+            messages,
+            deleteMessage,
+            markMessageAsRead,
+            refreshMessages,
             storageError,
             clearAllData
         }}>

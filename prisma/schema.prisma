@@ -104,3 +104,12 @@ model QuoteItem {
   quoteId     String
   quote       Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 }
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

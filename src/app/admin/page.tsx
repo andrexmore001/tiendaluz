@@ -10,7 +10,8 @@ import {
     Palette,
     User,
     LogOut,
-    FileText
+    FileText,
+    MessageSquare
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import { useSession, signOut } from 'next-auth/react';
@@ -26,6 +27,7 @@ const TabSettings = dynamic(() => import('./modules/TabSettings'));
 const TabMaterials = dynamic(() => import('./modules/TabMaterials'));
 const TabAccount = dynamic(() => import('./modules/TabAccount'));
 const TabQuotes = dynamic(() => import('./modules/TabQuotes'));
+const TabMessages = dynamic(() => import('./modules/TabMessages'));
 const ModalProduct = dynamic(() => import('./modules/ModalProduct'));
 const ModalMaterial = dynamic(() => import('./modules/ModalMaterial'));
 const ModalCollection = dynamic(() => import('./modules/ModalCollection'));
@@ -38,7 +40,8 @@ export default function AdminPage() {
         addProduct, updateProduct, deleteProduct,
         addCollection, updateCollection, deleteCollection,
         materials,
-        addMaterial, updateMaterial, deleteMaterial
+        addMaterial, updateMaterial, deleteMaterial,
+        messages, markMessageAsRead
     } = useSettings();
 
     const { data: session, status } = useSession();
@@ -85,6 +88,7 @@ export default function AdminPage() {
     const [editingImageConfig, setEditingImageConfig] = useState<number | null>(null);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [currentStep, setCurrentStep] = useState(1);
+    const unreadCount = messages.filter(m => !m.read).length;
     const totalSteps = formData.displayMode === 'photos' ? 2 : 3;
 
     // Fix currentStep if it exceeds totalSteps
@@ -300,6 +304,13 @@ export default function AdminPage() {
                     <button className={activeTab === 'settings' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}><SettingsIcon size={20} /><span>Configuración</span></button>
                     <button className={activeTab === 'materials' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}><Palette size={20} /><span>Materiales</span></button>
                     <button className={activeTab === 'quotes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('quotes'); setMobileMenuOpen(false); }}><FileText size={20} /><span>Cotizaciones</span></button>
+                    <button className={activeTab === 'messages' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('messages'); setMobileMenuOpen(false); }}>
+                        <div className={styles.navIconWrapper}>
+                            <MessageSquare size={20} />
+                            {unreadCount > 0 && <span className={styles.notificationBadge}>{unreadCount}</span>}
+                        </div>
+                        <span>Mensajes</span>
+                    </button>
                     <button className={activeTab === 'account' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('account'); setMobileMenuOpen(false); }}><User size={20} /><span>Cuenta</span></button>
                     <button className={styles.navItem} onClick={() => signOut()} style={{ marginTop: 'auto', color: '#ef4444' }}><LogOut size={20} /><span>Cerrar Sesión</span></button>
                 </nav>
@@ -317,6 +328,7 @@ export default function AdminPage() {
                 {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
+                {activeTab === 'messages' && <TabMessages onMenuClick={() => setMobileMenuOpen(true)} />}
             </main>
 
             <ModalProduct

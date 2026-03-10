@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+import { auth } from '@/auth';
 
 export const revalidate = 3600; // Cache for 1 hour
 
 export async function GET() {
     try {
         // Fetch all data in parallel to minimize wait time
-        const [settingsData, rawProducts, collections, materials] = await Promise.all([
+        const [settingsData, rawProducts, collections, materials, messages] = await Promise.all([
             prisma.setting.findFirst(),
             prisma.product.findMany({
                 include: {
@@ -19,7 +20,12 @@ export async function GET() {
                 },
             }),
             prisma.collection.findMany(),
-            prisma.material.findMany()
+            prisma.material.findMany(),
+            prisma.contactMessage.findMany({
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            })
         ]);
 
         // 1. Process Settings (Create defaults if missing)
@@ -43,12 +49,19 @@ export async function GET() {
             };
         });
 
-        const bootstrapData = {
+        const session = await auth();
+
+        const bootstrapData: any = {
             settings,
             products,
             collections,
-            materials
+            materials,
         };
+
+        // Only include messages for authenticated admins
+        if (session) {
+            bootstrapData.messages = messages;
+        }
 
         return new NextResponse(JSON.stringify(bootstrapData), {
             headers: {
