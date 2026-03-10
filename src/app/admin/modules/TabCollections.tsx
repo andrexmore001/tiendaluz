@@ -25,7 +25,10 @@ const TabCollections: React.FC<TabCollectionsProps> = ({ collections, onAdd, onE
                 {collections.length > 0 ? collections.map((col: any) => (
                     <div key={col.id} className={styles.collectionItem}>
                         <div className={styles.colInfo}>
-                            <span className={styles.colName}>{col.name}</span>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.8rem' }}>
+                                <span className={styles.colName}>{col.name}</span>
+                                <span className={styles.pCat} style={{ fontSize: '0.75rem', fontFamily: 'monospace', opacity: 0.7 }}>{col.id}</span>
+                            </div>
                             <p className={styles.colDesc}>{col.description}</p>
                         </div>
                         <div className={styles.rowActions}>

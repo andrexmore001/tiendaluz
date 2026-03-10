@@ -79,6 +79,7 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
                 <div className={styles.tableHeader}>
                     <span>Imagen</span>
                     <span>Nombre</span>
+                    <span>ID</span>
                     <span>Precio</span>
                     <span>Acciones</span>
                 </div>
@@ -86,6 +87,7 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
                     <div key={p.id} className={styles.tableRow}>
                         <img src={p.image || '/placeholder.png'} alt={p.name} className={styles.miniImg} />
                         <span className={styles.pName}>{p.name}</span>
+                        <code className={styles.pCat} style={{ fontSize: '0.75rem', fontFamily: 'monospace', opacity: 0.7 }}>{p.id}</code>
                         <span className={styles.pPrice}>${(p.price || 0).toLocaleString()}</span>
                         <div className={styles.rowActions}>
                             <button className={styles.iconBtn} onClick={() => onEdit(p)} title="Editar">
