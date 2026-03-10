@@ -9,7 +9,9 @@ import {
     User,
     Calendar,
     MapPin,
-    Hash
+    Hash,
+    History,
+    RefreshCw
 } from 'lucide-react';
 import { Product } from '@/types/product';
 import styles from '../admin.module.css';
@@ -37,8 +39,74 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         paymentTerms: 'pago inmediato'
     });
 
+    const [pastQuotes, setPastQuotes] = useState<any[]>([]);
+    const [isLoadingQuotes, setIsLoadingQuotes] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProductId, setSelectedProductId] = useState('');
+
+    useEffect(() => {
+        fetchQuotes();
+    }, []);
+
+    const fetchQuotes = async () => {
+        setIsLoadingQuotes(true);
+        try {
+            const res = await fetch('/api/quotes');
+            if (res.ok) {
+                const data = await res.json();
+                setPastQuotes(data);
+            }
+        } catch (error) {
+            console.error("Error fetching quotes:", error);
+        } finally {
+            setIsLoadingQuotes(false);
+        }
+    };
+
+    const saveQuote = async () => {
+        setIsSaving(true);
+        try {
+            const res = await fetch('/api/quotes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...quoteData,
+                    subtotal,
+                    total: subtotal
+                })
+            });
+            if (res.ok) {
+                fetchQuotes();
+            }
+        } catch (error) {
+            console.error("Error saving quote:", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const loadQuote = (quote: any) => {
+        setQuoteData({
+            quoteNumber: quote.quoteNumber,
+            date: quote.date,
+            expiryDate: quote.expiryDate,
+            vendor: quote.vendor,
+            clientName: quote.clientName,
+            clientNit: quote.clientNit,
+            billingAddress: quote.billingAddress,
+            shippingAddress: quote.shippingAddress,
+            items: quote.items.map((item: any) => {
+                const product = products.find(p => p.name === item.description.split(' (')[0]);
+                return {
+                    ...item,
+                    originalProduct: product
+                };
+            }),
+            notes: quote.notes || '',
+            paymentTerms: quote.paymentTerms || 'pago inmediato'
+        });
+    };
 
     const filteredProducts = products.filter(p =>
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -218,6 +286,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 fileName={`Cotizacion_${quoteData.quoteNumber}_${quoteData.clientName}.pdf`}
                                 className="btn-primary"
                                 style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', textDecoration: 'none' }}
+                                onClick={() => saveQuote()}
                             >
                                 {({ blob, url, loading, error }) =>
                                     loading ? 'Generando PDF...' : (
@@ -228,8 +297,18 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 }
                             </PDFDownloadLink>
 
+                            <button
+                                className={styles.secondaryBtn}
+                                style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}
+                                onClick={saveQuote}
+                                disabled={isSaving}
+                            >
+                                {isSaving ? <RefreshCw className={styles.animateSpin} size={18} /> : <FileText size={18} />}
+                                Guardar en Historial
+                            </button>
+
                             <p style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', marginTop: '1rem' }}>
-                                El PDF se generará con el diseño oficial de Artesana.
+                                Al descargar o guardar, la cotización quedará registrada en el historial.
                             </p>
                         </div>
                     </div>
@@ -248,6 +327,31 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                             onChange={e => setQuoteData({ ...quoteData, notes: e.target.value })}
                             placeholder="Ej: Incluye envío a nivel nacional..."
                         />
+                    </div>
+
+                    {/* Recent Quotes List */}
+                    <div className={styles.formGroup} style={{ marginTop: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 className={styles.formGroupTitle} style={{ margin: 0 }}><History size={16} /> Historial Reciente</h3>
+                            <button className={styles.refreshBtn} onClick={fetchQuotes} title="Actualizar">
+                                <RefreshCw size={14} className={isLoadingQuotes ? styles.animateSpin : ''} />
+                            </button>
+                        </div>
+                        <div className={styles.quoteHistoryBox} style={{ maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', borderRadius: '12px', padding: '0.5rem', border: '1px solid #e2e8f0' }}>
+                            {pastQuotes.length === 0 ? (
+                                <p style={{ fontSize: '0.8rem', color: '#94a3b8', textAlign: 'center', padding: '1rem' }}>No hay cotizaciones registradas.</p>
+                            ) : (
+                                pastQuotes.map((q, idx) => (
+                                    <div key={idx} onClick={() => loadQuote(q)} style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0', cursor: 'pointer', transition: 'background 0.2s' }} className={styles.historyRow}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                                            <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{q.quoteNumber}</span>
+                                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{q.date}</span>
+                                        </div>
+                                        <p style={{ fontSize: '0.8rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.clientName || 'Sin cliente'}</p>
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -845,3 +845,91 @@
     display: flex;
     gap: 0.8rem;
 }
+
+/* Quoting Module & Branding */
+.quoteCreatorGrid {
+    margin-top: 1rem;
+    animation: slideIn 0.4s ease-out;
+}
+
+.quoteForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.quotePreview {
+    position: sticky;
+    top: 2rem;
+}
+
+.previewCard {
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.addItemRow {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.quoteItemsList {
+    margin-top: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.quoteItemRow {
+    transition: transform 0.2s ease;
+}
+
+.quoteItemRow:hover {
+    transform: translateX(4px);
+}
+
+.searchSelectWrapper select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.2em;
+}
+
+.animateSpin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.historyRow:hover {
+    background: #f1f5f9 !important;
+}
+
+.refreshBtn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.refreshBtn:hover {
+    color: var(--primary);
+    background: #f1f5f9;
+}
+
+@media (max-width: 1200px) {
+    .quoteCreatorGrid {
+        grid-template-columns: 1fr !important;
+    }
+}

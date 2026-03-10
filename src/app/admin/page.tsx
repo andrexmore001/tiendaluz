@@ -316,7 +316,13 @@ export default function AdminPage() {
             <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.sidebarOpen : ''}`}>
                 <div className={styles.mobileClose}><button onClick={() => setMobileMenuOpen(false)}><X size={24} /></button></div>
                 <div className={styles.sidebarHeader}>
-                    <h2 className={styles.adminTitle}>{settings.title} Admin</h2>
+                    {settings.logo ? (
+                        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+                            <img src={settings.logo} alt="Logo" style={{ height: '70px', objectFit: 'contain' }} />
+                        </div>
+                    ) : (
+                        <h2 className={styles.adminTitle}>{settings.title} Admin</h2>
+                    )}
                     <p className={styles.adminUser}>Dispositivo Vinculado</p>
                 </div>
                 <nav className={styles.nav}>

@@ -11,7 +11,13 @@ export default function Footer() {
         <footer className={styles.footer}>
             <div className={`${styles.container} container`}>
                 <div className={styles.info}>
-                    <h2 className={styles.logo}>{settings.title.toUpperCase()}</h2>
+                    <Link href="/" className={styles.logo}>
+                        {settings.logo ? (
+                            <img src={settings.logo} alt={settings.title} style={{ height: '60px', objectFit: 'contain', marginBottom: '1rem' }} />
+                        ) : (
+                            settings.title.toUpperCase()
+                        )}
+                    </Link>
                     <p className={styles.description}>Creamos cajas que cuentan historias. Detalles artesanales hechos con el alma.</p>
                     <div className={styles.social}>
                         <a href={`https://instagram.com/${settings.contact.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram size={20} /></a>

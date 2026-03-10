@@ -3,6 +3,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from '@/context/SettingsContext';
 import DynamicStyles from '@/components/DynamicStyles';
+import DynamicFavicon from '@/components/Branding/DynamicFavicon';
 import { SessionProvider } from 'next-auth/react';
 
 const inter = Inter({
@@ -31,6 +32,7 @@ export default function RootLayout({
         <SessionProvider>
           <SettingsProvider>
             <DynamicStyles />
+            <DynamicFavicon />
             {children}
           </SettingsProvider>
         </SessionProvider>
