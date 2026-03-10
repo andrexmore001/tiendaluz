@@ -21,7 +21,6 @@ export async function GET() {
             return {
                 ...rest,
                 dimensions: { width, height, depth },
-                customMaterialTexture: p.materialTexture,
                 priceTiers: priceTiers || []
             };
         });
@@ -41,7 +40,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const data = await request.json();
-        const { id, images, dimensions, customMaterialTexture, priceTiers, ...rest } = data;
+        const { id, images, dimensions, priceTiers, ...rest } = data;
 
         const baseData = {
             name: rest.name,

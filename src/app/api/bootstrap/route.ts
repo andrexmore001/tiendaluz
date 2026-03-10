@@ -39,7 +39,6 @@ export async function GET() {
             return {
                 ...rest,
                 dimensions: { width, height, depth },
-                customMaterialTexture: p.materialTexture,
                 priceTiers: priceTiers || []
             };
         });

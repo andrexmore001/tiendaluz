@@ -12,14 +12,7 @@ interface Box3DProps {
   height?: number;
   depth?: number;
   materialData?: Material;
-  customMaterialTexture?: string;
   baseColor?: string;
-  hingeEdge?: "long" | "short";
-  flapsLocation?: "base" | "lid";
-  flapHeightPercent?: number;
-  flapWidthOffset?: number;
-  flapType?: "rectangular" | "trapezoidal";
-  tuckFlapHeightPercent?: number;
   text?: string;
 }
 
@@ -28,15 +21,8 @@ function IndustrialBox({
   height = 20,
   depth = 30,
   materialData,
-  customMaterialTexture,
   baseColor,
   isOpen = false,
-  hingeEdge = "long",
-  flapsLocation = "base",
-  flapHeightPercent = 0.25,
-  flapWidthOffset = -0.2,
-  flapType = "rectangular",
-  tuckFlapHeightPercent = 0.15,
   text = ""
 }: Box3DProps) {
 
@@ -58,8 +44,7 @@ function IndustrialBox({
     const loader = new THREE.TextureLoader();
     let map: THREE.Texture | null = null;
 
-    if (customMaterialTexture) map = loader.load(customMaterialTexture);
-    else if (materialData?.textureUrl) map = loader.load(materialData.textureUrl);
+    if (materialData?.textureUrl) map = loader.load(materialData.textureUrl);
 
     if (map) {
       map.wrapS = map.wrapT = THREE.RepeatWrapping;
@@ -74,11 +59,11 @@ function IndustrialBox({
       roughness: 0.75,
       metalness: 0.05,
     });
-  }, [materialData, customMaterialTexture, baseColor, width, depth]);
+  }, [materialData, baseColor, width, depth]);
 
   /* ================= BISAGRA ================= */
 
-  const isLongEdge = hingeEdge === "short";
+  const isLongEdge = true; // Default to long edge hinge
 
   const lidRef = useRef<THREE.Group>(null);
   const currentRotation = useRef(0);
@@ -103,16 +88,9 @@ function IndustrialBox({
   /* ================= ALETAS ================= */
 
   // AHORA DEPENDEN DE ALTURA TOTAL REAL
-  const flapHeight = h * flapHeightPercent;
-  const tuckHeight = h * tuckFlapHeightPercent;
-  const flapWidth = w + flapWidthOffset / scaleFactor;
-  console.log("DEBUG ALETAS:", {
-    flapHeightPercent,
-    flapsLocation,
-    flapWidthOffset,
-    tuckFlapHeightPercent,
-    flapType
-  });
+  const flapHeight = h * 0.25;
+  const tuckHeight = h * 0.15;
+  const flapWidth = w + (-0.2) / scaleFactor;
   /* ----- TRAPECIO GEOMETRY ----- */
 
   const trapezoidGeometry = useMemo(() => {
@@ -139,6 +117,7 @@ function IndustrialBox({
         <boxGeometry args={[w, thickness, d]} />
       </mesh>
 
+      {/* FRONT - siempre en la base por ahora */}
       <mesh material={material} position={[0, baseHeight / 2, d / 2 - thickness / 2]} castShadow receiveShadow>
         <boxGeometry args={[w, baseHeight, thickness]} />
       </mesh>
@@ -153,6 +132,19 @@ function IndustrialBox({
 
       <mesh material={material} position={[w / 2 - thickness / 2, baseHeight / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[thickness, baseHeight, d]} />
+      </mesh>
+
+      {/* ALETAS LATERALES - base por defecto */}
+      <mesh material={material} position={[-w / 2 - thickness / 2, baseHeight + flapHeight / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[thickness, flapHeight, d]} />
+      </mesh>
+      <mesh material={material} position={[w / 2 + thickness / 2, baseHeight + flapHeight / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[thickness, flapHeight, d]} />
+      </mesh>
+
+      {/* Tuck frontal - base por defecto */}
+      <mesh material={material} position={[0, baseHeight + tuckHeight / 2, d / 2 + thickness / 2]} castShadow receiveShadow>
+        <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
       </mesh>
 
       {/* ===== TAPA ===== */}
@@ -202,84 +194,34 @@ function IndustrialBox({
           </Text>
         )}
 
-        {/* ALETAS EN TAPA */}
-        {flapsLocation === "lid" && (
-          <>
-            {/* Lateral izquierda */}
-            <mesh
-              material={material}
-              position={[-w / 2 - thickness / 2, flapHeight / 2, 0]}
-            >
-              <boxGeometry args={[thickness, flapHeight, d]} />
-            </mesh>
-
-            {/* Lateral derecha */}
-            <mesh
-              material={material}
-              position={[w / 2 + thickness / 2, flapHeight / 2, 0]}
-            >
-              <boxGeometry args={[thickness, flapHeight, d]} />
-            </mesh>
-
-            {/* Tuck frontal */}
-            {flapType === "rectangular" ? (
-              <mesh
-                material={material}
-                position={[0, tuckHeight / 2, d / 2 + thickness / 2]}
-              >
-                <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
-              </mesh>
-            ) : (
-              <mesh
-                material={material}
-                geometry={trapezoidGeometry}
-                position={[0, 0, d / 2 + thickness / 2]}
-                rotation={[-Math.PI / 2, 0, 0]}
-              />
-            )}
-          </>
-        )}
+        {/* ALETAS EN TAPA - removidas para estandarizar en base por ahora o viceversa */}
 
       </group>
 
       {/* ===== ALETAS EN BASE ===== */}
-
-      {flapsLocation === "base" && (
-        <>
-          {/* Lateral izquierda */}
-          <mesh
-            material={material}
-            position={[-w / 2 - thickness / 2, baseHeight + flapHeight / 2, 0]}
-          >
-            <boxGeometry args={[thickness, flapHeight, d]} />
-          </mesh>
-
-          {/* Lateral derecha */}
-          <mesh
-            material={material}
-            position={[w / 2 + thickness / 2, baseHeight + flapHeight / 2, 0]}
-          >
-            <boxGeometry args={[thickness, flapHeight, d]} />
-          </mesh>
-
-          {/* Tuck frontal */}
-          {flapType === "rectangular" ? (
-            <mesh
-              material={material}
-              position={[0, baseHeight + tuckHeight / 2, d / 2 + thickness / 2]}
-            >
-              <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
-            </mesh>
-          ) : (
-            <mesh
-              material={material}
-              geometry={trapezoidGeometry}
-              position={[0, baseHeight, d / 2 + thickness / 2]}
-              rotation={[-Math.PI / 2, 0, 0]}
-            />
-          )}
-        </>
-      )}
+      <>
+        {/* Lateral izquierda */}
+        <mesh
+          material={material}
+          position={[-w / 2 - thickness / 2, baseHeight + flapHeight / 2, 0]}
+        >
+          <boxGeometry args={[thickness, flapHeight, d]} />
+        </mesh>
+        {/* Lateral derecha */}
+        <mesh
+          material={material}
+          position={[w / 2 + thickness / 2, baseHeight + flapHeight / 2, 0]}
+        >
+          <boxGeometry args={[thickness, flapHeight, d]} />
+        </mesh>
+        {/* Tuck frontal */}
+        <mesh
+          material={material}
+          position={[0, baseHeight + tuckHeight / 2, d / 2 + thickness / 2]}
+        >
+          <boxGeometry args={[flapWidth, tuckHeight, thickness]} />
+        </mesh>
+      </>
 
     </group>
   );

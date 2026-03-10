@@ -173,15 +173,9 @@ export default function ProductSection(props: ProductSectionProps) {
                                                             height={Number(formData.height)}
                                                             depth={Number(formData.depth)}
                                                             materialData={selectedMaterial}
-                                                            customMaterialTexture={formData.materialTexture}
                                                             baseColor={formData.baseColor}
                                                             isOpen={isOpen}
-                                                            hingeEdge={formData.hingeEdge}
-                                                            flapsLocation={formData.flapsLocation}
-                                                            flapHeightPercent={Number(formData.flapHeightPercent)}
-                                                            flapWidthOffset={Number(formData.flapWidthOffset)}
-                                                            flapType={formData.flapType}
-                                                            tuckFlapHeightPercent={Number(formData.tuckFlapHeightPercent)}
+                                                            text={formData.name}
                                                         />
                                                     );
                                                 })()}
@@ -207,24 +201,6 @@ export default function ProductSection(props: ProductSectionProps) {
                                                 {boxShapes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.type})</option>)}
                                             </select>
 
-                                            <label>Mecánica Manual</label>
-                                            <div className={styles.typeGrid}>
-                                                <button
-                                                    type="button"
-                                                    className={formData.boxType === 'standard' ? styles.typeBtnActive : styles.typeBtn}
-                                                    onClick={() => setFormData({ ...formData, boxType: 'standard' })}
-                                                >Estandar</button>
-                                                <button
-                                                    type="button"
-                                                    className={formData.boxType === 'lid-base' ? styles.typeBtnActive : styles.typeBtn}
-                                                    onClick={() => setFormData({ ...formData, boxType: 'lid-base' })}
-                                                >Tapa/Base</button>
-                                                <button
-                                                    type="button"
-                                                    className={formData.boxType === 'drawer' ? styles.typeBtnActive : styles.typeBtn}
-                                                    onClick={() => setFormData({ ...formData, boxType: 'drawer' })}
-                                                >Cajón</button>
-                                            </div>
                                         </>
                                     )}
                                 </div>
@@ -315,79 +291,6 @@ export default function ProductSection(props: ProductSectionProps) {
                                             </div>
                                         </div>
 
-                                        {formData.boxType === 'standard' && (
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '0.5rem' }}>
-                                                <div className={styles.inputGroup}>
-                                                    <label>Ubicación de la Bisagra</label>
-                                                    <div className={styles.typeToggle}>
-                                                        <button
-                                                            type="button"
-                                                            className={formData.hingeEdge === 'long' ? styles.typeBtnActive : styles.typeBtn}
-                                                            onClick={() => setFormData({ ...formData, hingeEdge: 'long' })}
-                                                        >Lado Largo</button>
-                                                        <button
-                                                            type="button"
-                                                            className={formData.hingeEdge === 'short' ? styles.typeBtnActive : styles.typeBtn}
-                                                            onClick={() => setFormData({ ...formData, hingeEdge: 'short' })}
-                                                        >Lado Corto</button>
-                                                    </div>
-                                                </div>
-
-                                                <div className={styles.inputGroup}>
-                                                    <label>Aletas de Cierre</label>
-                                                    <div className={styles.typeToggle}>
-                                                        <button
-                                                            type="button"
-                                                            className={formData.flapsLocation === 'base' ? styles.typeBtnActive : styles.typeBtn}
-                                                            onClick={() => {
-                                                                setFormData({ ...formData, flapsLocation: 'base' });
-                                                                setIsOpen(true);
-                                                            }}
-                                                        >En la Caja</button>
-                                                        <button
-                                                            type="button"
-                                                            className={formData.flapsLocation === 'lid' ? styles.typeBtnActive : styles.typeBtn}
-                                                            onClick={() => {
-                                                                setFormData({ ...formData, flapsLocation: 'lid' });
-                                                                setIsOpen(true);
-                                                            }}
-                                                        >En la Tapa</button>
-                                                    </div>
-                                                </div>
-
-                                                <div className={styles.dimensionsRow}>
-                                                    <div className={styles.inputGroup}>
-                                                        <label>Alto Aleta (%)</label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.05"
-                                                            value={formData.flapHeightPercent}
-                                                            onChange={(e) => setFormData({ ...formData, flapHeightPercent: parseFloat(e.target.value) || 0 })}
-                                                        />
-                                                    </div>
-                                                    <div className={styles.inputGroup}>
-                                                        <label>Ajuste Ancho</label>
-                                                        <input
-                                                            type="number"
-                                                            step="0.1"
-                                                            value={formData.flapWidthOffset}
-                                                            onChange={(e) => setFormData({ ...formData, flapWidthOffset: parseFloat(e.target.value) || 0 })}
-                                                        />
-                                                    </div>
-                                                    <div className={styles.inputGroup}>
-                                                        <label>Forma Aleta</label>
-                                                        <select
-                                                            value={formData.flapType}
-                                                            onChange={(e) => setFormData({ ...formData, flapType: e.target.value as any })}
-                                                            style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                                                        >
-                                                            <option value="rectangular">Rectangular</option>
-                                                            <option value="trapezoidal">Trapecio</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
                                 )}
 
@@ -423,35 +326,6 @@ export default function ProductSection(props: ProductSectionProps) {
                                             </div>
                                         </div>
 
-                                        {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
-                                            <div className={styles.inputGroup}>
-                                                <label>Diseño 3D (Arte)</label>
-                                                <div className={styles.uploadBox}>
-                                                    {formData.boxTexture ? (
-                                                        <>
-                                                            <img src={formData.boxTexture} alt="Preview" className={styles.previewImg} />
-                                                            <button
-                                                                type="button"
-                                                                className={styles.deleteFileBtn}
-                                                                onClick={() => setFormData((prev: any) => ({ ...prev, boxTexture: '' }))}
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
-                                                        </>
-                                                    ) : (
-                                                        <div className={styles.emptyUpload}>
-                                                            <Layers size={20} />
-                                                            <span>Subir Arte</span>
-                                                        </div>
-                                                    )}
-                                                    <input
-                                                        type="file"
-                                                        accept="image/*"
-                                                        onChange={(e) => handleFileUpload(e, 'boxTexture')}
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
                                     </div>
 
                                     {(formData.displayMode === 'photos' || formData.displayMode === 'both') && (

@@ -80,9 +80,7 @@ Total: $${total.toLocaleString()}
                 height={product.dimensions?.height || 20}
                 depth={product.dimensions?.depth || 30}
                 materialData={currentMaterial}
-                customMaterialTexture={product.customMaterialTexture}
                 baseColor={product.baseColor}
-                hingeEdge={product.hingeEdge}
                 isOpen={isOpen}
                 text={text}
               />

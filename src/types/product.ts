@@ -12,7 +12,6 @@ export interface Product {
     description: string;
     category: string;
     image: string;      // Base image for cards
-    boxTexture: string; // The texture used for the 3D model (top of the box)
     displayMode?: 'photos' | '3d' | 'both';
     images?: {
         url: string;
