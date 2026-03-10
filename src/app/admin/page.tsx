@@ -24,11 +24,9 @@ const TabProducts = dynamic(() => import('./modules/TabProducts'));
 const TabCollections = dynamic(() => import('./modules/TabCollections'));
 const TabSettings = dynamic(() => import('./modules/TabSettings'));
 const TabMaterials = dynamic(() => import('./modules/TabMaterials'));
-const TabShapes = dynamic(() => import('./modules/TabShapes'));
 const TabAccount = dynamic(() => import('./modules/TabAccount'));
 const TabQuotes = dynamic(() => import('./modules/TabQuotes'));
 const ModalProduct = dynamic(() => import('./modules/ModalProduct'));
-const ModalShape = dynamic(() => import('./modules/ModalShape'));
 const ModalMaterial = dynamic(() => import('./modules/ModalMaterial'));
 const ModalCollection = dynamic(() => import('./modules/ModalCollection'));
 const ModalTextConfig = dynamic(() => import('./modules/ModalTextConfig'));
@@ -39,7 +37,7 @@ export default function AdminPage() {
         settings, updateSettings, products, collections,
         addProduct, updateProduct, deleteProduct,
         addCollection, updateCollection, deleteCollection,
-        materials, boxShapes, addBoxShape, updateBoxShape, deleteBoxShape,
+        materials,
         addMaterial, updateMaterial, deleteMaterial
     } = useSettings();
 
@@ -65,18 +63,10 @@ export default function AdminPage() {
     }, []);
 
     // --- FORM STATES ---
-    const [showShapeForm, setShowShapeForm] = useState(false);
-    const [editingShape, setEditingShape] = useState<any>(null);
-    const [shapeFormData, setShapeFormData] = useState({
-        name: '', type: 'standard', width: 4, height: 2, depth: 4, hingeEdge: 'long',
-        flapsLocation: 'base', flapHeightPercent: 0.25, flapWidthOffset: -0.2,
-        flapType: 'rectangular', tuckFlapHeightPercent: 0.15
-    });
-
     const [showMaterialForm, setShowMaterialForm] = useState(false);
     const [editingMaterial, setEditingMaterial] = useState<any>(null);
     const [materialFormData, setMaterialFormData] = useState({
-        name: '', textureUrl: '', baseColor: '#e3c5a8'
+        name: '', textureUrl: ''
     });
 
     const [showCollectionForm, setShowCollectionForm] = useState(false);
@@ -87,11 +77,9 @@ export default function AdminPage() {
 
     const [formData, setFormData] = useState({
         name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
-        image: '', boxTexture: '', displayMode: '3d' as '3d' | 'photos' | 'both',
-        images: [] as any[], width: 4, height: 2, depth: 4, boxType: 'standard',
-        materialId: 'carton-kraft', baseColor: '#F9F1E7', materialTexture: '',
-        shapeId: '', hingeEdge: 'long', flapsLocation: 'base', flapHeightPercent: 0.25,
-        flapWidthOffset: -0.2, flapType: 'rectangular', tuckFlapHeightPercent: 0.15,
+        image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
+        images: [] as any[], width: 4, height: 2, depth: 4,
+        materialId: 'carton-kraft', baseColor: '#F9F1E7',
         priceTiers: [] as any[]
     });
 
@@ -152,7 +140,7 @@ export default function AdminPage() {
         setFormData({
             ...formData,
             name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
-            image: '', boxTexture: '', displayMode: '3d', images: [], priceTiers: []
+            image: '', displayMode: '3d', images: [], priceTiers: []
         });
         setCurrentStep(1); setShowProductForm(true);
     };
@@ -161,14 +149,11 @@ export default function AdminPage() {
         setEditingProduct(p);
         setFormData({
             name: p.name, price: p.price, category: p.category, description: p.description,
-            image: p.image || '', boxTexture: p.boxTexture || '', displayMode: p.displayMode || '3d',
+            image: p.image || '', displayMode: p.displayMode || '3d',
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
             width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
-            boxType: p.boxType || 'standard', materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
-            materialTexture: p.customMaterialTexture || '', shapeId: p.shapeId || '', hingeEdge: p.hingeEdge || 'long',
-            flapsLocation: p.flapsLocation || 'base', flapHeightPercent: p.flapHeightPercent || 0.25,
-            flapWidthOffset: p.flapWidthOffset || -0.2, flapType: p.flapType || 'rectangular',
-            tuckFlapHeightPercent: p.tuckFlapHeightPercent || 0.15, priceTiers: p.priceTiers || []
+            materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
+            priceTiers: p.priceTiers || []
         });
         setCurrentStep(1); setShowProductForm(true);
     };
@@ -183,9 +168,7 @@ export default function AdminPage() {
             id: editingProduct ? editingProduct.id : Date.now().toString(),
             ...formData,
             dimensions: { width: Number(formData.width), height: Number(formData.height), depth: Number(formData.depth) },
-            baseColor: formData.baseColor || selectedMaterial?.baseColor || '#F9F1E7',
-            flapHeightPercent: Number(formData.flapHeightPercent), flapWidthOffset: Number(formData.flapWidthOffset),
-            tuckFlapHeightPercent: Number(formData.tuckFlapHeightPercent)
+            baseColor: formData.baseColor || '#F9F1E7'
         };
         if (editingProduct) updateProduct(newP as any); else addProduct(newP as any);
         showToast(editingProduct ? "Producto actualizado" : "Producto añadido");
@@ -238,14 +221,6 @@ export default function AdminPage() {
         }
     };
 
-    const handleShapeChange = (shapeId: string) => {
-        const s = boxShapes.find(x => x.id === shapeId);
-        if (s) setFormData({
-            ...formData, shapeId: s.id, boxType: s.type, width: s.defaultDimensions.width, height: s.defaultDimensions.height, depth: s.defaultDimensions.depth,
-            hingeEdge: s.hingeEdge || 'long', flapsLocation: s.flapsLocation || 'base', flapHeightPercent: s.flapHeightPercent || 0.25, flapWidthOffset: s.flapWidthOffset || -0.2, flapType: s.flapType || 'rectangular', tuckFlapHeightPercent: s.tuckFlapHeightPercent || 0.15
-        });
-        else setFormData({ ...formData, shapeId: '' });
-    };
 
     const handleTierChange = (idx: number, field: string, value: any) => {
         const tiers = [...formData.priceTiers];
@@ -261,12 +236,6 @@ export default function AdminPage() {
         setFormData({ ...formData, images: imgs });
     };
 
-    const handleSubmitShape = (e: React.FormEvent) => {
-        e.preventDefault();
-        const newS = { id: editingShape ? editingShape.id : `shape_${Date.now()}`, ...shapeFormData, defaultDimensions: { width: Number(shapeFormData.width), height: Number(shapeFormData.height), depth: Number(shapeFormData.depth) } };
-        if (editingShape) updateBoxShape(newS as any); else addBoxShape(newS as any);
-        showToast("Forma guardada"); setShowShapeForm(false);
-    };
 
     const handleSubmitMaterial = (e: React.FormEvent) => {
         e.preventDefault();
@@ -330,7 +299,6 @@ export default function AdminPage() {
                     <button className={activeTab === 'collections' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('collections'); setMobileMenuOpen(false); }}><Layers size={20} /><span>Colecciones</span></button>
                     <button className={activeTab === 'settings' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}><SettingsIcon size={20} /><span>Configuración</span></button>
                     <button className={activeTab === 'materials' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}><Palette size={20} /><span>Materiales</span></button>
-                    <button className={activeTab === 'shapes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('shapes'); setMobileMenuOpen(false); }}><Box size={20} /><span>Formas 3D</span></button>
                     <button className={activeTab === 'quotes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('quotes'); setMobileMenuOpen(false); }}><FileText size={20} /><span>Cotizaciones</span></button>
                     <button className={activeTab === 'account' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('account'); setMobileMenuOpen(false); }}><User size={20} /><span>Cuenta</span></button>
                     <button className={styles.navItem} onClick={() => signOut()} style={{ marginTop: 'auto', color: '#ef4444' }}><LogOut size={20} /><span>Cerrar Sesión</span></button>
@@ -346,8 +314,7 @@ export default function AdminPage() {
                         onChange={handleSettingChange} onFileUpload={handleFileUpload} onRemoveHeroImage={removeHeroImage} onResetColors={handleResetColors}
                     />
                 )}
-                {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '', baseColor: '#FFFFFF' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl, baseColor: m.baseColor || '#FFFFFF' }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
-                {activeTab === 'shapes' && <TabShapes boxShapes={boxShapes} onAdd={() => { setEditingShape(null); setShapeFormData({ name: '', type: 'standard', width: 4, height: 2, depth: 4, hingeEdge: 'long', flapsLocation: 'base', flapHeightPercent: 0.25, flapWidthOffset: -0.2, flapType: 'rectangular', tuckFlapHeightPercent: 0.15 }); setShowShapeForm(true); }} onEdit={s => { setEditingShape(s); setShapeFormData({ name: s.name, type: s.type, width: s.defaultDimensions.width, height: s.defaultDimensions.height, depth: s.defaultDimensions.depth, hingeEdge: s.hingeEdge || 'long', flapsLocation: s.flapsLocation || 'base', flapHeightPercent: s.flapHeightPercent || 0.25, flapWidthOffset: s.flapWidthOffset || -0.2, flapType: s.flapType || 'rectangular', tuckFlapHeightPercent: s.tuckFlapHeightPercent || 0.15 }); setShowShapeForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteBoxShape(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
             </main>
@@ -355,15 +322,14 @@ export default function AdminPage() {
             <ModalProduct
                 showProductForm={showProductForm} setShowProductForm={setShowProductForm} editingProduct={editingProduct}
                 formData={formData} setFormData={setFormData} isMobileView={isMobileView} currentStep={currentStep} totalSteps={totalSteps}
-                materials={materials} collections={collections} boxShapes={boxShapes} isBoxOpen={isBoxOpen} setIsBoxOpen={setIsBoxOpen}
-                handleSubmitProduct={handleSubmitProduct} handleFileUpload={handleFileUpload} handleShapeChange={handleShapeChange}
+                materials={materials} collections={collections} isBoxOpen={isBoxOpen} setIsBoxOpen={setIsBoxOpen}
+                handleSubmitProduct={handleSubmitProduct} handleFileUpload={handleFileUpload}
                 handleAddTier={() => setFormData(prev => ({ ...prev, priceTiers: [...prev.priceTiers, { minQty: 1, maxQty: null, unitPrice: prev.price }] }))}
                 handleRemoveTier={idx => setFormData(prev => ({ ...prev, priceTiers: prev.priceTiers.filter((_, i) => i !== idx) }))}
                 handleTierChange={handleTierChange} prevStep={() => setCurrentStep(prev => Math.max(prev - 1, 1))} nextStep={() => setCurrentStep(prev => Math.min(prev + 1, totalSteps))}
                 toggleImageCustomization={idx => { const imgs = [...formData.images]; imgs[idx].isCustomizable = !imgs[idx].isCustomizable; setFormData({ ...formData, images: imgs }); if (imgs[idx].isCustomizable) setEditingImageConfig(idx); }}
                 removeGalleryImage={idx => setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))} setEditingImageConfig={setEditingImageConfig}
             />
-            <ModalShape showShapeForm={showShapeForm} setShowShapeForm={setShowShapeForm} editingShape={editingShape} shapeFormData={shapeFormData} setShapeFormData={setShapeFormData} handleSubmitShape={handleSubmitShape} />
             <ModalMaterial showMaterialForm={showMaterialForm} setShowMaterialForm={setShowMaterialForm} editingMaterial={editingMaterial} materialFormData={materialFormData} setMaterialFormData={setMaterialFormData} handleSubmitMaterial={handleSubmitMaterial} onFileUpload={handleFileUpload} />
             <ModalCollection showCollectionForm={showCollectionForm} setShowCollectionForm={setShowCollectionForm} editingCollection={editingCollection} collectionFormData={collectionFormData} setCollectionFormData={setCollectionFormData} handleSubmitCollection={handleSubmitCollection} />
             <ModalTextConfig editingImageConfig={editingImageConfig} formData={formData} setEditingImageConfig={setEditingImageConfig} handleConfigChange={handleConfigChange} />

@@ -28,12 +28,10 @@ interface ModalProductProps {
     totalSteps: number;
     materials: any[];
     collections: any[];
-    boxShapes: any[];
     isBoxOpen: boolean;
     setIsBoxOpen: (open: boolean) => void;
     handleSubmitProduct: (e: React.FormEvent) => void;
     handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, field: any) => void;
-    handleShapeChange: (id: string) => void;
     handleAddTier: () => void;
     handleRemoveTier: (idx: number) => void;
     handleTierChange: (idx: number, field: string, value: any) => void;
@@ -55,12 +53,10 @@ const ModalProduct: React.FC<ModalProductProps> = ({
     totalSteps,
     materials,
     collections,
-    boxShapes,
     isBoxOpen,
     setIsBoxOpen,
     handleSubmitProduct,
     handleFileUpload,
-    handleShapeChange,
     handleAddTier,
     handleRemoveTier,
     handleTierChange,
@@ -108,15 +104,9 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                                 height={Number(formData.height)}
                                                 depth={Number(formData.depth)}
                                                 materialData={selectedMaterial}
-                                                customMaterialTexture={formData.materialTexture}
                                                 baseColor={formData.baseColor}
                                                 isOpen={isBoxOpen}
-                                                hingeEdge={formData.hingeEdge as "long" | "short"}
-                                                flapsLocation={formData.flapsLocation as "base" | "lid"}
-                                                flapHeightPercent={Number(formData.flapHeightPercent)}
-                                                flapWidthOffset={Number(formData.flapWidthOffset)}
-                                                flapType={formData.flapType as "rectangular" | "trapezoidal"}
-                                                tuckFlapHeightPercent={Number(formData.tuckFlapHeightPercent)}
+                                                tuckFlapHeightPercent={0.15}
                                             />
                                         );
                                     })()}
@@ -220,39 +210,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                             <div className={`${styles.formGroup} ${styles.slideContent} ${(isMobileView && currentStep !== 2) ? styles.hideOnMobile : ''}`}>
                                 <h3 className={styles.formGroupTitle}>Dimensiones y Mecánica</h3>
 
-                                <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
-                                    <label>Modelo / Forma Preset</label>
-                                    <select
-                                        className={styles.pSelect}
-                                        value={formData.shapeId || ''}
-                                        onChange={(e) => handleShapeChange(e.target.value)}
-                                        style={{ width: '100%', padding: '0.8rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}
-                                    >
-                                        <option value="">-- Personalizado / Ninguna --</option>
-                                        {boxShapes.map(s => <option key={s.id} value={s.id}>{s.name} ({s.type})</option>)}
-                                    </select>
-                                </div>
 
-                                <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
-                                    <label>Mecánica Manual</label>
-                                    <div className={styles.typeGrid}>
-                                        <button
-                                            type="button"
-                                            className={formData.boxType === 'standard' ? styles.typeBtnActive : styles.typeBtn}
-                                            onClick={() => setFormData((prev: any) => ({ ...prev, boxType: 'standard' }))}
-                                        >Estandar</button>
-                                        <button
-                                            type="button"
-                                            className={formData.boxType === 'lid-base' ? styles.typeBtnActive : styles.typeBtn}
-                                            onClick={() => setFormData((prev: any) => ({ ...prev, boxType: 'lid-base' }))}
-                                        >Tapa/Base</button>
-                                        <button
-                                            type="button"
-                                            className={formData.boxType === 'drawer' ? styles.typeBtnActive : styles.typeBtn}
-                                            onClick={() => setFormData((prev: any) => ({ ...prev, boxType: 'drawer' }))}
-                                        >Cajón</button>
-                                    </div>
-                                </div>
                                 <div className={styles.dimensionsRow}>
                                     <div className={styles.inputGroup}>
                                         <label>Ancho (cm)</label>
@@ -279,80 +237,6 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                         />
                                     </div>
                                 </div>
-
-                                {formData.boxType === 'standard' && (
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '0.5rem' }}>
-                                        <div className={styles.inputGroup}>
-                                            <label>Ubicación de la Bisagra</label>
-                                            <div className={styles.typeToggle}>
-                                                <button
-                                                    type="button"
-                                                    className={formData.hingeEdge === 'long' ? styles.typeBtnActive : styles.typeBtn}
-                                                    onClick={() => setFormData((prev: any) => ({ ...prev, hingeEdge: 'long' }))}
-                                                >Lado Largo</button>
-                                                <button
-                                                    type="button"
-                                                    className={formData.hingeEdge === 'short' ? styles.typeBtnActive : styles.typeBtn}
-                                                    onClick={() => setFormData((prev: any) => ({ ...prev, hingeEdge: 'short' }))}
-                                                >Lado Corto</button>
-                                            </div>
-                                        </div>
-
-                                        <div className={styles.inputGroup}>
-                                            <label>Aletas de Cierre</label>
-                                            <div className={styles.typeToggle}>
-                                                <button
-                                                    type="button"
-                                                    className={formData.flapsLocation === 'base' ? styles.typeBtnActive : styles.typeBtn}
-                                                    onClick={() => {
-                                                        setFormData((prev: any) => ({ ...prev, flapsLocation: 'base' }));
-                                                        setIsBoxOpen(true);
-                                                    }}
-                                                >En la Caja</button>
-                                                <button
-                                                    type="button"
-                                                    className={formData.flapsLocation === 'lid' ? styles.typeBtnActive : styles.typeBtn}
-                                                    onClick={() => {
-                                                        setFormData((prev: any) => ({ ...prev, flapsLocation: 'lid' }));
-                                                        setIsBoxOpen(true);
-                                                    }}
-                                                >En la Tapa</button>
-                                            </div>
-                                        </div>
-
-                                        <div className={styles.dimensionsRow}>
-                                            <div className={styles.inputGroup}>
-                                                <label>Alto Aleta (%)</label>
-                                                <input
-                                                    type="number"
-                                                    step="0.05"
-                                                    value={formData.flapHeightPercent}
-                                                    onChange={(e) => setFormData((prev: any) => ({ ...prev, flapHeightPercent: parseFloat(e.target.value) || 0 }))}
-                                                />
-                                            </div>
-                                            <div className={styles.inputGroup}>
-                                                <label>Ajuste Ancho</label>
-                                                <input
-                                                    type="number"
-                                                    step="0.1"
-                                                    value={formData.flapWidthOffset}
-                                                    onChange={(e) => setFormData((prev: any) => ({ ...prev, flapWidthOffset: parseFloat(e.target.value) || 0 }))}
-                                                />
-                                            </div>
-                                            <div className={styles.inputGroup}>
-                                                <label>Forma Aleta</label>
-                                                <select
-                                                    value={formData.flapType}
-                                                    onChange={(e) => setFormData((prev: any) => ({ ...prev, flapType: e.target.value as any }))}
-                                                    style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}
-                                                >
-                                                    <option value="rectangular">Rectangular</option>
-                                                    <option value="trapezoidal">Trapecio</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         )}
 
@@ -425,7 +309,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                     <div className={styles.galleryGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
                                         {formData.images.map((img: any, idx: number) => (
                                             <div key={idx} className={styles.galleryItem} style={{ position: 'relative', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                                <img src={(img.url || img) || '/placeholder.png'} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                <img src={img.url || (typeof img === 'string' ? img : '/placeholder.png')} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                 {img.textConfig && (
                                                     <div
                                                         style={{

@@ -50,7 +50,7 @@ function IndustrialBox({
   const baseHeight = h - lidHeight;
 
   const thickness =
-    ((materialData?.thickness_mm ?? 3) / 10) / scaleFactor;
+    ((3) / 10) / scaleFactor;
 
   /* ================= MATERIAL ================= */
 
@@ -70,9 +70,9 @@ function IndustrialBox({
 
     return new THREE.MeshStandardMaterial({
       map: map ?? undefined,
-      color: map ? "#ffffff" : materialData?.baseColor || baseColor || "#e5e5e5",
-      roughness: materialData?.roughness ?? 0.75,
-      metalness: materialData?.metalness ?? 0.05,
+      color: map ? "#ffffff" : baseColor || "#e5e5e5",
+      roughness: 0.75,
+      metalness: 0.05,
     });
   }, [materialData, customMaterialTexture, baseColor, width, depth]);
 

@@ -7,11 +7,10 @@ export const revalidate = 3600; // Cache for 1 hour
 export async function GET() {
     try {
         // Fetch all data in parallel to minimize wait time
-        const [settingsData, rawProducts, collections, materials, rawShapes] = await Promise.all([
+        const [settingsData, rawProducts, collections, materials] = await Promise.all([
             prisma.setting.findFirst(),
             prisma.product.findMany({
                 include: {
-                    images: true,
                     priceTiers: {
                         orderBy: {
                             minQty: 'asc'
@@ -20,8 +19,7 @@ export async function GET() {
                 },
             }),
             prisma.collection.findMany(),
-            prisma.material.findMany(),
-            prisma.boxShape.findMany()
+            prisma.material.findMany()
         ]);
 
         // 1. Process Settings (Create defaults if missing)
@@ -37,31 +35,12 @@ export async function GET() {
 
         // 2. Map Products
         const products = rawProducts.map((p: any) => {
-            const { width, height, depth, images, priceTiers, ...rest } = p;
+            const { width, height, depth, priceTiers, ...rest } = p;
             return {
                 ...rest,
                 dimensions: { width, height, depth },
                 customMaterialTexture: p.materialTexture,
-                images: images.map((img: any) => ({
-                    url: img.url,
-                    isCustomizable: img.isCustomizable,
-                    textConfig: {
-                        x: img.textX,
-                        y: img.textY,
-                        rotation: img.rotation,
-                        scale: img.scale
-                    }
-                })),
                 priceTiers: priceTiers || []
-            };
-        });
-
-        // 3. Map Box Shapes
-        const boxShapes = rawShapes.map(s => {
-            const { width, height, depth, ...rest } = s;
-            return {
-                ...rest,
-                defaultDimensions: { width, height, depth }
             };
         });
 
@@ -69,8 +48,7 @@ export async function GET() {
             settings,
             products,
             collections,
-            materials,
-            boxShapes
+            materials
         };
 
         return new NextResponse(JSON.stringify(bootstrapData), {

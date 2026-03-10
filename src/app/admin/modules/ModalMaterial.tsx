@@ -44,22 +44,6 @@ const ModalMaterial: React.FC<ModalMaterialProps> = ({
                             />
                         </div>
                         <div className={styles.inputGroup}>
-                            <label>Color Dominante (Para bordes/interior)</label>
-                            <div className={styles.colorWrapper}>
-                                <input
-                                    type="color"
-                                    value={materialFormData.baseColor || '#FFFFFF'}
-                                    onChange={(e) => setMaterialFormData((prev: any) => ({ ...prev, baseColor: e.target.value }))}
-                                />
-                                <input
-                                    type="text"
-                                    value={materialFormData.baseColor || '#FFFFFF'}
-                                    onChange={(e) => setMaterialFormData((prev: any) => ({ ...prev, baseColor: e.target.value }))}
-                                    placeholder="#000000"
-                                />
-                            </div>
-                        </div>
-                        <div className={styles.inputGroup}>
                             <label>Imagen de Textura</label>
                             <div className={styles.uploadBox}>
                                 {materialFormData.textureUrl ? (

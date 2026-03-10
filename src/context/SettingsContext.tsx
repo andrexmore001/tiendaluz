@@ -1,25 +1,12 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections, boxShapes as initialBoxShapes } from '@/lib/data';
-import { Product, BoxShape, Collection } from '@/types/product';
+import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections } from '@/lib/data';
+import { Product, Collection } from '@/types/product';
 
 export interface Material {
     id: string;
     name: string;
-
-    /* Tipo físico */
-    type: "corrugated" | "mdf" | "wood";
-
-    /* Propiedades industriales */
-    thickness_mm: number;
-    tolerance_mm: number;
-    stiffness_factor: number;
-
-    /* Visual */
     textureUrl?: string;
-    baseColor?: string;
-    roughness?: number;
-    metalness?: number;
 }
 
 interface SettingsContextType {
@@ -34,10 +21,6 @@ interface SettingsContextType {
     updateCollection: (collection: Collection) => void;
     deleteCollection: (id: string) => void;
     materials: Material[];
-    boxShapes: BoxShape[];
-    addBoxShape: (shape: BoxShape) => void;
-    updateBoxShape: (shape: BoxShape) => void;
-    deleteBoxShape: (id: string) => void;
     addMaterial: (material: Material) => void;
     updateMaterial: (material: Material) => void;
     deleteMaterial: (id: string) => void;
@@ -51,7 +34,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SiteSettings>(initialSettings);
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [collections, setCollections] = useState<Collection[]>(initialCollections);
-    const [boxShapes, setBoxShapes] = useState<BoxShape[]>(initialBoxShapes);
     const [materials, setMaterials] = useState<Material[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -68,7 +50,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 const data = await response.json();
 
                 if (data && !data.error) {
-                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials, boxShapes: resShapes } = data;
+                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials } = data;
 
                     if (resSettings) {
                         setSettings({
@@ -90,7 +72,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             },
                             heroTitle: resSettings.heroTitle || '',
                             heroSubtitle: resSettings.heroSubtitle || '',
-                            heroImages: resSettings.heroImages ? JSON.parse(resSettings.heroImages) : [],
+                            heroImages: Array.isArray(resSettings.heroImages) ? resSettings.heroImages : [],
                             updatedAt: resSettings.updatedAt
                         });
                     }
@@ -98,7 +80,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                     if (Array.isArray(resProducts)) setProducts(resProducts);
                     if (Array.isArray(resCollections)) setCollections(resCollections);
                     if (Array.isArray(resMaterials)) setMaterials(resMaterials);
-                    if (Array.isArray(resShapes)) setBoxShapes(resShapes);
                 }
 
             } catch (e) {
@@ -213,42 +194,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const addBoxShape = async (shape: BoxShape) => {
-        setBoxShapes(prev => [...prev, shape]);
-        try {
-            await fetch('/api/box-shapes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(shape)
-            });
-        } catch (e) {
-            console.error("Error adding shape", e);
-        }
-    };
-
-    const updateBoxShape = async (updatedShape: BoxShape) => {
-        setBoxShapes(prev => prev.map(s => s.id === updatedShape.id ? updatedShape : s));
-        try {
-            await fetch('/api/box-shapes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedShape)
-            });
-        } catch (e) {
-            console.error("Error updating shape", e);
-        }
-    };
-
-    const deleteBoxShape = async (id: string) => {
-        setBoxShapes(prev => prev.filter(s => s.id !== id));
-        try {
-            await fetch(`/api/box-shapes?id=${id}`, {
-                method: 'DELETE',
-            });
-        } catch (e) {
-            console.error("Error deleting shape", e);
-        }
-    };
 
     const addMaterial = async (material: Material) => {
         setMaterials(prev => [...prev, material]);
@@ -310,10 +255,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             updateCollection,
             deleteCollection,
             materials,
-            boxShapes,
-            addBoxShape,
-            updateBoxShape,
-            deleteBoxShape,
             addMaterial,
             updateMaterial,
             deleteMaterial,
