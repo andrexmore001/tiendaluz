@@ -1,0 +1,4 @@
+nombre;precio;categoria;descripcion;imagen;ancho;alto;profundidad;modelo;material;color;modo;galeria
+Caja de Regalo Premium;15000;;Caja elegante para regalos especiales;https://res.cloudinary.com/demo/image/upload/gift-box.jpg;;;;;;;photos;"https://res.cloudinary.com/demo/image/upload/box1.jpg;https://res.cloudinary.com/demo/image/upload/box1.jpg"
+Empaque Ecológico;8000;;Caja de cartón reciclado;https://res.cloudinary.com/demo/image/upload/eco-box.jpg;;;;;;;photos;"https://res.cloudinary.com/demo/image/upload/box1.jpg;https://res.cloudinary.com/demo/image/upload/box1.jpg"
+Caja de Joyería;5000;;Pequeña caja para anillos o collares;https://res.cloudinary.com/demo/image/upload/jewelry-box.jpg;;;;;;;photos;"https://res.cloudinary.com/demo/image/upload/box1.jpg;https://res.cloudinary.com/demo/image/upload/box1.jpg"
