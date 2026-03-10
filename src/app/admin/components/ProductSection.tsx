@@ -404,7 +404,7 @@ export default function ProductSection(props: ProductSectionProps) {
                                                         <button
                                                             type="button"
                                                             className={styles.deleteFileBtn}
-                                                            onClick={() => setFormData(prev => ({ ...prev, image: '' }))}
+                                                            onClick={() => setFormData((prev: any) => ({ ...prev, image: '' }))}
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>

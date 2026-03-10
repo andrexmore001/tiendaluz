@@ -34,7 +34,7 @@ export let siteSettings: SiteSettings = {
         background: '#FFFFFF',
     },
     contact: {
-        phone: '+57 311 565 9523',
+        phone: '3115659523',
         email: 'hola@artesana.com',
         address: 'Bogotá, Colombia',
         instagram: 'artesana.detalles',

@@ -57,9 +57,14 @@ export default function Hero() {
                     {subtitle}
                 </p>
                 <div className={styles.ctaGroup}>
-                    <Link href="/personalizar" className="btn-primary">
-                        Diseñar mi caja
-                    </Link>
+                    <a
+                        href={`https://wa.me/${settings.contact.phone.replace(/\D/g, '')}`}
+                        className="btn-primary"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Personalicemos algo juntos
+                    </a>
                     <Link href="/productos" className={styles.secondaryBtn}>
                         Ver Colecciones
                     </Link>

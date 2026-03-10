@@ -70,7 +70,7 @@ Total: $${total.toLocaleString()}
       <div className={`${styles.container} container`}>
         <div className={styles.visualizer}>
           <div className={styles.badge}>
-            {currentView === '3d' ? 'Vista Previa 3D' : 'Galería de Fotos'}
+            {currentView === '3d' ? 'Vista Previa' : 'Galería de Fotos'}
           </div>
 
           {currentView === '3d' ? (
