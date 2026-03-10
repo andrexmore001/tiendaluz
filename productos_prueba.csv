@@ -1,0 +1,6 @@
+nombre,precio,categoria,descripcion,imagen,ancho,alto,profundidad
+"Caja de Regalo Artesana",15000,"Especiales","Caja elegante con acabado mate y cinta decorativa.","https://res.cloudinary.com/dtnrgadz4/image/upload/v1741555000/artesana/sample1.jpg",12,8,12
+"Caja Corrugada Kraft",8500,"Empaque","Caja resistente ideal para envíos de productos pequeños.","https://res.cloudinary.com/dtnrgadz4/image/upload/v1741555000/artesana/sample2.jpg",10,5,10
+"Estuche de Joyería",22000,"Lujo","Estuche premium con interior aterciopelado para joyas.","https://res.cloudinary.com/dtnrgadz4/image/upload/v1741555000/artesana/sample3.jpg",6,4,6
+"Caja para Picnic",35000,"Eventos","Caja grande con asas reforzadas para transporte de alimentos.","",25,15,25
+"Caja de Navidad Edición Limitada",18900,"Temporada","Diseño festivo con motivos navideños y barniz brillante.","https://res.cloudinary.com/dtnrgadz4/image/upload/v1741555000/artesana/sample4.jpg",15,10,15

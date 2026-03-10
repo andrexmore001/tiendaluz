@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import { Plus, Edit, Trash2, Package } from 'lucide-react';
+import { Plus, Edit, Trash2, Package, Upload } from 'lucide-react';
 import styles from '../admin.module.css';
 import { Product } from '@/types/product';
 import TabHeader from './TabHeader';
@@ -14,12 +14,65 @@ interface TabProductsProps {
 }
 
 const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDelete, onMenuClick }) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [isUploading, setIsUploading] = React.useState(false);
+
+    const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const csvText = event.target?.result as string;
+            try {
+                const res = await fetch('/api/products/bulk', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ csv: csvText })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert(`Éxito: ${data.message}`);
+                    window.location.reload(); // Simple way to refresh products via bootstrap
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error during bulk upload:', error);
+                alert('Ocurrió un error al subir el archivo.');
+            } finally {
+                setIsUploading(false);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+            }
+        };
+        reader.readAsText(file);
+    };
+
     return (
         <div className={styles.tabContent}>
             <TabHeader title="Gestión de Productos" onMenuClick={onMenuClick}>
-                <button className="btn-primary" onClick={onAdd}>
-                    <Plus size={20} /> Agregar Producto
-                </button>
+                <div style={{ display: 'flex', gap: '0.8rem' }}>
+                    <input
+                        type="file"
+                        accept=".csv"
+                        ref={fileInputRef}
+                        onChange={handleBulkUpload}
+                        style={{ display: 'none' }}
+                    />
+                    <button
+                        className={styles.secondaryBtn}
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                    >
+                        {isUploading ? <Upload className={styles.animateSpin} size={18} /> : <Upload size={18} />}
+                        <span>{isUploading ? 'Subiendo...' : 'Carga Masiva (CSV)'}</span>
+                    </button>
+                    <button className="btn-primary" onClick={onAdd}>
+                        <Plus size={20} /> Agregar Producto
+                    </button>
+                </div>
             </TabHeader>
 
             <div className={styles.productTable}>
