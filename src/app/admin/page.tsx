@@ -81,7 +81,7 @@ export default function AdminPage() {
         name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
         image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
         images: [] as any[], width: 4, height: 2, depth: 4,
-        materialId: 'carton-kraft', baseColor: '#F9F1E7', modelUrl: '',
+        materialId: '', baseColor: '#F9F1E7', modelUrl: '',
         priceTiers: [] as any[]
     });
 
@@ -143,7 +143,8 @@ export default function AdminPage() {
         setFormData({
             ...formData,
             name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
-            image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: ''
+            image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
+            materialId: materials[0]?.id || ''
         });
         setCurrentStep(1); setShowProductForm(true);
     };

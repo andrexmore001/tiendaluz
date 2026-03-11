@@ -40,7 +40,11 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const data = await request.json();
-        const { id, images, dimensions, priceTiers, ...rest } = data;
+        const { id, images, dimensions, priceTiers, materialId, ...rest } = data;
+
+        if (!materialId) {
+            return NextResponse.json({ error: 'El ID de material es obligatorio' }, { status: 400 });
+        }
 
         const baseData = {
             name: rest.name,
@@ -52,7 +56,7 @@ export async function POST(request: Request) {
             width: Number(dimensions?.width || rest.width || 4),
             height: Number(dimensions?.height || rest.height || 2),
             depth: Number(dimensions?.depth || rest.depth || 4),
-            materialId: rest.materialId || 'carton-kraft',
+            materialId: materialId,
             baseColor: rest.baseColor || '#F9F1E7',
             modelUrl: rest.modelUrl || '',
             images: images || [], // Now a JSON field

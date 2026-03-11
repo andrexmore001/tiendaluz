@@ -84,7 +84,10 @@ export async function POST(req: Request) {
             if (!product.category) product.category = 'General';
             if (!product.description) product.description = '';
             if (!product.displayMode) product.displayMode = '3d';
-            if (!product.materialId) product.materialId = 'carton-kraft';
+            if (!product.materialId) {
+                // We'll let the existing validation logic handle the error message
+                product.materialId = '';
+            }
             if (!product.baseColor) product.baseColor = '#F9F1E7';
 
             // Validate relations
