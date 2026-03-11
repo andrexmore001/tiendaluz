@@ -1,5 +1,5 @@
 .navbar {
-    height: 80px;
+    height: 115px;
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.82);
@@ -23,7 +23,7 @@
 }
 
 .logoImg {
-    height: 75px;
+    height: 105px;
     width: auto;
     object-fit: contain;
     transition: var(--transition);
@@ -91,12 +91,12 @@
     }
 
     .logoImg {
-        height: 60px;
+        height: 85px;
     }
 
     .links {
         position: fixed;
-        top: 80px;
+        top: 115px;
         left: 0;
         right: 0;
         background: white;
