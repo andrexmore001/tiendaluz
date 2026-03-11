@@ -216,8 +216,8 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                         </div>
                         <div className={styles.inputGroup}>
                             <label>Logo de la Marca</label>
-                            <div className={styles.fileRow} style={{ marginTop: 0 }}>
-                                <div className={styles.uploadBox}>
+                            <div className={styles.formRow} style={{ marginTop: '0.5rem', gap: '2rem' }}>
+                                <div className={styles.uploadBox} style={{ flex: '0 0 150px' }}>
                                     {localSettings.logo ? (
                                         <>
                                             <img src={localSettings.logo} alt="Logo preview" className={styles.previewImg} />
@@ -234,18 +234,26 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                                     ) : (
                                         <div className={styles.emptyUpload}>
                                             <Plus size={24} />
-                                            <span>Subir Logo</span>
+                                            <span>Subir</span>
                                             <input type="file" accept="image/*" onChange={(e) => onFileUpload(e, 'logo')} />
                                         </div>
                                     )}
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                                    <p style={{ fontSize: '0.8rem', color: '#64748b', margin: 0 }}>
-                                        Se recomienda un archivo PNG o SVG transparente.
-                                    </p>
-                                    <p style={{ fontSize: '0.8rem', color: '#64748b', margin: '0.5rem 0 0 0' }}>
-                                        Tamaño sugerido: 400x120px.
-                                    </p>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div className={styles.inputGroup} style={{ margin: 0 }}>
+                                        <label style={{ fontSize: '0.8rem', color: '#64748b' }}>O pega una URL de Cloudinary:</label>
+                                        <input
+                                            type="text"
+                                            value={localSettings.logo || ''}
+                                            onChange={(e) => onChange('logo', e.target.value)}
+                                            placeholder="https://res.cloudinary.com/..."
+                                            style={{ fontSize: '0.85rem' }}
+                                        />
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                        <p style={{ margin: 0 }}>PNG o SVG transparente recomendado.</p>
+                                        <p style={{ margin: '0.2rem 0 0 0' }}>Tamaño sugerido: 400x120px.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
