@@ -334,7 +334,14 @@ export default function AdminPage() {
                 formData={formData} setFormData={setFormData} isMobileView={isMobileView} currentStep={currentStep} totalSteps={totalSteps}
                 materials={materials} collections={collections}
                 handleSubmitProduct={handleSubmitProduct} handleFileUpload={handleFileUpload}
-                handleAddTier={() => setFormData(prev => ({ ...prev, priceTiers: [...prev.priceTiers, { minQty: 1, maxQty: null, unitPrice: prev.price }] }))}
+                handleAddTier={() => {
+                    const lastTier = formData.priceTiers[formData.priceTiers.length - 1];
+                    const nextMinQty = lastTier ? (Number(lastTier.maxQty || lastTier.minQty) + 1) : 1;
+                    setFormData(prev => ({
+                        ...prev,
+                        priceTiers: [...prev.priceTiers, { minQty: nextMinQty, maxQty: null, unitPrice: prev.price }]
+                    }));
+                }}
                 handleRemoveTier={idx => setFormData(prev => ({ ...prev, priceTiers: prev.priceTiers.filter((_, i) => i !== idx) }))}
                 handleTierChange={handleTierChange} prevStep={() => setCurrentStep(prev => Math.max(prev - 1, 1))} nextStep={() => setCurrentStep(prev => Math.min(prev + 1, totalSteps))}
                 toggleImageCustomization={idx => { const imgs = [...formData.images]; imgs[idx].isCustomizable = !imgs[idx].isCustomizable; setFormData({ ...formData, images: imgs }); if (imgs[idx].isCustomizable) setEditingImageConfig(idx); }}
