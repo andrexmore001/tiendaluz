@@ -22,7 +22,7 @@ export default function Navbar() {
 
                 <Link href="/" className={styles.logo}>
                     {settings.logo ? (
-                        <img src={settings.logo} alt={settings.title} style={{ height: '40px', objectFit: 'contain' }} />
+                        <img src={settings.logo} alt={settings.title} className={styles.logoImg} />
                     ) : (
                         settings.title.toUpperCase()
                     )}

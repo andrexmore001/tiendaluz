@@ -13,7 +13,7 @@ export default function Footer() {
                 <div className={styles.info}>
                     <Link href="/" className={styles.logo}>
                         {settings.logo ? (
-                            <img src={settings.logo} alt={settings.title} style={{ height: '60px', objectFit: 'contain', marginBottom: '1rem' }} />
+                            <img src={settings.logo} alt={settings.title} className={styles.logoImg} />
                         ) : (
                             settings.title.toUpperCase()
                         )}
