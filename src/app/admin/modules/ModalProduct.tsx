@@ -307,7 +307,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
 
                             {(formData.displayMode === 'photos' || formData.displayMode === 'both') && (
                                 <div className={styles.gallerySection} style={{ marginTop: '2rem' }}>
-                                    <label>Galería de Imágenes (Mínimo 2 para modo fotos)</label>
+                                    <label>Galería de Imágenes</label>
                                     <div className={styles.galleryGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
                                         {formData.images.map((img: any, idx: number) => (
                                             <div key={idx} className={styles.galleryItem} style={{ position: 'relative', height: '100px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>

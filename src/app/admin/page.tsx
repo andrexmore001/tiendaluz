@@ -165,9 +165,6 @@ export default function AdminPage() {
 
     const handleSubmitProduct = (e: React.FormEvent) => {
         e.preventDefault();
-        if ((formData.displayMode === 'photos' || formData.displayMode === 'both') && formData.images.length < 2) {
-            showToast("El modo fotos requiere al menos 2 imágenes"); return;
-        }
         const selectedMaterial = materials.find(m => m.id === formData.materialId);
         const newP = {
             id: editingProduct ? editingProduct.id : Date.now().toString(),

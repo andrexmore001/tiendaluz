@@ -26,6 +26,12 @@ export default function ProductosPage() {
 
                 {/* Collections Filter Navigation */}
                 <nav className={styles.collectionNav}>
+                    <button
+                        className={`${styles.colBtn} ${activeCollection === "Todas" ? styles.colBtnActive : ''}`}
+                        onClick={() => setActiveCollection("Todas")}
+                    >
+                        Todas
+                    </button>
                     {collections.map(col => (
                         <button
                             key={col.id}
