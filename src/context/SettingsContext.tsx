@@ -37,6 +37,7 @@ interface SettingsContextType {
     deleteMessage: (id: string) => void;
     markMessageAsRead: (id: string) => void;
     refreshMessages: () => Promise<void>;
+    isLoaded: boolean;
     storageError: string | null;
     clearAllData: () => void;
 }
@@ -87,8 +88,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             heroTitle: resSettings.heroTitle || '',
                             heroSubtitle: resSettings.heroSubtitle || '',
                             heroImages: Array.isArray(resSettings.heroImages) ? resSettings.heroImages : [],
-                            chatBusinessId: resSettings.chatBusinessId || 'mvp-test-123',
-                            chatApiKey: resSettings.chatApiKey || 'key_test_123',
+                            chatBusinessId: resSettings.chatBusinessId || '',
+                            chatApiKey: resSettings.chatApiKey || '',
                             updatedAt: resSettings.updatedAt
                         });
                     }
@@ -322,6 +323,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             deleteMessage,
             markMessageAsRead,
             refreshMessages,
+            isLoaded,
             storageError,
             clearAllData
         }}>

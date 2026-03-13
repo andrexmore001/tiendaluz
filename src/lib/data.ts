@@ -42,8 +42,8 @@ export let siteSettings: SiteSettings = {
         instagram: 'artesana.detalles',
         facebook: 'artesana.detalles',
     },
-    chatBusinessId: 'mvp-test-123',
-    chatApiKey: 'key_test_123'
+    chatBusinessId: '',
+    chatApiKey: ''
 };
 
 export const collections: Collection[] = [];

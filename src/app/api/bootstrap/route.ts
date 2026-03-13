@@ -66,7 +66,7 @@ export async function GET() {
         return new NextResponse(JSON.stringify(bootstrapData), {
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59',
+                'Cache-Control': 'public, max-age=0, s-maxage=1, stale-while-revalidate=59, must-revalidate',
             },
         });
     } catch (error) {
