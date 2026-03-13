@@ -6,18 +6,22 @@ const DynamicFavicon = () => {
     const { settings } = useSettings();
 
     useEffect(() => {
-        if (settings.logo) {
-            // Remove existing favicons
-            const links = document.querySelectorAll("link[rel*='icon']");
-            links.forEach(link => link.parentNode?.removeChild(link));
+        if (!settings.logo) return;
 
-            // Create new favicon link
-            const link = document.createElement('link');
-            link.type = 'image/x-icon';
+        // Try to find existing dynamic favicon or create one
+        let link = document.querySelector("link[rel*='icon'][data-dynamic='true']") as HTMLLinkElement;
+
+        if (!link) {
+            link = document.createElement('link');
             link.rel = 'shortcut icon';
-            link.href = settings.logo;
-            document.getElementsByTagName('head')[0].appendChild(link);
+            link.dataset.dynamic = 'true';
+            document.head.appendChild(link);
         }
+
+        link.href = settings.logo;
+
+        // Note: We don't remove other icons here to avoid React/Next.js removeChild errors.
+        // Browsers prioritize the last icon added or specific rel types.
     }, [settings.logo]);
 
     return null;

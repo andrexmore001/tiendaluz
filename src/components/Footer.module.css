@@ -17,7 +17,7 @@
 }
 
 .logoImg {
-    height: 105px;
+    height: 155px;
     width: auto;
     object-fit: contain;
     transition: var(--transition);

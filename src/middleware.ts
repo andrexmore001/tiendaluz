@@ -14,8 +14,9 @@ export default auth((req) => {
     const isApiRoute = nextUrl.pathname.startsWith("/api");
     const isAuthRoute = nextUrl.pathname.startsWith("/api/auth");
     const isReadMethods = ["GET", "OPTIONS"].includes(req.method);
+    const isPublicApiRoute = nextUrl.pathname === "/api/contact" && req.method === "POST";
 
-    if (isApiRoute && !isAuthRoute && !isReadMethods && !isLoggedIn) {
+    if (isApiRoute && !isAuthRoute && !isReadMethods && !isPublicApiRoute && !isLoggedIn) {
         return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

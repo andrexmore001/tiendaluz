@@ -297,8 +297,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    // Prevent hydration mismatch by only rendering once loaded
-    if (!isLoaded) return null;
+    // We no longer return null here to avoid hydration mismatches.
+    // The provider will render with initialSettings first.
 
     return (
         <SettingsContext.Provider value={{

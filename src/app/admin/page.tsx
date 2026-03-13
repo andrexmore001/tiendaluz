@@ -289,7 +289,7 @@ export default function AdminPage() {
                 <div className={styles.sidebarHeader}>
                     {settings.logo ? (
                         <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-                            <img src={settings.logo} alt="Logo" style={{ height: '70px', objectFit: 'contain' }} />
+                            <img src={settings.logo} alt="Logo" style={{ height: '100px', objectFit: 'contain' }} />
                         </div>
                     ) : (
                         <h2 className={styles.adminTitle}>{settings.title} Admin</h2>
