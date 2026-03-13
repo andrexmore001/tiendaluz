@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   description: "Marca femenina dedicada a la venta de cajas personalizadas y regalos especiales. Detalles hechos con amor.",
 };
 
+import ChatWidget from '@/components/ChatWidget';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -34,6 +36,7 @@ export default function RootLayout({
             <DynamicStyles />
             <DynamicFavicon />
             {children}
+            <ChatWidget />
           </SettingsProvider>
         </SessionProvider>
       </body>
