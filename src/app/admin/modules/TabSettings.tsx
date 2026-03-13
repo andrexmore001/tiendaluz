@@ -329,7 +329,34 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                         </div>
                     </div>
                 </section>
-
+ 
+                {/* Chat Bot Configuration */}
+                <section className={styles.settingsSection}>
+                    <h3><MessageCircle size={20} /> Configuración del Chat Bot</h3>
+                    <div className={styles.formStack}>
+                        <div className={styles.formRow}>
+                            <div className={styles.inputGroup}>
+                                <label>Business ID (Identificador del Bot)</label>
+                                <input
+                                    type="text"
+                                    value={localSettings.chatBusinessId || ''}
+                                    onChange={(e) => onChange('chatBusinessId', e.target.value)}
+                                    placeholder="Ej: mvp-test-123"
+                                />
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label>API Key</label>
+                                <input
+                                    type="password"
+                                    value={localSettings.chatApiKey || ''}
+                                    onChange={(e) => onChange('chatApiKey', e.target.value)}
+                                    placeholder="Ej: key_test_123"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+ 
                 {/* Info */}
                 <section className={styles.settingsSection}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -24,6 +24,8 @@ model Setting {
   heroTitle       String?
   heroSubtitle    String?
   heroImages      Json?
+  chatBusinessId  String?  @default("mvp-test-123")
+  chatApiKey      String?  @default("key_test_123")
   updatedAt       DateTime @updatedAt
 }
 

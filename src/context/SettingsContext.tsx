@@ -87,6 +87,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             heroTitle: resSettings.heroTitle || '',
                             heroSubtitle: resSettings.heroSubtitle || '',
                             heroImages: Array.isArray(resSettings.heroImages) ? resSettings.heroImages : [],
+                            chatBusinessId: resSettings.chatBusinessId || 'mvp-test-123',
+                            chatApiKey: resSettings.chatApiKey || 'key_test_123',
                             updatedAt: resSettings.updatedAt
                         });
                     }

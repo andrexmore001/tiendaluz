@@ -20,6 +20,8 @@ export interface SiteSettings {
     heroTitle?: string;
     heroSubtitle?: string;
     heroImages?: string[];
+    chatBusinessId?: string;
+    chatApiKey?: string;
     updatedAt?: string;
 }
 
@@ -39,7 +41,9 @@ export let siteSettings: SiteSettings = {
         address: 'Bogotá, Colombia',
         instagram: 'artesana.detalles',
         facebook: 'artesana.detalles',
-    }
+    },
+    chatBusinessId: 'mvp-test-123',
+    chatApiKey: 'key_test_123'
 };
 
 export const collections: Collection[] = [];
