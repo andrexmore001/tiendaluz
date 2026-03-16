@@ -1,5 +1,5 @@
 "use client";
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductModel from "@/components/Three/ProductModel";
@@ -14,19 +14,37 @@ export default function CustomizerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { products, settings, materials } = useSettings();
+  const { products, settings, materials, isLoaded } = useSettings();
 
   const product = products.find((p) => p.id === id) || products[0];
 
   const [text, setText] = useState("");
   const [quantity, setQuantity] = useState(1);
 
-  const currentMaterial =
-    materials.find((m) => m.id === product.materialId) ||
-    materials.find((m) => m.id === "carton-kraft");
+  const currentMaterial = product ?
+    (materials.find((m) => m.id === product.materialId) ||
+    materials.find((m) => m.id === "carton-kraft")) : undefined;
 
-  const [currentView, setCurrentView] = useState<'3d' | 'photos'>(product.displayMode === 'photos' ? 'photos' : '3d');
+  const [currentView, setCurrentView] = useState<'3d' | 'photos'>(product?.displayMode === 'photos' ? 'photos' : '3d');
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+
+  useEffect(() => {
+    if (product) {
+      setCurrentView(product.displayMode === 'photos' ? 'photos' : '3d');
+    }
+  }, [product?.displayMode]);
+
+  if (!isLoaded || !product) {
+    return (
+      <main style={{ minHeight: "100vh", background: "#fcfcfc", display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p>{!isLoaded ? "Cargando producto..." : "Producto no encontrado"}</p>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   const displayPhotos = product.images && product.images.length > 0 ? product.images : [product.image];
 
