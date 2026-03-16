@@ -45,7 +45,7 @@ export default function ProductosPage() {
 
                 <div className={styles.grid}>
                     {filteredProducts.map(product => (
-                        <div key={product.id} className={styles.card}>
+                        <Link key={product.id} href={`/personalizar/${product.id}`} className={styles.card} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
                             <div className={styles.imageBox}>
                                 <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} />
                             </div>
@@ -53,11 +53,11 @@ export default function ProductosPage() {
                                 <span className={styles.category}>{product.category}</span>
                                 <h3>{product.name}</h3>
                                 <p className={styles.price}>${product.price.toLocaleString()}</p>
-                                <Link href={`/personalizar/${product.id}`} className={styles.productBtn}>
-                                    Comprar
-                                </Link>
+                                <span className={styles.productBtn}>
+                                    Añadir al carrito
+                                </span>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
 

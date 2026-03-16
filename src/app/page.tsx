@@ -30,18 +30,18 @@ export default function Home() {
         </p>
         <div className={styles.productGrid}>
           {products.slice(0, 4).map(product => (
-            <div key={product.id} className={styles.productCard}>
+            <Link key={product.id} href={`/personalizar/${product.id}`} className={styles.productCard} style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}>
               <div className={styles.productImage}>
                 <img src={getOptimizedUrl(product.image, 500) || '/placeholder.png'} alt={product.name} loading="lazy" />
               </div>
               <div className={styles.productInfo}>
                 <h3>{product.name}</h3>
                 <p className={styles.price}>${product.price.toLocaleString()}</p>
-                <Link href={`/personalizar/${product.id}`} className="btn-primary" style={{ display: 'block' }}>
-                  Comprar
-                </Link>
+                <span className="btn-primary" style={{ display: 'block' }}>
+                  Añadir al carrito
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
