@@ -147,7 +147,7 @@ Total: $${total.toLocaleString()}
             <p className={styles.price}>
               ${currentUnitPrice.toLocaleString()} <span className={styles.unitText}>por unidad</span>
             </p>
-            <p className={styles.description}>{product.description}</p>
+            <p className={styles.description} style={{ whiteSpace: 'pre-wrap' }}>{product.description}</p>
           </div>
 
           {/* TABLA DE PRECIOS POR VOLUMEN */}
