@@ -165,7 +165,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 <button className={styles.menuTrigger} onClick={onMenuClick}>Menu</button>
             </header>
 
-            <div className={styles.quoteCreatorGrid} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            <div className={styles.quoteCreatorGrid}>
                 {/* Form Side */}
                 <div className={styles.quoteForm}>
                     <div className={styles.formGroup}>
@@ -231,7 +231,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
 
                         <div className={styles.quoteItemsList}>
                             {quoteData.items.map((item, idx) => (
-                                <div key={idx} className={styles.quoteItemRow} style={{ display: 'grid', gridTemplateColumns: '2fr 100px 1fr 40px', gap: '1rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', marginBottom: '0.5rem', alignItems: 'center' }}>
+                                <div key={idx} className={styles.quoteItemRow}>
                                     <div>
                                         <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{item.description}</p>
                                         <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Unit: ${item.unitPrice.toLocaleString()}</p>

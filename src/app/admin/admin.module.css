@@ -998,6 +998,47 @@
     }
 }
 
+/* --- Quotes Tab --- */
+.quoteCreatorGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .quoteCreatorGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.quoteItemRow {
+    display: grid;
+    grid-template-columns: 2fr 100px 1fr 40px;
+    gap: 1rem;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    align-items: center;
+}
+
+@media (max-width: 640px) {
+    .quoteItemRow {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .quoteItemRow > input {
+        width: 100%;
+    }
+    .quoteItemRow > p {
+        text-align: left !important;
+    }
+    .iconBtnDelete {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
 /* --- Messages Tab --- */
 .messagesGrid {
     padding: 2rem;
