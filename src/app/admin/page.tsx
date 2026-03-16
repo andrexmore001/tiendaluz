@@ -213,7 +213,20 @@ export default function AdminPage() {
                 if (data.url) {
                     if (field === 'logo') setLocalSettings(prev => ({ ...prev, logo: data.url }));
                     else if (field === 'textureUrl') setMaterialFormData(prev => ({ ...prev, [field]: data.url }));
-                    else setFormData(prev => ({ ...prev, [field]: data.url }));
+                    else {
+                        setFormData(prev => {
+                            const newFormData = { ...prev, [field]: data.url };
+                            // If they just uploaded the cover image, automatically add it to the gallery
+                            if (field === 'image') {
+                                // Check if it's already in the gallery to avoid duplicates
+                                const alreadyInGallery = newFormData.images.some((img: any) => img.url === data.url);
+                                if (!alreadyInGallery) {
+                                    newFormData.images = [{ url: data.url, isCustomizable: false }, ...newFormData.images];
+                                }
+                            }
+                            return newFormData;
+                        });
+                    }
                 }
             }
             showToast("Imagen subida con éxito");

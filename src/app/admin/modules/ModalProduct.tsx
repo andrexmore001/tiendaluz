@@ -255,7 +255,12 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                                 <button
                                                     type="button"
                                                     className={styles.deleteFileBtn}
-                                                    onClick={() => setFormData((prev: any) => ({ ...prev, image: '' }))}
+                                                    onClick={() => setFormData((prev: any) => ({
+                                                        ...prev,
+                                                        image: '',
+                                                        // También quita de la galería si estaba allí
+                                                        images: prev.images.filter((img: any) => img.url !== prev.image)
+                                                    }))}
                                                 >
                                                     <Trash2 size={14} />
                                                 </button>
