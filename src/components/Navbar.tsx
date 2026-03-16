@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ShoppingBag, Menu, X, User } from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useSettings } from '@/context/SettingsContext';
+import SearchBar from './SearchBar/SearchBar';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
@@ -35,14 +36,17 @@ export default function Navbar() {
                     <Link href="/contacto" onClick={() => setIsOpen(false)}>Contacto</Link>
                 </div>
 
-                <div className={styles.actions}>
-                    <button className={styles.actionBtn}>
-                        <User size={20} />
-                    </button>
-                    <button className={styles.actionBtn}>
-                        <ShoppingBag size={20} />
-                        <span className={styles.cartCount}>0</span>
-                    </button>
+                <div className={styles.navRight}>
+                    <SearchBar />
+                    <div className={styles.actions}>
+                        <button className={styles.actionBtn}>
+                            <User size={20} />
+                        </button>
+                        <button className={styles.actionBtn}>
+                            <ShoppingBag size={20} />
+                            <span className={styles.cartCount}>0</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>
