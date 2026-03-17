@@ -4,8 +4,9 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductModel from "@/components/Three/ProductModel";
 import { useSettings } from "@/context/SettingsContext";
+import { useCart } from "@/context/CartContext";
 import { getOptimizedUrl } from "@/lib/cloudinary";
-import { Type, Image as ImageIcon, MessageCircle } from "lucide-react";
+import { Type, Image as ImageIcon, MessageCircle, ShoppingBag } from "lucide-react";
 import styles from "./customizer.module.css";
 
 export default function CustomizerPage({
@@ -15,6 +16,7 @@ export default function CustomizerPage({
 }) {
   const { id } = use(params);
   const { products, settings, materials, isLoaded } = useSettings();
+  const { addToCart, openCart, getProductQuantity, cartItems } = useCart();
 
   const product = products.find((p) => p.id === id) || products[0];
 
@@ -66,14 +68,33 @@ export default function CustomizerPage({
 
   const handleWhatsApp = () => {
     const phoneNumber = settings.contact.phone.replace(/\s+/g, "");
-    const total = currentUnitPrice * quantity;
-    const message = `Hola, quiero comprar:
-Producto: ${product.name}
-Cantidad: ${quantity}
-Precio Unitario: $${currentUnitPrice.toLocaleString()}
-Texto personalizado: ${text || "Sin texto"}
-Total: $${total.toLocaleString()}
-`;
+    const currentItemTotal = currentUnitPrice * quantity;
+
+    let message = "Hola, me gustaría realizar el siguiente pedido:\n\n";
+    let grandTotal = currentItemTotal;
+
+    // 1. Add current item being customized
+    message += `1. ${quantity}x ${product.name} - $${currentItemTotal.toLocaleString()}`;
+    if (text) {
+      message += `\n   Texto: "${text}"`;
+    }
+    message += "\n\n";
+
+    // 2. Add existing cart items if any
+    if (cartItems && cartItems.length > 0) {
+      cartItems.forEach((item, index) => {
+        const itemTotal = item.unitPrice * item.quantity;
+        grandTotal += itemTotal;
+        message += `${index + 2}. ${item.quantity}x ${item.name} - $${itemTotal.toLocaleString()}`;
+        if (item.customText) {
+          message += `\n   Texto: "${item.customText}"`;
+        }
+        message += "\n\n";
+      });
+    }
+
+    message += `*Total estimado:* $${grandTotal.toLocaleString()}COP`;
+
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
   };
@@ -143,7 +164,15 @@ Total: $${total.toLocaleString()}
 
         <aside className={styles.controls}>
           <div className={styles.productHeader}>
-            <h1>{product.name}</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <h1>{product.name}</h1>
+              {getProductQuantity(product.id) > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--secondary)', color: 'var(--text-color)', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                  <ShoppingBag size={14} />
+                  {getProductQuantity(product.id)} en carrito
+                </div>
+              )}
+            </div>
             <p className={styles.price}>
               ${currentUnitPrice.toLocaleString()} <span className={styles.unitText}>por unidad</span>
             </p>
@@ -259,13 +288,34 @@ Total: $${total.toLocaleString()}
               </div>
             </div>
 
-            <button
-              className={styles.whatsappBtn}
-              onClick={handleWhatsApp}
-            >
-              <MessageCircle size={20} />
-              Finalizar por WhatsApp
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+              <button
+                className="btn-primary"
+                style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                onClick={() => {
+                  addToCart({
+                    productId: product.id,
+                    name: product.name,
+                    image: getOptimizedUrl(displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || '', 150) || '/placeholder.png',
+                    quantity: quantity,
+                    unitPrice: currentUnitPrice,
+                    customText: text || undefined
+                  });
+                  openCart();
+                }}
+              >
+                <ShoppingBag size={20} />
+                Añadir al Carrito
+              </button>
+
+              <button
+                className={styles.whatsappBtn}
+                onClick={handleWhatsApp}
+              >
+                <MessageCircle size={20} />
+                Comprar Ahora
+              </button>
+            </div>
           </div>
         </aside>
       </div>

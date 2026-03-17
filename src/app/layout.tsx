@@ -5,6 +5,8 @@ import { SettingsProvider } from '@/context/SettingsContext';
 import DynamicStyles from '@/components/DynamicStyles';
 import DynamicFavicon from '@/components/Branding/DynamicFavicon';
 import { SessionProvider } from 'next-auth/react';
+import { CartProvider } from '@/context/CartContext';
+import CartDrawer from '@/components/CartDrawer';
 
 const inter = Inter({
   variable: "--font-body",
@@ -33,10 +35,13 @@ export default function RootLayout({
       <body className={`${inter.variable} ${playfair.variable}`}>
         <SessionProvider>
           <SettingsProvider>
-            <DynamicStyles />
-            <DynamicFavicon />
-            {children}
-            <ChatWidget />
+            <CartProvider>
+              <DynamicStyles />
+              <DynamicFavicon />
+              {children}
+              <CartDrawer />
+              <ChatWidget />
+            </CartProvider>
           </SettingsProvider>
         </SessionProvider>
       </body>

@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { ShoppingBag, Menu, X, User } from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useSettings } from '@/context/SettingsContext';
+import { useCart } from '@/context/CartContext';
 import SearchBar from './SearchBar/SearchBar';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const { settings } = useSettings();
+    const { cartCount, toggleCart } = useCart();
 
     return (
         <nav className={styles.navbar}>
@@ -42,9 +44,11 @@ export default function Navbar() {
                         <button className={styles.actionBtn}>
                             <User size={20} />
                         </button>
-                        <button className={styles.actionBtn}>
+                        <button className={styles.actionBtn} onClick={toggleCart} aria-label="Abrir carrito">
                             <ShoppingBag size={20} />
-                            <span className={styles.cartCount}>0</span>
+                            {cartCount > 0 && (
+                                <span className={styles.cartCount}>{cartCount}</span>
+                            )}
                         </button>
                     </div>
                 </div>
