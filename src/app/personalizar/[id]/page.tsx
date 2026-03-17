@@ -16,12 +16,25 @@ export default function CustomizerPage({
 }) {
   const { id } = use(params);
   const { products, settings, materials, isLoaded } = useSettings();
-  const { addToCart, openCart, getProductQuantity, cartItems } = useCart();
+  const { addToCart, updateQuantity, openCart, getProductQuantity, cartItems } = useCart();
 
   const product = products.find((p) => p.id === id) || products[0];
 
   const [text, setText] = useState("");
   const [quantity, setQuantity] = useState(1);
+
+  // Sync with global cart quantity for this specific generic product
+  // Listen to getProductQuantity so if they change it in the drawer, the UI updates
+  useEffect(() => {
+    if (product) {
+      const globalQty = getProductQuantity(product.id);
+      if (globalQty > 0) {
+        setQuantity(globalQty);
+      } else {
+        setQuantity(1); // Reset to 1 if removed entirely from cart
+      }
+    }
+  }, [product, getProductQuantity, cartItems]);
 
   const currentMaterial = product ?
     (materials.find((m) => m.id === product.materialId) ||
@@ -50,16 +63,14 @@ export default function CustomizerPage({
 
   const displayPhotos = product.images && product.images.length > 0 ? product.images : [product.image];
 
-  // Calculate tiered price
+  // Calculate tiered price based strictly on the current input quantity
   const getTieredPrice = () => {
     if (!product.priceTiers || product.priceTiers.length === 0) return product.price;
 
-    const projectedQty = getProductQuantity(product.id) + quantity;
-
     // Find the tier that matches the quantity
     const activeTier = product.priceTiers.find(tier => {
-      const minMatch = projectedQty >= tier.minQty;
-      const maxMatch = tier.maxQty === null || tier.maxQty === undefined || projectedQty <= tier.maxQty;
+      const minMatch = quantity >= tier.minQty;
+      const maxMatch = tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty;
       return minMatch && maxMatch;
     });
 
@@ -194,15 +205,14 @@ export default function CustomizerPage({
               <div className={styles.tableBody}>
                 {/* Pre-tier (range from 1 to the first tier's minQty - 1 if it starts > 1) */}
                 {product.priceTiers[0].minQty > 1 && (
-                  <div className={`${styles.tableRow} ${getProductQuantity(product.id) + quantity < product.priceTiers[0].minQty ? styles.activeRow : ''}`}>
+                  <div className={`${styles.tableRow} ${quantity < product.priceTiers[0].minQty ? styles.activeRow : ''}`}>
                     <span>1 - {product.priceTiers[0].minQty - 1}</span>
                     <span>${product.price.toLocaleString()}</span>
                   </div>
                 )}
 
                 {product.priceTiers.map((tier, idx) => {
-                  const projectedQty = getProductQuantity(product.id) + quantity;
-                  const isActive = projectedQty >= tier.minQty && (tier.maxQty === null || tier.maxQty === undefined || projectedQty <= tier.maxQty);
+                  const isActive = quantity >= tier.minQty && (tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty);
                   const label = tier.maxQty ? `${tier.minQty} - ${tier.maxQty}` : `${tier.minQty}+`;
                   const discount = product.price > 0
                     ? Math.round(((product.price - tier.unitPrice) / product.price) * 100)
@@ -299,14 +309,26 @@ export default function CustomizerPage({
                 className="btn-primary"
                 style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
                 onClick={() => {
-                  addToCart({
-                    productId: product.id,
-                    name: product.name,
-                    image: getOptimizedUrl(displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || '', 150) || '/placeholder.png',
-                    quantity: quantity,
-                    unitPrice: product.price,
-                    customText: text || undefined
-                  });
+                  const normalizedText = text || undefined;
+                  const existingItem = cartItems.find(
+                    item => item.productId === product.id && item.customText === normalizedText
+                  );
+
+                  if (existingItem) {
+                    // Update exact absolute quantity if modifying existing personalized item
+                    updateQuantity(existingItem.id, quantity);
+                  } else {
+                    // It's a brand new custom variant, so just add it completely fresh
+                    addToCart({
+                      productId: product.id,
+                      name: product.name,
+                      image: getOptimizedUrl(displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || '', 150) || '/placeholder.png',
+                      quantity: quantity,
+                      unitPrice: product.price,
+                      customText: normalizedText
+                    });
+                  }
+                  
                   openCart();
                 }}
               >

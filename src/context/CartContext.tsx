@@ -59,9 +59,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cartItems, isInitialized]);
 
   const addToCart = (newItem: Omit<CartItem, 'id'>) => {
+    // Normalize empty strings to undefined to ensure exact matching
+    const normalizedCustomText = newItem.customText || undefined;
+    
     setCartItems(prev => {
       const existingItemIndex = prev.findIndex(
-        item => item.productId === newItem.productId && item.customText === newItem.customText
+        item => item.productId === newItem.productId && item.customText === normalizedCustomText
       );
 
       if (existingItemIndex >= 0) {
@@ -70,7 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         return newCart;
       } else {
         const id = `${newItem.productId}-${Date.now()}`;
-        return [...prev, { ...newItem, id }];
+        return [...prev, { ...newItem, customText: normalizedCustomText, id }];
       }
     });
   };
