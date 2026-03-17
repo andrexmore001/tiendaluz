@@ -54,10 +54,12 @@ export default function CustomizerPage({
   const getTieredPrice = () => {
     if (!product.priceTiers || product.priceTiers.length === 0) return product.price;
 
+    const projectedQty = getProductQuantity(product.id) + quantity;
+
     // Find the tier that matches the quantity
     const activeTier = product.priceTiers.find(tier => {
-      const minMatch = quantity >= tier.minQty;
-      const maxMatch = tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty;
+      const minMatch = projectedQty >= tier.minQty;
+      const maxMatch = tier.maxQty === null || tier.maxQty === undefined || projectedQty <= tier.maxQty;
       return minMatch && maxMatch;
     });
 
@@ -175,6 +177,9 @@ export default function CustomizerPage({
             </div>
             <p className={styles.price}>
               ${currentUnitPrice.toLocaleString()} <span className={styles.unitText}>por unidad</span>
+              {currentUnitPrice < product.price && (
+                <span style={{ fontSize: '0.8rem', background: '#e0ffe0', color: '#008000', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 600 }}>¡Precio por Volumen!</span>
+              )}
             </p>
             <p className={styles.description} style={{ whiteSpace: 'pre-wrap' }}>{product.description}</p>
           </div>
@@ -189,14 +194,15 @@ export default function CustomizerPage({
               <div className={styles.tableBody}>
                 {/* Pre-tier (range from 1 to the first tier's minQty - 1 if it starts > 1) */}
                 {product.priceTiers[0].minQty > 1 && (
-                  <div className={`${styles.tableRow} ${quantity < product.priceTiers[0].minQty ? styles.activeRow : ''}`}>
+                  <div className={`${styles.tableRow} ${getProductQuantity(product.id) + quantity < product.priceTiers[0].minQty ? styles.activeRow : ''}`}>
                     <span>1 - {product.priceTiers[0].minQty - 1}</span>
                     <span>${product.price.toLocaleString()}</span>
                   </div>
                 )}
 
                 {product.priceTiers.map((tier, idx) => {
-                  const isActive = quantity >= tier.minQty && (tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty);
+                  const projectedQty = getProductQuantity(product.id) + quantity;
+                  const isActive = projectedQty >= tier.minQty && (tier.maxQty === null || tier.maxQty === undefined || projectedQty <= tier.maxQty);
                   const label = tier.maxQty ? `${tier.minQty} - ${tier.maxQty}` : `${tier.minQty}+`;
                   const discount = product.price > 0
                     ? Math.round(((product.price - tier.unitPrice) / product.price) * 100)
@@ -298,7 +304,7 @@ export default function CustomizerPage({
                     name: product.name,
                     image: getOptimizedUrl(displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || '', 150) || '/placeholder.png',
                     quantity: quantity,
-                    unitPrice: currentUnitPrice,
+                    unitPrice: product.price,
                     customText: text || undefined
                   });
                   openCart();
