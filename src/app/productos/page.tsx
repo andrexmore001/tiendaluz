@@ -48,11 +48,6 @@ export default function ProductosPage() {
 
                 <div className={styles.grid}>
                     {[...filteredProducts]
-                        .sort((a, b) => {
-                            const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-                            const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-                            return dateB - dateA; // Descending
-                        })
                         .map(product => {
                         const qtyInCart = getProductQuantity(product.id);
                         const baseCartItem = cartItems.find(i => i.productId === product.id && !i.customText);

@@ -33,11 +33,6 @@ export default function Home() {
         <div className={styles.productGrid}>
           {[...products]
             .filter(p => p.isVisible !== false)
-            .sort((a, b) => {
-              const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
-              const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
-              return dateB - dateA; // Descending
-            })
             .slice(0, 4).map(product => {
             const qtyInCart = getProductQuantity(product.id);
             const baseCartItem = cartItems.find(i => i.productId === product.id && !i.customText);

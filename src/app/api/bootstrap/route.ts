@@ -11,6 +11,9 @@ export async function GET() {
         const [settingsData, rawProducts, collections, materials, messages] = await Promise.all([
             prisma.setting.findFirst(),
             prisma.product.findMany({
+                orderBy: {
+                    updatedAt: 'desc'
+                },
                 include: {
                     priceTiers: {
                         orderBy: {

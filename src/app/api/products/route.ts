@@ -7,6 +7,9 @@ export const revalidate = 3600; // Recache every hour
 export async function GET() {
     try {
         const products = await prisma.product.findMany({
+            orderBy: {
+                updatedAt: 'desc'
+            },
             include: {
                 priceTiers: {
                     orderBy: {
