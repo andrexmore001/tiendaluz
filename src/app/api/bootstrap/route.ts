@@ -61,6 +61,9 @@ export async function GET() {
         // Only include messages for authenticated admins
         if (session) {
             bootstrapData.messages = messages;
+        } else {
+            // If not admin, hide products that are not visible
+            bootstrapData.products = bootstrapData.products.filter((p: any) => p.isVisible !== false);
         }
 
         return new NextResponse(JSON.stringify(bootstrapData), {

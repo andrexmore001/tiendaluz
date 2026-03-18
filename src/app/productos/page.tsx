@@ -13,9 +13,10 @@ export default function ProductosPage() {
     const { addToCart, getProductQuantity, updateQuantity, cartItems, openCart, getEffectivePrice } = useCart();
     const [activeCollection, setActiveCollection] = useState("Todas");
 
+    const visibleProducts = products.filter(p => p.isVisible !== false);
     const filteredProducts = activeCollection === "Todas"
-        ? products
-        : products.filter(p => p.category === activeCollection);
+        ? visibleProducts
+        : visibleProducts.filter(p => p.category === activeCollection);
 
     return (
         <main>
@@ -46,7 +47,13 @@ export default function ProductosPage() {
                 </nav>
 
                 <div className={styles.grid}>
-                    {filteredProducts.map(product => {
+                    {[...filteredProducts]
+                        .sort((a, b) => {
+                            const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+                            const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+                            return dateB - dateA; // Descending
+                        })
+                        .map(product => {
                         const qtyInCart = getProductQuantity(product.id);
                         const baseCartItem = cartItems.find(i => i.productId === product.id && !i.customText);
 

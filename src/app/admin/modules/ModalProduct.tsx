@@ -126,6 +126,18 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                 </div>
                             </div>
 
+                            <div className={styles.inputGroup} style={{ marginBottom: '2rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isVisible !== false}
+                                        onChange={(e) => setFormData((prev: any) => ({ ...prev, isVisible: e.target.checked }))}
+                                        style={{ marginRight: '0.75rem', width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                                    />
+                                    <span>Visible en la tienda (mostrar al cliente)</span>
+                                </label>
+                            </div>
+
                             <div className={styles.formGrid}>
                                 <div className={styles.inputGroup}>
                                     <label>Nombre del Producto</label>

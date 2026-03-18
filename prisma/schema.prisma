@@ -30,24 +30,25 @@ model Setting {
 }
 
 model Product {
-  id              String      @id @default(cuid())
-  name            String
-  price           Float
-  category        String
-  description     String
-  image           String?
-  displayMode     String      @default("3d")
-  width           Float       @default(4)
-  height          Float       @default(2)
-  depth           Float       @default(4)
-  materialId      String
-  baseColor       String      @default("#F9F1E7")
-  modelUrl        String?
-  images          Json?
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  priceTiers      PriceTier[]
-  material        Material    @relation(fields: [materialId], references: [id])
+  id          String      @id @default(cuid())
+  name        String
+  price       Float
+  category    String
+  description String
+  image       String?
+  displayMode String      @default("3d")
+  width       Float       @default(4)
+  height      Float       @default(2)
+  depth       Float       @default(4)
+  materialId  String
+  baseColor   String      @default("#F9F1E7")
+  modelUrl    String?
+  images      Json?
+  isVisible   Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  priceTiers  PriceTier[]
+  material    Material    @relation(fields: [materialId], references: [id])
 }
 
 model PriceTier {
@@ -67,10 +68,10 @@ model Collection {
 }
 
 model Material {
-  id               String    @id @default(cuid())
-  name             String
-  textureUrl       String?
-  products         Product[]
+  id         String    @id @default(cuid())
+  name       String
+  textureUrl String?
+  products   Product[]
 }
 
 model User {

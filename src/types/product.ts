@@ -32,6 +32,8 @@ export interface Product {
     baseColor?: string;
     modelUrl?: string;
     priceTiers?: PriceTier[];
+    updatedAt?: string;
+    isVisible?: boolean;
 }
 
 export interface Collection {

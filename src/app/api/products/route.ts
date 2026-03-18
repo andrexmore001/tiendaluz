@@ -60,6 +60,7 @@ export async function POST(request: Request) {
             baseColor: rest.baseColor || '#F9F1E7',
             modelUrl: rest.modelUrl || '',
             images: images || [], // Now a JSON field
+            isVisible: rest.isVisible !== undefined ? rest.isVisible : true,
         };
 
         const tierOperations = priceTiers?.map((tier: any) => ({

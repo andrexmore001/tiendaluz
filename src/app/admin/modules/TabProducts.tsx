@@ -19,6 +19,8 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
     const [searchQuery, setSearchQuery] = React.useState('');
     const [currentPage, setCurrentPage] = React.useState(1);
     const [itemsPerPage, setItemsPerPage] = React.useState(10);
+    const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+    const [isBulkLoading, setIsBulkLoading] = React.useState(false);
 
     // Filtration
     const filteredProducts = products.filter(p => 
@@ -54,6 +56,50 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
     React.useEffect(() => {
         setCurrentPage(1);
     }, [searchQuery]);
+
+    // Handle multiselect
+    const toggleSelection = (id: string) => {
+        const next = new Set(selectedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedIds(next);
+    };
+
+    const toggleAll = () => {
+        if (selectedIds.size === paginatedProducts.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(paginatedProducts.map(p => p.id)));
+        }
+    };
+
+    const handleBulkAction = async (action: 'hide' | 'show' | 'delete') => {
+        if (selectedIds.size === 0) return;
+        if (action === 'delete' && !confirm(`¿Estás seguro de que quieres eliminar ${selectedIds.size} productos?`)) return;
+
+        setIsBulkLoading(true);
+        try {
+            const res = await fetch('/api/products/bulk-actions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productIds: Array.from(selectedIds), action })
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                alert(`Acción completada: ${data.message}`);
+                setSelectedIds(new Set());
+                window.location.reload();
+            } else {
+                alert(`Error: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error during bulk action:', error);
+            alert('Ocurrió un error al procesar la acción.');
+        } finally {
+            setIsBulkLoading(false);
+        }
+    };
 
     const handleBulkUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -118,30 +164,44 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
                     <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                     <input
                         type="text"
-                        placeholder="Buscar producto por nombre, ID o categoría..."
+                        placeholder="Buscar producto..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         style={{ width: '100%', padding: '0.6rem 1rem 0.6rem 2.5rem', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.95rem' }}
                     />
                 </div>
                 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#64748b' }}>Mostrar:</span>
-                    <select 
-                        value={itemsPerPage} 
-                        onChange={handleItemsPerPageChange}
-                        style={{ padding: '0.4rem 0.6rem', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', color: '#334155', cursor: 'pointer', outline: 'none' }}
-                    >
-                        <option value={10}>10 productos</option>
-                        <option value={20}>20 productos</option>
-                        <option value={50}>50 productos</option>
-                        <option value={100}>100 productos</option>
-                    </select>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    {selectedIds.size > 0 && (
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#f8fafc', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{selectedIds.size} seleccionados</span>
+                            <button onClick={() => handleBulkAction('show')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#dcfce7', color: '#166534' }}>Mostrar</button>
+                            <button onClick={() => handleBulkAction('hide')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#fef9c3', color: '#854d0e' }}>Ocultar</button>
+                            <button onClick={() => handleBulkAction('delete')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#fee2e2', color: '#991b1b' }}>Eliminar</button>
+                        </div>
+                    )}
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.9rem', color: '#64748b' }}>Mostrar:</span>
+                        <select 
+                            value={itemsPerPage} 
+                            onChange={handleItemsPerPageChange}
+                            style={{ padding: '0.4rem 0.6rem', border: '1px solid #e2e8f0', borderRadius: '6px', backgroundColor: 'white', color: '#334155', cursor: 'pointer', outline: 'none' }}
+                        >
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 
             <div className={styles.productTable}>
-                <div className={styles.tableHeader}>
+                <div className={styles.tableHeader} style={{ gridTemplateColumns: '40px 60px 2fr 1.5fr 1fr 100px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <input type="checkbox" onChange={toggleAll} checked={paginatedProducts.length > 0 && selectedIds.size === paginatedProducts.length} style={{ cursor: 'pointer', width: '1rem', height: '1rem' }} />
+                    </div>
                     <span>Imagen</span>
                     <span>Nombre</span>
                     <span>ID</span>
@@ -149,9 +209,15 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
                     <span>Acciones</span>
                 </div>
                 {paginatedProducts.length > 0 ? paginatedProducts.map((p: Product) => (
-                    <div key={p.id} className={styles.tableRow}>
+                    <div key={p.id} className={styles.tableRow} style={{ gridTemplateColumns: '40px 60px 2fr 1.5fr 1fr 100px', backgroundColor: selectedIds.has(p.id) ? '#f0f9ff' : 'transparent', opacity: p.isVisible === false ? 0.6 : 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <input type="checkbox" checked={selectedIds.has(p.id)} onChange={() => toggleSelection(p.id)} style={{ cursor: 'pointer', width: '1rem', height: '1rem' }} />
+                        </div>
                         <img src={p.image || '/placeholder.png'} alt={p.name} className={styles.miniImg} />
-                        <span className={styles.pName}>{p.name}</span>
+                        <span className={styles.pName} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            {p.name}
+                            {p.isVisible === false && <span style={{ fontSize: '0.65rem', padding: '2px 6px', background: '#fee2e2', color: '#991b1b', borderRadius: '4px', fontWeight: 'bold' }}>OCULTO</span>}
+                        </span>
                         <code className={styles.pCat} style={{ fontSize: '0.75rem', fontFamily: 'monospace', opacity: 0.7 }}>{p.id}</code>
                         <span className={styles.pPrice}>${(p.price || 0).toLocaleString()}</span>
                         <div className={styles.rowActions}>

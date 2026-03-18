@@ -170,7 +170,8 @@ export default function AdminPage() {
             id: editingProduct ? editingProduct.id : Date.now().toString(),
             ...formData,
             dimensions: { width: Number(formData.width), height: Number(formData.height), depth: Number(formData.depth) },
-            baseColor: formData.baseColor || '#F9F1E7'
+            baseColor: formData.baseColor || '#F9F1E7',
+            updatedAt: new Date().toISOString()
         };
         if (editingProduct) updateProduct(newP as any); else addProduct(newP as any);
         showToast(editingProduct ? "Producto actualizado" : "Producto añadido");
