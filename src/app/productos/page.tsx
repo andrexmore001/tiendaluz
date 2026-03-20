@@ -16,7 +16,10 @@ export default function ProductosPage() {
     const visibleProducts = products.filter(p => p.isVisible !== false);
     const filteredProducts = activeCollection === "Todas"
         ? visibleProducts
-        : visibleProducts.filter(p => p.category === activeCollection);
+        : visibleProducts.filter(p => {
+            const col = collections.find((c: any) => c.id === activeCollection);
+            return p.category === activeCollection || p.category === col?.name;
+        });
 
     return (
         <main>

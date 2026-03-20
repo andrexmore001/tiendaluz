@@ -151,8 +151,11 @@ export default function AdminPage() {
 
     const handleEditProduct = (p: Product) => {
         setEditingProduct(p);
+        const matchedCollection = collections.find((c: any) => c.id === p.category || c.name === p.category);
+        const categoryIdToEdit = matchedCollection ? matchedCollection.id : (collections[0]?.id || 'Todas');
+
         setFormData({
-            name: p.name, price: p.price, category: p.category, description: p.description,
+            name: p.name, price: p.price, category: categoryIdToEdit, description: p.description,
             image: p.image || '', displayMode: p.displayMode || '3d',
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
             width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
