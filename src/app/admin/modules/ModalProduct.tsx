@@ -155,7 +155,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                         value={formData.category}
                                         onChange={(e) => setFormData((prev: any) => ({ ...prev, category: e.target.value }))}
                                     >
-                                        {collections.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
+                                        {collections.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                 </div>
                                 <div className={styles.inputGroup}>

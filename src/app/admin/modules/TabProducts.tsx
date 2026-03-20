@@ -11,9 +11,10 @@ interface TabProductsProps {
     onEdit: (p: Product) => void;
     onDelete: (id: string) => void;
     onMenuClick: () => void;
+    collections: any[];
 }
 
-const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDelete, onMenuClick }) => {
+const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDelete, onMenuClick, collections }) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -23,11 +24,12 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
     const [isBulkLoading, setIsBulkLoading] = React.useState(false);
 
     // Filtration
-    const filteredProducts = products.filter(p => 
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const filteredProducts = products.filter(p => {
+        const catName = collections.find((c: any) => c.id === p.category)?.name || p.category || '';
+        return p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
         p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
+        catName.toLowerCase().includes(searchQuery.toLowerCase());
+    });
 
     // Pagination
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);

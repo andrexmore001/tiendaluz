@@ -78,7 +78,7 @@ export default function AdminPage() {
     });
 
     const [formData, setFormData] = useState({
-        name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
+        name: '', price: 0, category: collections[0]?.id || 'Todas', description: '',
         image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
         images: [] as any[], width: 4, height: 2, depth: 4,
         materialId: '', baseColor: '#F9F1E7', modelUrl: '',
@@ -142,7 +142,7 @@ export default function AdminPage() {
         setEditingProduct(null);
         setFormData({
             ...formData,
-            name: '', price: 0, category: collections[0]?.name || 'Todas', description: '',
+            name: '', price: 0, category: collections[0]?.id || 'Todas', description: '',
             image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
             materialId: materials[0]?.id || ''
         });
@@ -329,7 +329,7 @@ export default function AdminPage() {
             </aside>
 
             <main className={styles.content}>
-                {activeTab === 'products' && <TabProducts products={products} onAdd={handleNewProduct} onEdit={handleEditProduct} onDelete={id => { if (confirm('¿Eliminar?')) { deleteProduct(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'products' && <TabProducts products={products} collections={collections} onAdd={handleNewProduct} onEdit={handleEditProduct} onDelete={id => { if (confirm('¿Eliminar?')) { deleteProduct(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'collections' && <TabCollections collections={collections} onAdd={() => { setEditingCollection(null); setCollectionFormData({ name: '', description: '' }); setShowCollectionForm(true); }} onEdit={col => { setEditingCollection(col); setCollectionFormData({ name: col.name, description: col.description || '' }); setShowCollectionForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteCollection(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'settings' && (
                     <TabSettings

@@ -35,11 +35,11 @@ export default function ProductosPage() {
                     >
                         Todas
                     </button>
-                    {collections.map(col => (
+                    {collections.map((col: any) => (
                         <button
                             key={col.id}
-                            className={`${styles.colBtn} ${activeCollection === col.name ? styles.colBtnActive : ''}`}
-                            onClick={() => setActiveCollection(col.name)}
+                            className={`${styles.colBtn} ${activeCollection === col.id ? styles.colBtnActive : ''}`}
+                            onClick={() => setActiveCollection(col.id)}
                         >
                             {col.name}
                         </button>
@@ -81,7 +81,7 @@ export default function ProductosPage() {
                                         <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} />
                                     </div>
                                     <div className={styles.info}>
-                                        <span className={styles.category}>{product.category}</span>
+                                        <span className={styles.category}>{collections.find((c: any) => c.id === product.category)?.name || product.category}</span>
                                         <h3>{product.name}</h3>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <p className={styles.price} style={getEffectivePrice(product.id, product.price) < product.price ? { fontWeight: 600, color: 'var(--primary)', margin: 0 } : { margin: 0 }}>
