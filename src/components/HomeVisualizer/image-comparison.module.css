@@ -1,0 +1,94 @@
+.wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radius-lg, 16px);
+  box-shadow: var(--shadow-soft, 0 10px 30px rgba(0,0,0,0.05));
+  background: #f8fafc;
+  /* Prevent interaction highlighting on mobile */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    aspect-ratio: 1 / 1;
+  }
+}
+
+.imageContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.imageContainer img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Base image (Before) */
+.beforeImage {
+  z-index: 1;
+}
+
+/* Top image (After) clipped */
+.afterImage {
+  z-index: 2;
+  /* We control the clip-path via inline style in the component */
+}
+
+/* Invisible range input spanning the whole wrapper */
+.sliderRange {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  opacity: 0;
+  cursor: ew-resize;
+  margin: 0;
+  padding: 0;
+}
+
+/* The visual divider line and arrows handle */
+.sliderHandle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4px; /* Line width */
+  background-color: white;
+  z-index: 3;
+  transform: translateX(-50%);
+  pointer-events: none; /* Let the range input receive clicks */
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+
+.sliderArrowBtn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 48px;
+  height: 48px;
+  background-color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  color: #333;
+}
+
+.sliderArrowBtn svg {
+  width: 24px;
+  height: 24px;
+}

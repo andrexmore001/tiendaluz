@@ -1,12 +1,8 @@
 "use client";
 import Navbar from '@/components/Navbar';
-import Hero from '@/components/Hero';
+import SplitHero from '@/components/HomeVisualizer/SplitHero';
 import Features from '@/components/Features';
-import dynamic from 'next/dynamic';
-const Home3DSection = dynamic(() => import('@/components/HomeVisualizer/Home3DSection'), {
-  ssr: false,
-  loading: () => <div className="section-padding container text-center">Cargando visualizador...</div>
-});
+
 import Footer from '@/components/Footer';
 import { useSettings } from '@/context/SettingsContext';
 import { useCart } from '@/context/CartContext';
@@ -21,9 +17,8 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <Navbar />
-      <Hero />
+      <SplitHero />
       <Features />
-      <Home3DSection />
 
       <section className="section-padding container text-center">
         <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Colecciones Destacadas</h2>
