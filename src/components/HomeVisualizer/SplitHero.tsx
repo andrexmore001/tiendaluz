@@ -14,7 +14,7 @@ export default function SplitHero() {
         </div>
         <div className={styles.textCol}>
           <h1 className={styles.title}>
-            Artesana:<br />detalles que<br />envuelven emociones
+            Artesana:<br />Empaques que<br />envuelven emociones
           </h1>
           <Link href="/productos" className={`btn-primary ${styles.actionBtn}`}>
             Ver más &rarr;
