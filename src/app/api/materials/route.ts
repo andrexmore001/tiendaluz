@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+
+export const revalidate = 3600; // Recache every hour
 
 export async function GET() {
     try {
         const materials = await prisma.material.findMany();
-        return NextResponse.json(materials);
+        return new NextResponse(JSON.stringify(materials), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=59',
+            },
+        });
     } catch (error) {
         return NextResponse.json({ error: 'Error fetching materials' }, { status: 500 });
     }
@@ -21,6 +29,8 @@ export async function POST(request: Request) {
             create: { ...rest, id: id || undefined },
         });
 
+        revalidatePath('/api/materials');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json(material);
     } catch (error) {
         return NextResponse.json({ error: 'Error saving material' }, { status: 500 });
@@ -40,6 +50,8 @@ export async function DELETE(request: Request) {
             where: { id },
         });
 
+        revalidatePath('/api/materials');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting material:', error);

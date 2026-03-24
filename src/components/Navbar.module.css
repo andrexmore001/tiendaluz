@@ -1,5 +1,5 @@
 .navbar {
-    height: 80px;
+    height: 115px;
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.82);
@@ -18,11 +18,15 @@
 }
 
 .logo {
-    font-family: var(--font-display);
-    font-size: 1.8rem;
-    letter-spacing: 4px;
-    font-weight: 600;
-    color: var(--primary);
+    display: flex;
+    align-items: center;
+}
+
+.logoImg {
+    height: 105px;
+    width: auto;
+    object-fit: contain;
+    transition: var(--transition);
 }
 
 .links {
@@ -43,6 +47,12 @@
 .links a:hover {
     opacity: 1;
     color: var(--primary);
+}
+
+.navRight {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .actions {
@@ -86,14 +96,13 @@
         order: -1;
     }
 
-    .logo {
-        font-size: 1.4rem;
-        letter-spacing: 2px;
+    .logoImg {
+        height: 85px;
     }
 
     .links {
         position: fixed;
-        top: 80px;
+        top: 115px;
         left: 0;
         right: 0;
         background: white;

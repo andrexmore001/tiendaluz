@@ -1,10 +1,12 @@
 "use client";
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Box3D from "@/components/Three/Box3D";
+import ProductModel from "@/components/Three/ProductModel";
 import { useSettings } from "@/context/SettingsContext";
-import { Type, Image as ImageIcon, MessageCircle } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { getOptimizedUrl } from "@/lib/cloudinary";
+import { Type, Image as ImageIcon, MessageCircle, ShoppingBag } from "lucide-react";
 import styles from "./customizer.module.css";
 
 export default function CustomizerPage({
@@ -13,25 +15,55 @@ export default function CustomizerPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const { products, settings, materials } = useSettings();
+  const { products, settings, materials, isLoaded } = useSettings();
+  const { addToCart, updateQuantity, openCart, getProductQuantity, cartItems } = useCart();
 
   const product = products.find((p) => p.id === id) || products[0];
 
   const [text, setText] = useState("");
-  const [includeImage, setIncludeImage] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [isOpen, setIsOpen] = useState(false); // 🔥 ESTADO NUEVO
 
-  const currentMaterial =
-    materials.find((m) => m.id === product.materialId) ||
-    materials.find((m) => m.id === "carton-kraft");
+  // Sync with global cart quantity for this specific generic product
+  // Listen to getProductQuantity so if they change it in the drawer, the UI updates
+  useEffect(() => {
+    if (product) {
+      const globalQty = getProductQuantity(product.id);
+      if (globalQty > 0) {
+        setQuantity(globalQty);
+      } else {
+        setQuantity(1); // Reset to 1 if removed entirely from cart
+      }
+    }
+  }, [product, getProductQuantity, cartItems]);
 
-  const [currentView, setCurrentView] = useState<'3d' | 'photos'>(product.displayMode === 'photos' ? 'photos' : '3d');
+  const currentMaterial = product ?
+    (materials.find((m) => m.id === product.materialId) ||
+    materials.find((m) => m.id === "carton-kraft")) : undefined;
+
+  const [currentView, setCurrentView] = useState<'3d' | 'photos'>(product?.displayMode === 'photos' ? 'photos' : '3d');
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+
+  useEffect(() => {
+    if (product) {
+      setCurrentView(product.displayMode === 'photos' ? 'photos' : '3d');
+    }
+  }, [product?.displayMode]);
+
+  if (!isLoaded || !product) {
+    return (
+      <main style={{ minHeight: "100vh", background: "#fcfcfc", display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p>{!isLoaded ? "Cargando producto..." : "Producto no encontrado"}</p>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   const displayPhotos = product.images && product.images.length > 0 ? product.images : [product.image];
 
-  // Calculate tiered price
+  // Calculate tiered price based strictly on the current input quantity
   const getTieredPrice = () => {
     if (!product.priceTiers || product.priceTiers.length === 0) return product.price;
 
@@ -49,15 +81,33 @@ export default function CustomizerPage({
 
   const handleWhatsApp = () => {
     const phoneNumber = settings.contact.phone.replace(/\s+/g, "");
-    const total = currentUnitPrice * quantity;
-    const message = `Hola, quiero comprar:
-Producto: ${product.name}
-Cantidad: ${quantity}
-Precio Unitario: $${currentUnitPrice.toLocaleString()}
-Texto personalizado: ${text || "Sin texto"}
-Incluye imagen personalizada: ${includeImage ? "Sí" : "No"}
-Total: $${total.toLocaleString()}
-`;
+    const currentItemTotal = currentUnitPrice * quantity;
+
+    let message = "Hola, me gustaría realizar el siguiente pedido:\n\n";
+    let grandTotal = currentItemTotal;
+
+    // 1. Add current item being customized
+    message += `1. ${quantity}x ${product.name} - $${currentItemTotal.toLocaleString()}`;
+    if (text) {
+      message += `\n   Texto: "${text}"`;
+    }
+    message += "\n\n";
+
+    // 2. Add existing cart items if any
+    if (cartItems && cartItems.length > 0) {
+      cartItems.forEach((item, index) => {
+        const itemTotal = item.unitPrice * item.quantity;
+        grandTotal += itemTotal;
+        message += `${index + 2}. ${item.quantity}x ${item.name} - $${itemTotal.toLocaleString()}`;
+        if (item.customText) {
+          message += `\n   Texto: "${item.customText}"`;
+        }
+        message += "\n\n";
+      });
+    }
+
+    message += `*Total estimado:* $${grandTotal.toLocaleString()}COP`;
+
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
   };
@@ -69,28 +119,18 @@ Total: $${total.toLocaleString()}
       <div className={`${styles.container} container`}>
         <div className={styles.visualizer}>
           <div className={styles.badge}>
-            {currentView === '3d' ? 'Vista Previa 3D' : 'Galería de Fotos'}
+            {currentView === '3d' ? 'Vista Previa' : 'Galería de Fotos'}
           </div>
 
           {currentView === '3d' ? (
             <div style={{ width: '100%', height: '400px' }}>
-              <Box3D
-                width={product.dimensions?.width || 30}
-                height={product.dimensions?.height || 20}
-                depth={product.dimensions?.depth || 30}
-                materialData={currentMaterial}
-                customMaterialTexture={product.customMaterialTexture}
-                baseColor={product.baseColor}
-                hingeEdge={product.hingeEdge}
-                isOpen={isOpen}
-                text={text}
-              />
+              <ProductModel modelUrl={product.modelUrl} />
             </div>
           ) : (
             <div className={styles.photoGallery}>
               <div className={styles.mainPhotoWrapper}>
                 <div className={styles.imageRelativeWrapper}>
-                  <img src={displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || '')} alt={product.name} />
+                  <img src={getOptimizedUrl(displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || ''), 800)} alt={product.name} />
                   {text && displayPhotos[activePhotoIdx] && (displayPhotos[activePhotoIdx] as any).isCustomizable && (
                     <div
                       className={styles.textOverlay}
@@ -109,7 +149,7 @@ Total: $${total.toLocaleString()}
                 {displayPhotos.map((img: any, idx) => (
                   <img
                     key={idx}
-                    src={typeof img === 'string' ? img : img.url}
+                    src={getOptimizedUrl(typeof img === 'string' ? img : img.url, 150)}
                     alt={`Thumb ${idx}`}
                     onClick={() => setActivePhotoIdx(idx)}
                     style={{
@@ -122,14 +162,6 @@ Total: $${total.toLocaleString()}
           )}
 
           <div className={styles.visualizerControls} style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center' }}>
-            {currentView === '3d' && (
-              <button
-                className={styles.toggleOpen}
-                onClick={() => setIsOpen((prev) => !prev)}
-              >
-                {isOpen ? "Cerrar Caja" : "Abrir Caja"}
-              </button>
-            )}
 
             {product.displayMode === 'both' && (
               <button
@@ -145,11 +177,22 @@ Total: $${total.toLocaleString()}
 
         <aside className={styles.controls}>
           <div className={styles.productHeader}>
-            <h1>{product.name}</h1>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <h1>{product.name}</h1>
+              {getProductQuantity(product.id) > 0 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--secondary)', color: 'var(--text-color)', padding: '0.4rem 0.8rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 600 }}>
+                  <ShoppingBag size={14} />
+                  {getProductQuantity(product.id)} en carrito
+                </div>
+              )}
+            </div>
             <p className={styles.price}>
               ${currentUnitPrice.toLocaleString()} <span className={styles.unitText}>por unidad</span>
+              {currentUnitPrice < product.price && (
+                <span style={{ fontSize: '0.8rem', background: '#e0ffe0', color: '#008000', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 600 }}>¡Precio por Volumen!</span>
+              )}
             </p>
-            <p className={styles.description}>{product.description}</p>
+            <p className={styles.description} style={{ whiteSpace: 'pre-wrap' }}>{product.description}</p>
           </div>
 
           {/* TABLA DE PRECIOS POR VOLUMEN */}
@@ -261,13 +304,46 @@ Total: $${total.toLocaleString()}
               </div>
             </div>
 
-            <button
-              className={styles.whatsappBtn}
-              onClick={handleWhatsApp}
-            >
-              <MessageCircle size={20} />
-              Finalizar por WhatsApp
-            </button>
+            <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+              <button
+                className="btn-primary"
+                style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
+                onClick={() => {
+                  const normalizedText = text || undefined;
+                  const existingItem = cartItems.find(
+                    item => item.productId === product.id && item.customText === normalizedText
+                  );
+
+                  if (existingItem) {
+                    // Update exact absolute quantity if modifying existing personalized item
+                    updateQuantity(existingItem.id, quantity);
+                  } else {
+                    // It's a brand new custom variant, so just add it completely fresh
+                    addToCart({
+                      productId: product.id,
+                      name: product.name,
+                      image: getOptimizedUrl(displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || '', 150) || '/placeholder.png',
+                      quantity: quantity,
+                      unitPrice: product.price,
+                      customText: normalizedText
+                    });
+                  }
+                  
+                  openCart();
+                }}
+              >
+                <ShoppingBag size={20} />
+                Añadir al Carrito
+              </button>
+
+              <button
+                className={styles.whatsappBtn}
+                onClick={handleWhatsApp}
+              >
+                <MessageCircle size={20} />
+                Comprar Ahora
+              </button>
+            </div>
           </div>
         </aside>
       </div>

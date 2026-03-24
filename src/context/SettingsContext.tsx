@@ -1,25 +1,21 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections, boxShapes as initialBoxShapes } from '@/lib/data';
-import { Product, BoxShape, Collection } from '@/types/product';
+import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections } from '@/lib/data';
+import { Product, Collection } from '@/types/product';
 
 export interface Material {
     id: string;
     name: string;
-
-    /* Tipo físico */
-    type: "corrugated" | "mdf" | "wood";
-
-    /* Propiedades industriales */
-    thickness_mm: number;
-    tolerance_mm: number;
-    stiffness_factor: number;
-
-    /* Visual */
     textureUrl?: string;
-    baseColor?: string;
-    roughness?: number;
-    metalness?: number;
+}
+
+export interface ContactMessage {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    read: boolean;
+    createdAt: string;
 }
 
 interface SettingsContextType {
@@ -34,13 +30,14 @@ interface SettingsContextType {
     updateCollection: (collection: Collection) => void;
     deleteCollection: (id: string) => void;
     materials: Material[];
-    boxShapes: BoxShape[];
-    addBoxShape: (shape: BoxShape) => void;
-    updateBoxShape: (shape: BoxShape) => void;
-    deleteBoxShape: (id: string) => void;
     addMaterial: (material: Material) => void;
     updateMaterial: (material: Material) => void;
     deleteMaterial: (id: string) => void;
+    messages: ContactMessage[];
+    deleteMessage: (id: string) => void;
+    markMessageAsRead: (id: string) => void;
+    refreshMessages: () => Promise<void>;
+    isLoaded: boolean;
     storageError: string | null;
     clearAllData: () => void;
 }
@@ -51,8 +48,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [settings, setSettings] = useState<SiteSettings>(initialSettings);
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [collections, setCollections] = useState<Collection[]>(initialCollections);
-    const [boxShapes, setBoxShapes] = useState<BoxShape[]>(initialBoxShapes);
     const [materials, setMaterials] = useState<Material[]>([]);
+    const [messages, setMessages] = useState<ContactMessage[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [storageError, setStorageError] = useState<string | null>(null);
@@ -63,54 +60,49 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             try {
                 setIsInitialLoading(true);
 
-                // Fetch from API
-                const [resSettings, resProducts, resCollections, resMaterials, resShapes] = await Promise.all([
-                    fetch('/api/settings').then(r => r.json()),
-                    fetch('/api/products').then(r => r.json()),
-                    fetch('/api/collections').then(r => r.json()),
-                    fetch('/api/materials').then(r => r.json()),
-                    fetch('/api/box-shapes').then(r => r.json())
-                ]);
+                // Fetch everything in ONE call
+                const response = await fetch('/api/bootstrap');
+                const data = await response.json();
 
-                if (resSettings && !resSettings.error) {
-                    // Map DB format to SiteSettings
-                    setSettings({
-                        title: resSettings.title,
-                        slug: resSettings.slug,
-                        logo: resSettings.logo || '',
-                        colors: {
-                            primary: resSettings.primaryColor,
-                            secondary: resSettings.secondaryColor,
-                            accent: resSettings.accentColor,
-                            background: resSettings.backgroundColor
-                        },
-                        contact: {
-                            phone: resSettings.phone,
-                            email: resSettings.email,
-                            address: resSettings.address,
-                            instagram: resSettings.instagram,
-                            facebook: resSettings.facebook
-                        },
-                        heroTitle: resSettings.heroTitle || '',
-                        heroSubtitle: resSettings.heroSubtitle || '',
-                        heroImages: resSettings.heroImages ? JSON.parse(resSettings.heroImages) : [],
-                        updatedAt: resSettings.updatedAt
-                    });
-                }
+                if (data && !data.error) {
+                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials } = data;
 
-                if (Array.isArray(resProducts)) {
-                    setProducts(resProducts);
-                }
+                    if (resSettings) {
+                        setSettings({
+                            title: resSettings.title,
+                            slug: resSettings.slug,
+                            logo: resSettings.logo || '',
+                            colors: {
+                                primary: resSettings.primaryColor,
+                                secondary: resSettings.secondaryColor,
+                                accent: resSettings.accentColor,
+                                background: resSettings.backgroundColor
+                            },
+                            contact: {
+                                phone: resSettings.phone,
+                                email: resSettings.email,
+                                address: resSettings.address,
+                                instagram: resSettings.instagram,
+                                facebook: resSettings.facebook
+                            },
+                            heroTitle: resSettings.heroTitle || '',
+                            heroSubtitle: resSettings.heroSubtitle || '',
+                            heroImages: Array.isArray(resSettings.heroImages) ? resSettings.heroImages : [],
+                            chatBusinessId: resSettings.chatBusinessId || '',
+                            chatApiKey: resSettings.chatApiKey || '',
+                            updatedAt: resSettings.updatedAt
+                        });
+                    }
 
-                if (Array.isArray(resCollections)) setCollections(resCollections);
-                if (Array.isArray(resMaterials)) setMaterials(resMaterials);
-                if (Array.isArray(resShapes)) {
-                    setBoxShapes(resShapes);
+                    if (Array.isArray(resProducts)) setProducts(resProducts);
+                    if (Array.isArray(resCollections)) setCollections(resCollections);
+                    if (Array.isArray(resMaterials)) setMaterials(resMaterials);
+                    if (Array.isArray(data.messages)) setMessages(data.messages);
                 }
 
             } catch (e) {
-                console.error("Error loading from API", e);
-                // Fallback to localStorage logic if API fails or for first-time migration
+                console.error("Error loading bootstrap data", e);
+                // Fallback to localStorage logic if API fails
                 const savedProducts = localStorage.getItem('artesana_products');
                 if (savedProducts) setProducts(JSON.parse(savedProducts));
             } finally {
@@ -220,42 +212,6 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    const addBoxShape = async (shape: BoxShape) => {
-        setBoxShapes(prev => [...prev, shape]);
-        try {
-            await fetch('/api/box-shapes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(shape)
-            });
-        } catch (e) {
-            console.error("Error adding shape", e);
-        }
-    };
-
-    const updateBoxShape = async (updatedShape: BoxShape) => {
-        setBoxShapes(prev => prev.map(s => s.id === updatedShape.id ? updatedShape : s));
-        try {
-            await fetch('/api/box-shapes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedShape)
-            });
-        } catch (e) {
-            console.error("Error updating shape", e);
-        }
-    };
-
-    const deleteBoxShape = async (id: string) => {
-        setBoxShapes(prev => prev.filter(s => s.id !== id));
-        try {
-            await fetch(`/api/box-shapes?id=${id}`, {
-                method: 'DELETE',
-            });
-        } catch (e) {
-            console.error("Error deleting shape", e);
-        }
-    };
 
     const addMaterial = async (material: Material) => {
         setMaterials(prev => [...prev, material]);
@@ -294,6 +250,49 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const deleteMessage = async (id: string) => {
+        setMessages(prev => prev.filter(m => m.id !== id));
+        try {
+            await fetch(`/api/contact/${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting message", e);
+        }
+    };
+
+    const markMessageAsRead = async (id: string) => {
+        setMessages(prev => prev.map(m => m.id === id ? { ...m, read: true } : m));
+        try {
+            await fetch(`/api/contact/${id}/read`, {
+                method: 'PATCH',
+            });
+        } catch (e) {
+            console.error("Error marking message as read", e);
+        }
+    };
+
+    const refreshMessages = async () => {
+        try {
+            const res = await fetch('/api/contact');
+            if (res.ok) {
+                const data = await res.json();
+                setMessages(data);
+            }
+        } catch (e) {
+            console.error("Error refreshing messages", e);
+        }
+    };
+
+    // Auto-refresh messages every 30 minutes if in admin panel (or just always if safe)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            // We could check for session here, but refreshMessages already checks auth on server
+            refreshMessages();
+        }, 1800000); // 30 minutes
+        return () => clearInterval(interval);
+    }, []);
+
     const clearAllData = () => {
         if (confirm('¿Estás seguro de resetear todos los datos? Se borrarán tus productos y configuraciones personalizadas.')) {
             localStorage.clear();
@@ -301,8 +300,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
-    // Prevent hydration mismatch by only rendering once loaded
-    if (!isLoaded) return null;
+    // We no longer return null here to avoid hydration mismatches.
+    // The provider will render with initialSettings first.
 
     return (
         <SettingsContext.Provider value={{
@@ -317,13 +316,14 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             updateCollection,
             deleteCollection,
             materials,
-            boxShapes,
-            addBoxShape,
-            updateBoxShape,
-            deleteBoxShape,
             addMaterial,
             updateMaterial,
             deleteMaterial,
+            messages,
+            deleteMessage,
+            markMessageAsRead,
+            refreshMessages,
+            isLoaded,
             storageError,
             clearAllData
         }}>

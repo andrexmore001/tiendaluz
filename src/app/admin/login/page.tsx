@@ -1,22 +1,28 @@
-import { useState, useEffect } from 'react';
+"use client";
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { QrCode, Smartphone, RefreshCw, ChevronRight, Lock, User, AlertCircle } from 'lucide-react';
-import { signIn } from 'next-auth/react';
-import { useSettings } from '@/context/SettingsContext';
+import { RefreshCw, Lock, User, AlertCircle } from 'lucide-react';
+import { signIn, useSession } from 'next-auth/react';
+import { useEffect } from 'react';
 import styles from './login.module.css';
 
 export default function AdminLogin() {
     const router = useRouter();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const { status } = useSession();
+
+    useEffect(() => {
+        if (status === 'authenticated') {
+            window.location.href = '/admin';
+        }
+    }, [status]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        setError(false);
-
         try {
             const result = await signIn('credentials', {
                 email: username,
@@ -25,13 +31,15 @@ export default function AdminLogin() {
             });
 
             if (result?.error) {
-                setError(true);
+                console.error("Login attempt error:", result.error);
+                setError("Credenciales incorrectas o error de conexión");
                 setIsLoading(false);
             } else {
-                router.push('/admin');
+                window.location.href = '/admin';
             }
         } catch (err) {
-            setError(true);
+            console.error("Login unexpected error:", err);
+            setError("Ocurrió un error inesperado");
             setIsLoading(false);
         }
     };
@@ -42,11 +50,6 @@ export default function AdminLogin() {
                 <div className={styles.brandSide}>
                     <h1 className={styles.logo}>ARTESANA</h1>
                     <p className={styles.tagline}>Panel de Gestión Artesanal</p>
-
-                    <div className={styles.premiumBadge}>
-                        <Lock size={14} /> Sistema Seguro
-                    </div>
-
                     <p style={{ marginTop: '2rem', fontSize: '0.9rem', opacity: 0.8 }}>
                         Acceso exclusivo para administradores de la marca.
                         Por favor, ingresa tus credenciales para continuar.
@@ -63,7 +66,7 @@ export default function AdminLogin() {
                                 type="text"
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
-                                placeholder="tu_usuario"
+                                placeholder="user"
                                 required
                             />
                         </div>
@@ -81,7 +84,7 @@ export default function AdminLogin() {
 
                         {error && (
                             <div className={styles.errorMsg}>
-                                <AlertCircle size={16} /> Credenciales incorrectas
+                                <AlertCircle size={16} /> {error}
                             </div>
                         )}
 

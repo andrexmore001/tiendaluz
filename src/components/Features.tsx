@@ -5,12 +5,12 @@ const features = [
     {
         icon: <Box size={32} />,
         title: "Personalización Total",
-        description: "Cada caja es un lienzo en blanco. Elige colores, textos e imágenes que cuenten tu historia."
+        description: "Cada detalle es un lienzo en blanco. Elige colores, textos e imágenes que cuenten tu historia."
     },
     {
         icon: <MousePointer2 size={32} />,
-        title: "Vista Previa 3D",
-        description: "Visualiza tu creación en tiempo real con nuestra tecnología 3D antes de finalizar tu pedido."
+        title: "Vista Previa",
+        description: "Visualiza tu creación en tiempo real con nuestra tecnología antes de finalizar tu pedido."
     },
     {
         icon: <MessageCircle size={32} />,

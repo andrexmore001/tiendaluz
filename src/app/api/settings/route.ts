@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+
+export const revalidate = 3600; // Recache every hour
 
 export async function GET() {
     try {
@@ -15,7 +18,12 @@ export async function GET() {
             });
         }
 
-        return NextResponse.json(settings);
+        return new NextResponse(JSON.stringify(settings), {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, max-age=0, s-maxage=1, stale-while-revalidate=59, must-revalidate',
+            },
+        });
     } catch (error) {
         console.error('Error fetching settings:', error);
         return NextResponse.json({ error: 'Error al obtener configuraciones' }, { status: 500 });
@@ -31,6 +39,7 @@ export async function POST(request: Request) {
             where: { id: 'site-settings' },
             update: {
                 ...rest,
+                logo: rest?.logo,
                 primaryColor: colors?.primary,
                 secondaryColor: colors?.secondary,
                 accentColor: colors?.accent,
@@ -43,10 +52,13 @@ export async function POST(request: Request) {
                 heroTitle: rest?.heroTitle,
                 heroSubtitle: rest?.heroSubtitle,
                 heroImages: JSON.stringify(rest?.heroImages || []),
+                chatBusinessId: rest?.chatBusinessId,
+                chatApiKey: rest?.chatApiKey,
             },
             create: {
                 id: 'site-settings',
                 ...rest,
+                logo: rest?.logo,
                 primaryColor: colors?.primary,
                 secondaryColor: colors?.secondary,
                 accentColor: colors?.accent,
@@ -59,9 +71,13 @@ export async function POST(request: Request) {
                 heroTitle: rest?.heroTitle,
                 heroSubtitle: rest?.heroSubtitle,
                 heroImages: JSON.stringify(rest?.heroImages || []),
+                chatBusinessId: rest?.chatBusinessId,
+                chatApiKey: rest?.chatApiKey,
             },
         });
 
+        revalidatePath('/api/settings');
+        revalidatePath('/api/bootstrap');
         return NextResponse.json(settings);
     } catch (error) {
         console.error('Error saving settings:', error);

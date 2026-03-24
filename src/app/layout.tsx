@@ -3,7 +3,10 @@ import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { SettingsProvider } from '@/context/SettingsContext';
 import DynamicStyles from '@/components/DynamicStyles';
+import DynamicFavicon from '@/components/Branding/DynamicFavicon';
 import { SessionProvider } from 'next-auth/react';
+import { CartProvider } from '@/context/CartContext';
+import CartDrawer from '@/components/CartDrawer';
 
 const inter = Inter({
   variable: "--font-body",
@@ -16,9 +19,11 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Artesana | Cajas que cuentan historias",
+  title: "Artesana | Cajas que cuentan historias.",
   description: "Marca femenina dedicada a la venta de cajas personalizadas y regalos especiales. Detalles hechos con amor.",
 };
+
+import ChatWidget from '@/components/ChatWidget';
 
 export default function RootLayout({
   children,
@@ -30,8 +35,13 @@ export default function RootLayout({
       <body className={`${inter.variable} ${playfair.variable}`}>
         <SessionProvider>
           <SettingsProvider>
-            <DynamicStyles />
-            {children}
+            <CartProvider>
+              <DynamicStyles />
+              <DynamicFavicon />
+              {children}
+              <CartDrawer />
+              <ChatWidget />
+            </CartProvider>
           </SettingsProvider>
         </SessionProvider>
       </body>

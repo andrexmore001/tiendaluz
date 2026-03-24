@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useRef, Suspense } from 'react';
+import React, { useState, useRef, Suspense, useEffect } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, ContactShadows, Environment } from '@react-three/drei';
 import * as THREE from 'three';
@@ -22,21 +22,41 @@ function LightHolder() {
 }
 
 export default function Home3DSection() {
+    const [isVisible, setIsVisible] = useState(false);
+    const sectionRef = useRef<HTMLElement>(null);
     const [text, setText] = useState('Tienda Luz');
     const [isOpen, setIsOpen] = useState(true);
     const [logoTexture, setLogoTexture] = useState<THREE.Texture | null>(null);
     const controlsRef = useRef<any>(null);
 
-    // Load default logo on mount
-    React.useEffect(() => {
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setIsVisible(true);
+                    observer.disconnect();
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (sectionRef.current) {
+            observer.observe(sectionRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, []);
+
+    // Load default logo on mount (only when visible)
+    useEffect(() => {
+        if (!isVisible) return;
         const loader = new THREE.TextureLoader();
-        // Use local path to avoid CORS issues found in browser debugging
         const defaultLogoUrl = "/branding/default-logo.png";
         loader.load(defaultLogoUrl, (texture) => {
             texture.colorSpace = THREE.SRGBColorSpace;
             setLogoTexture(texture);
         });
-    }, []);
+    }, [isVisible]);
 
     const handleZoom = (amount: number) => {
         if (controlsRef.current) {
@@ -73,46 +93,52 @@ export default function Home3DSection() {
     };
 
     return (
-        <section className={styles.section}>
+        <section className={styles.section} ref={sectionRef}>
             <div className="container">
                 <div className={styles.grid}>
                     <div className={styles.visualizerContainer}>
                         <div className={styles.badge}>Simulador 3D Interactivo</div>
-                        <Canvas
-                            camera={{ position: [50, 80, 120], fov: 45 }}
-                            shadows
-                            gl={{ antialias: true }}
-                        >
-                            {/* Original Lighting Setup */}
-                            <ambientLight intensity={0.5} />
-                            <LightHolder />
+                        {isVisible ? (
+                            <Canvas
+                                camera={{ position: [50, 80, 120], fov: 45 }}
+                                shadows
+                                gl={{ antialias: true }}
+                            >
+                                {/* Original Lighting Setup */}
+                                <ambientLight intensity={0.5} />
+                                <LightHolder />
 
-                            <Suspense fallback={null}>
-                                <BoxComponent
-                                    isOpen={isOpen}
-                                    text={text}
-                                    logoTexture={logoTexture}
-                                />
-                                <Environment preset="city" />
-                                <ContactShadows
-                                    position={[0, -50, 0]}
-                                    opacity={0.3}
-                                    scale={250}
-                                    blur={2.5}
-                                    far={120}
-                                />
-                            </Suspense>
+                                <Suspense fallback={null}>
+                                    <BoxComponent
+                                        isOpen={isOpen}
+                                        text={text}
+                                        logoTexture={logoTexture}
+                                    />
+                                    <Environment preset="city" />
+                                    <ContactShadows
+                                        position={[0, -50, 0]}
+                                        opacity={0.3}
+                                        scale={250}
+                                        blur={2.5}
+                                        far={120}
+                                    />
+                                </Suspense>
 
-                            <OrbitControls
-                                ref={controlsRef}
-                                enablePan={false}
-                                enableZoom={true}
-                                autoRotate={isOpen}
-                                autoRotateSpeed={0.5}
-                                minDistance={100}
-                                maxDistance={400}
-                            />
-                        </Canvas>
+                                <OrbitControls
+                                    ref={controlsRef}
+                                    enablePan={false}
+                                    enableZoom={true}
+                                    autoRotate={isOpen}
+                                    autoRotateSpeed={0.5}
+                                    minDistance={100}
+                                    maxDistance={400}
+                                />
+                            </Canvas>
+                        ) : (
+                            <div className={styles.visualizerPlaceholder} style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', borderRadius: '16px' }}>
+                                <p style={{ color: '#94a3b8' }}>Cargando Simulador 3D...</p>
+                            </div>
+                        )}
                     </div>
 
                     <div className={styles.controls}>

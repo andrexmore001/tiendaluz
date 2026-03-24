@@ -11,11 +11,17 @@ export default function Footer() {
         <footer className={styles.footer}>
             <div className={`${styles.container} container`}>
                 <div className={styles.info}>
-                    <h2 className={styles.logo}>{settings.title.toUpperCase()}</h2>
+                    <Link href="/" className={styles.logo}>
+                        {settings.logo ? (
+                            <img src={settings.logo} alt={settings.title} className={styles.logoImg} />
+                        ) : (
+                            settings.title.toUpperCase()
+                        )}
+                    </Link>
                     <p className={styles.description}>Creamos cajas que cuentan historias. Detalles artesanales hechos con el alma.</p>
                     <div className={styles.social}>
-                        <a href={`https://instagram.com/${settings.contact.instagram}`}><Instagram size={20} /></a>
-                        <a href={`https://facebook.com/${settings.contact.facebook}`}><Facebook size={20} /></a>
+                        <a href={`https://instagram.com/${settings.contact.instagram}`} target="_blank" rel="noopener noreferrer"><Instagram size={20} /></a>
+                        <a href={`https://facebook.com/${settings.contact.facebook}`} target="_blank" rel="noopener noreferrer"><Facebook size={20} /></a>
                     </div>
                 </div>
 

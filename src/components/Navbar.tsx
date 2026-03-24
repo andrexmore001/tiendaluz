@@ -4,10 +4,13 @@ import Link from 'next/link';
 import { ShoppingBag, Menu, X, User } from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useSettings } from '@/context/SettingsContext';
+import { useCart } from '@/context/CartContext';
+import SearchBar from './SearchBar/SearchBar';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const { settings } = useSettings();
+    const { cartCount, toggleCart } = useCart();
 
     return (
         <nav className={styles.navbar}>
@@ -22,7 +25,7 @@ export default function Navbar() {
 
                 <Link href="/" className={styles.logo}>
                     {settings.logo ? (
-                        <img src={settings.logo} alt={settings.title} style={{ height: '40px', objectFit: 'contain' }} />
+                        <img src={settings.logo} alt={settings.title} className={styles.logoImg} />
                     ) : (
                         settings.title.toUpperCase()
                     )}
@@ -35,14 +38,19 @@ export default function Navbar() {
                     <Link href="/contacto" onClick={() => setIsOpen(false)}>Contacto</Link>
                 </div>
 
-                <div className={styles.actions}>
-                    <button className={styles.actionBtn}>
-                        <User size={20} />
-                    </button>
-                    <button className={styles.actionBtn}>
-                        <ShoppingBag size={20} />
-                        <span className={styles.cartCount}>0</span>
-                    </button>
+                <div className={styles.navRight}>
+                    <SearchBar />
+                    <div className={styles.actions}>
+                        <button className={styles.actionBtn}>
+                            <User size={20} />
+                        </button>
+                        <button className={styles.actionBtn} onClick={toggleCart} aria-label="Abrir carrito">
+                            <ShoppingBag size={20} />
+                            {cartCount > 0 && (
+                                <span className={styles.cartCount}>{cartCount}</span>
+                            )}
+                        </button>
+                    </div>
                 </div>
             </div>
         </nav>

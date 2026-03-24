@@ -4,15 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "npx prisma db push && npx prisma generate && next build",
+    "build": "npx prisma db push --accept-data-loss && npx prisma generate && next build",
     "start": "next start"
   },
   "dependencies": {
     "@prisma/client": "6.4",
+    "@react-pdf/renderer": "^4.3.2",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.5.0",
     "@types/three": "^0.183.1",
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.9.0",
     "gsap": "^3.14.2",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
