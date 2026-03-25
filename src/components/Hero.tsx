@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSettings } from '@/context/SettingsContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
+import { getWhatsAppLink } from '@/lib/whatsapp';
 import styles from './Hero.module.css';
 
 import Image from 'next/image';
@@ -58,7 +59,7 @@ export default function Hero() {
                 </p>
                 <div className={styles.ctaGroup}>
                     <a
-                        href={`https://wa.me/${settings.contact.phone.replace(/\D/g, '').startsWith('57') ? settings.contact.phone.replace(/\D/g, '') : '57' + settings.contact.phone.replace(/\D/g, '')}?text=${encodeURIComponent('¡Hola!, Quisiera personalizar algo ✨, soy:  ')}`}
+                        href={getWhatsAppLink(settings.contact.phone, '¡Hola!, Quisiera personalizar algo ✨, soy:  ')}
                         className="btn-primary"
                         target="_blank"
                         rel="noopener noreferrer"

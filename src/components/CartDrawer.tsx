@@ -3,6 +3,7 @@ import React from 'react';
 import { useCart } from '@/context/CartContext';
 import { useSettings } from '@/context/SettingsContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
+import { getWhatsAppLink } from '@/lib/whatsapp';
 import { X, Trash2, ShoppingBag, MessageCircle } from 'lucide-react';
 import styles from './CartDrawer.module.css';
 
@@ -13,8 +14,6 @@ export default function CartDrawer() {
   const handleWhatsAppCheckout = () => {
     if (cartItems.length === 0) return;
 
-    const phoneNumber = settings.contact.phone.replace(/\s+/g, "");
-    
     let itemsText = cartItems.map((item, index) => {
       const effectivePrice = getEffectivePrice(item.productId, item.unitPrice);
       let text = `${index + 1}. ${item.quantity}x ${item.name} - $${(effectivePrice * item.quantity).toLocaleString()}`;
@@ -25,8 +24,7 @@ export default function CartDrawer() {
     }).join('\n\n');
 
     const message = `Hola, me gustaría realizar el siguiente pedido:\n\n${itemsText}\n\n*Total estimado:* $${cartTotal.toLocaleString()}COP`;
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
+    window.open(getWhatsAppLink(settings.contact.phone, message), "_blank");
   };
 
   return (

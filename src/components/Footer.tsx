@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react';
 import styles from './Footer.module.css';
 import { useSettings } from '@/context/SettingsContext';
+import { getWhatsAppLink } from '@/lib/whatsapp';
 
 export default function Footer() {
     const { settings } = useSettings();
@@ -44,7 +45,7 @@ export default function Footer() {
             </div>
             <div className={styles.bottomBar}>
                 <p>&copy; 2026 Artesana. Hecho con amor en Colombia.</p>
-                <p className={styles.developer}>Desarrollado por <a href="https://wa.me/3215458839?text=Hola%20Andres%2C%20vi%20la%20p%C3%A1gina%20de%20Artesana%20y%20me%20encantar%C3%ADa%20que%20me%20ayudaras%20a%20desarrollar%20mi%20propia%20p%C3%A1gina%20web." target="_blank" rel="noopener noreferrer">Andres Moreno</a></p>
+                <p className={styles.developer}>Desarrollado por <a href={getWhatsAppLink("3215458839", "Hola Andres, vi la página de Artesana y me encantaría que me ayudaras a desarrollar mi propia página web.")} target="_blank" rel="noopener noreferrer">Andres Moreno</a></p>
             </div>
         </footer>
     );

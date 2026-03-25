@@ -6,6 +6,7 @@ import ProductModel from "@/components/Three/ProductModel";
 import { useSettings } from "@/context/SettingsContext";
 import { useCart } from "@/context/CartContext";
 import { getOptimizedUrl } from "@/lib/cloudinary";
+import { getWhatsAppLink } from "@/lib/whatsapp";
 import { Type, Image as ImageIcon, MessageCircle, ShoppingBag } from "lucide-react";
 import styles from "./customizer.module.css";
 
@@ -80,7 +81,6 @@ export default function CustomizerPage({
   const currentUnitPrice = getTieredPrice();
 
   const handleWhatsApp = () => {
-    const phoneNumber = settings.contact.phone.replace(/\s+/g, "");
     const currentItemTotal = currentUnitPrice * quantity;
 
     let message = "Hola, me gustaría realizar el siguiente pedido:\n\n";
@@ -108,8 +108,7 @@ export default function CustomizerPage({
 
     message += `*Total estimado:* $${grandTotal.toLocaleString()}COP`;
 
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${phoneNumber}?text=${encodedMessage}`, "_blank");
+    window.open(getWhatsAppLink(settings.contact.phone, message), "_blank");
   };
 
   return (
