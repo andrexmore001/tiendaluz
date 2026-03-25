@@ -14,35 +14,150 @@
     font-size: 1.1rem;
 }
 
-.collectionNav {
+.shopLayout {
     display: flex;
-    justify-content: center;
-    gap: 1rem;
+    gap: 3rem;
+    align-items: flex-start;
     margin-bottom: 5rem;
-    flex-wrap: wrap;
 }
 
-.colBtn {
-    padding: 0.8rem 2rem;
-    border-radius: 30px;
+.sidebar {
+    flex: 0 0 280px;
     background: white;
-    color: var(--text-main);
-    font-size: 0.9rem;
-    font-weight: 500;
-    border: 1px solid #eee;
-    transition: var(--transition);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-soft);
+    border: 1px solid #f8f8f8;
+    position: sticky;
+    top: 100px;
 }
 
-.colBtn:hover {
-    border-color: var(--primary);
+.sidebar h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.filterGroup {
+    margin-bottom: 2rem;
+}
+
+.accordionItem {
+    margin-bottom: 0.5rem;
+}
+
+.accordionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    padding: 0.5rem 0;
+    transition: var(--transition);
+    user-select: none;
+}
+
+.accordionHeader:hover {
     color: var(--primary);
 }
 
-.colBtnActive {
+.accordionHeader.active {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.accordionContent {
+    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: 0.4rem;
+}
+
+.childBtn {
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.2rem 0;
+    transition: var(--transition);
+}
+
+.childBtn:hover {
+    color: var(--primary);
+}
+
+.childBtn.active {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.productArea {
+    flex: 1;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.breadcrumbs {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.breadcrumbs span {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.sortSelect {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    outline: none;
+    background: white;
+}
+
+.mobileFilterBtn {
+    display: none;
     background: var(--primary);
     color: white;
-    border-color: var(--primary);
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 30px;
+    font-weight: 500;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
     box-shadow: 0 4px 15px rgba(232, 162, 162, 0.3);
+}
+
+/* Slider Custom Styles */
+.rangeInput {
+    width: 100%;
+    margin-top: 1rem;
+    accent-color: var(--primary);
+}
+
+.priceLabels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
 }
 
 .grid {
@@ -139,13 +254,55 @@
     opacity: 0.95;
 }
 
+@media (max-width: 992px) {
+    .shopLayout {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        bottom: 0;
+        width: 300px;
+        z-index: 9999;
+        border-radius: 0;
+        transition: left 0.3s ease;
+        overflow-y: auto;
+        box-shadow: 5px 0 20px rgba(0,0,0,0.1);
+    }
+
+    .sidebarOpen {
+        left: 0;
+    }
+
+    .sidebarOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 9998;
+        backdrop-filter: blur(2px);
+    }
+
+    .mobileFilterBtn {
+        display: flex;
+    }
+
+    .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
 @media (max-width: 768px) {
     .header h1 {
         font-size: 2.5rem;
     }
 
-    .colBtn {
-        padding: 0.6rem 1.5rem;
-        font-size: 0.85rem;
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     }
 }

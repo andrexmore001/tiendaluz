@@ -6,7 +6,7 @@ import { getOptimizedUrl } from '@/lib/cloudinary';
 import styles from './SearchBar.module.css';
 
 export default function SearchBar() {
-  const { products } = useSettings();
+  const { products, collections } = useSettings();
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -22,9 +22,14 @@ export default function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const getCategoryName = (categoryId: string) => {
+    const col = collections.find((c: any) => c.id === categoryId);
+    return col ? col.name.toLowerCase() : '';
+  };
+
   const filteredProducts = query.trim() === '' 
     ? [] 
-    : products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || p.category.toLowerCase().includes(query.toLowerCase())).slice(0, 5); // Limit to 5 results
+    : products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || getCategoryName(p.category).includes(query.toLowerCase())).slice(0, 5); // Limit to 5 results
 
   const handleSelectProduct = (id: string) => {
     setIsOpen(false);

@@ -33,6 +33,7 @@ export interface Product {
     modelUrl?: string;
     priceTiers?: PriceTier[];
     updatedAt?: string;
+    createdAt?: string;
     isVisible?: boolean;
 }
 
@@ -40,4 +41,6 @@ export interface Collection {
     id: string;
     name: string;
     description: string;
+    parentId?: string | null;
+    createdAt?: string;
 }

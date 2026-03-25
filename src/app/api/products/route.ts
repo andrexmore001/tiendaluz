@@ -52,7 +52,8 @@ export async function POST(request: Request) {
         const baseData = {
             name: rest.name,
             price: Number(rest.price),
-            category: rest.category,
+            category: rest.category || 'General',
+            collectionId: rest.collectionId || rest.category,
             description: rest.description || '',
             image: rest.image || '',
             displayMode: rest.displayMode || '3d',

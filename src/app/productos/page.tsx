@@ -6,20 +6,51 @@ import { useSettings } from '@/context/SettingsContext';
 import { useCart } from '@/context/CartContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
 import Link from 'next/link';
+import { ChevronDown, ChevronRight, Filter, X } from 'lucide-react';
 import styles from './productos.module.css';
 
 export default function ProductosPage() {
-    const { products, collections } = useSettings();
+    const { products, collections, materials } = useSettings();
     const { addToCart, getProductQuantity, updateQuantity, cartItems, openCart, getEffectivePrice } = useCart();
+    
+    // Filtros
     const [activeCollection, setActiveCollection] = useState("Todas");
+    const [expandedParents, setExpandedParents] = useState<Record<string, boolean>>({});
+    const [maxPrice, setMaxPrice] = useState(1000000); // 1 Millón max por defecto
+    const [sortBy, setSortBy] = useState('newest'); // 'newest', 'priceAsc', 'priceDesc'
+    
+    // UI Mobile
+    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+
+    // Helpers de Categoría
+    const isParent = (id: string) => collections.some((c: any) => c.parentId === id);
+    const getParentOf = (id: string) => collections.find((c: any) => c.id === id)?.parentId;
+    const parentCollections = collections.filter((col: any) => !col.parentId);
 
     const visibleProducts = products.filter(p => p.isVisible !== false);
     const filteredProducts = activeCollection === "Todas"
-        ? visibleProducts
+        ? visibleProducts.filter(p => p.price <= maxPrice)
         : visibleProducts.filter(p => {
-            const col = collections.find((c: any) => c.id === activeCollection);
-            return p.category === activeCollection || p.category === col?.name;
+            const isMatch = p.category === activeCollection || collections.find((c: any) => c.id === p.category)?.parentId === activeCollection;
+            return isMatch && p.price <= maxPrice;
         });
+
+    // Ordenamiento
+    const sortedProducts = [...filteredProducts].sort((a, b) => {
+        if (sortBy === 'priceAsc') return a.price - b.price;
+        if (sortBy === 'priceDesc') return b.price - a.price;
+        // newest (createdAt, pero si no hay, ID o default)
+        return (new Date(b.createdAt || 0)).getTime() - (new Date(a.createdAt || 0)).getTime();
+    });
+
+    const toggleAccordion = (id: string) => {
+        setExpandedParents(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    // Breadcrumbs Label
+    const currentCategoryName = activeCollection === "Todas" 
+        ? "Todas las Piezas" 
+        : collections.find((c: any) => c.id === activeCollection)?.name;
 
     return (
         <main>
@@ -30,28 +61,113 @@ export default function ProductosPage() {
                     <p>Explora nuestras creaciones diseñadas para cada historia especial.</p>
                 </header>
 
-                {/* Collections Filter Navigation */}
-                <nav className={styles.collectionNav}>
-                    <button
-                        className={`${styles.colBtn} ${activeCollection === "Todas" ? styles.colBtnActive : ''}`}
-                        onClick={() => setActiveCollection("Todas")}
-                    >
-                        Todas
-                    </button>
-                    {collections.map((col: any) => (
-                        <button
-                            key={col.id}
-                            className={`${styles.colBtn} ${activeCollection === col.id ? styles.colBtnActive : ''}`}
-                            onClick={() => setActiveCollection(col.id)}
-                        >
-                            {col.name}
-                        </button>
-                    ))}
-                </nav>
+                {isMobileFiltersOpen && <div className={styles.sidebarOverlay} onClick={() => setIsMobileFiltersOpen(false)} />}
+                
+                <div className={styles.shopLayout}>
+                    {/* Sidebar / Filtros */}
+                    <aside className={`${styles.sidebar} ${isMobileFiltersOpen ? styles.sidebarOpen : ''}`}>
+                        {isMobileFiltersOpen && (
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                                <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Filtros</h2>
+                                <button onClick={() => setIsMobileFiltersOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                            </div>
+                        )}
 
-                <div className={styles.grid}>
-                    {[...filteredProducts]
-                        .map(product => {
+                        <div className={styles.filterGroup}>
+                            <h3>Categorías</h3>
+                            <div className={styles.accordionItem}>
+                                <div 
+                                    className={`${styles.accordionHeader} ${activeCollection === "Todas" ? styles.active : ''}`}
+                                    onClick={() => { setActiveCollection("Todas"); setIsMobileFiltersOpen(false); }}
+                                >
+                                    <span>Ver Todas</span>
+                                </div>
+                            </div>
+                            
+                            {parentCollections.map((parent: any) => {
+                                const children = collections.filter((c: any) => c.parentId === parent.id);
+                                const isExpanded = expandedParents[parent.id] || activeCollection === parent.id || getParentOf(activeCollection) === parent.id;
+                                
+                                return (
+                                    <div key={parent.id} className={styles.accordionItem}>
+                                        <div className={styles.accordionHeader}>
+                                            <span 
+                                                className={activeCollection === parent.id ? styles.active : ''}
+                                                onClick={() => { setActiveCollection(parent.id); setIsMobileFiltersOpen(false); }}
+                                                style={{ flex: 1, paddingRight: '1rem' }}
+                                            >
+                                                {parent.name}
+                                            </span>
+                                            {children.length > 0 && (
+                                                <button 
+                                                    onClick={(e) => { e.stopPropagation(); toggleAccordion(parent.id); }} 
+                                                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.2rem', color: '#64748b' }}
+                                                >
+                                                    {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                                                </button>
+                                            )}
+                                        </div>
+                                        
+                                        {isExpanded && children.length > 0 && (
+                                            <div className={styles.accordionContent}>
+                                                {children.map((child: any) => (
+                                                    <button 
+                                                        key={child.id}
+                                                        className={`${styles.childBtn} ${activeCollection === child.id ? styles.active : ''}`}
+                                                        onClick={() => { setActiveCollection(child.id); setIsMobileFiltersOpen(false); }}
+                                                    >
+                                                        {child.name}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className={styles.filterGroup}>
+                            <h3>Precio Máximo</h3>
+                            <input 
+                                type="range" 
+                                min="0" 
+                                max="2000000" 
+                                step="10000" 
+                                value={maxPrice} 
+                                onChange={(e) => setMaxPrice(Number(e.target.value))} 
+                                className={styles.rangeInput}
+                            />
+                            <div className={styles.priceLabels}>
+                                <span>$0</span>
+                                <span>${maxPrice.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </aside>
+
+                    {/* Área de Productos (Grilla) */}
+                    <div className={styles.productArea}>
+                        <div className={styles.toolbar}>
+                            <button className={styles.mobileFilterBtn} onClick={() => setIsMobileFiltersOpen(true)}>
+                                <Filter size={18} /> Filtros
+                            </button>
+                            
+                            <div className={styles.breadcrumbs}>
+                                Explorando: <span>{currentCategoryName}</span>
+                            </div>
+
+                            <select 
+                                className={styles.sortSelect} 
+                                value={sortBy} 
+                                onChange={(e) => setSortBy(e.target.value)}
+                            >
+                                <option value="newest">Más Relevantes</option>
+                                <option value="priceAsc">Precio: Menor a Mayor</option>
+                                <option value="priceDesc">Precio: Mayor a Menor</option>
+                            </select>
+                        </div>
+                        
+                        <div className={styles.grid}>
+                            {sortedProducts.map(product => {
                         const qtyInCart = getProductQuantity(product.id);
                         const baseCartItem = cartItems.find(i => i.productId === product.id && !i.customText);
 
@@ -126,13 +242,16 @@ export default function ProductosPage() {
                             </div>
                         );
                     })}
-                </div>
+                        </div>
 
-                {filteredProducts.length === 0 && (
-                    <div className={styles.emptyState}>
-                        <p>Próximamente tendremos nuevas piezas en esta colección.</p>
+                        {sortedProducts.length === 0 && (
+                            <div className={styles.emptyState}>
+                                <p>No se encontraron productos que coincidan con estos filtros.</p>
+                                <button onClick={() => { setActiveCollection("Todas"); setMaxPrice(1000000); }} className="btn-secondary" style={{ marginTop: '1rem' }}>Limpiar Filtros</button>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </section>
             <Footer />
         </main>

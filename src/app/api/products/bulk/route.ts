@@ -41,18 +41,13 @@ export async function POST(req: Request) {
         const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
         const dataRows = lines.slice(1);
 
-        // Pre-fetch valid materials and collections for validation
-        const [materials, collections] = await Promise.all([
-            prisma.material.findMany({ select: { id: true } }),
-            prisma.collection.findMany({ select: { id: true } })
-        ]);
+        // Initial fetch for materials to validate
+        const materials = await prisma.material.findMany({ select: { id: true } });
         const validMaterialIds = new Set(materials.map(m => m.id));
-        const validCollectionIds = new Set(collections.map(c => c.id));
-
         const invalidMaterials = new Set<string>();
-        const invalidCollections = new Set<string>();
 
-        const productsData = dataRows.map((line: string, lineIndex: number) => {
+        // Step 1: Parse rows into raw products and extract unique missing categories
+        const unmappedProductsData = dataRows.map((line: string, lineIndex: number) => {
             const values = parseCSVLine(line);
             const product: any = {};
 
@@ -82,41 +77,52 @@ export async function POST(req: Request) {
                 }
             });
 
-            // Ensure required fields for Prisma
             if (!product.name) product.name = `Producto en línea ${lineIndex + 2}`;
             if (product.price === undefined) product.price = 0;
             if (!product.category) product.category = 'General';
             if (!product.description) product.description = '';
             if (!product.displayMode) product.displayMode = '3d';
-            if (!product.materialId) {
-                // We'll let the existing validation logic handle the error message
-                product.materialId = '';
-            }
+            if (!product.materialId) product.materialId = '';
             if (!product.baseColor) product.baseColor = '#F9F1E7';
 
-            // Validate relations
-            if (!validMaterialIds.has(product.materialId)) {
-                invalidMaterials.add(product.materialId);
-            }
-            if (product.category !== 'General' && !validCollectionIds.has(product.category)) {
-                invalidCollections.add(product.category);
-            }
+            if (!validMaterialIds.has(product.materialId)) invalidMaterials.add(product.materialId);
 
             return product;
         });
 
-        // If there are validation errors, return them before creating anything
-        if (invalidMaterials.size > 0 || invalidCollections.size > 0) {
-            let errorMsg = 'Errores de validación en el CSV:\n';
-            if (invalidMaterials.size > 0) {
-                errorMsg += `- Los siguientes materiales no existen: ${Array.from(invalidMaterials).join(', ')}\n`;
-            }
-            if (invalidCollections.size > 0) {
-                errorMsg += `- Las siguientes categorías (colecciones) no existen: ${Array.from(invalidCollections).join(', ')}\n`;
-            }
-            errorMsg += 'Por favor, crea estos elementos primero o corrige el archivo.';
-            return NextResponse.json({ error: errorMsg }, { status: 400 });
+        if (invalidMaterials.size > 0) {
+            return NextResponse.json({ error: `Errores de validación en el CSV: Los siguientes materiales no existen: ${Array.from(invalidMaterials).join(', ')}` }, { status: 400 });
         }
+
+        // Step 2: Extract unique categories and ensure they exist
+        const uniqueCategories = [...new Set(unmappedProductsData.map((p: any) => p.category))];
+        const existingCollections = await prisma.collection.findMany({
+            where: { name: { in: uniqueCategories as string[] } }
+        });
+        const existingColNames = new Set(existingCollections.map(c => c.name));
+
+        const newCategories = (uniqueCategories as string[]).filter(c => !existingColNames.has(c));
+        
+        // Create missing collections sequentially (createMany isn't supported on SQLite but is on Postgres, we use loop to be safe if fallback or handle nested in future)
+        for (const cat of newCategories) {
+            await prisma.collection.upsert({
+                where: { name: cat },
+                create: { name: cat, description: 'Creada desde carga masiva CSV' },
+                update: {}
+            });
+        }
+
+        // Fetch all again to get standard IDs map
+        const finalCollections = await prisma.collection.findMany({
+            where: { name: { in: uniqueCategories as string[] } }
+        });
+        const collectionNameToId = new Map(finalCollections.map(c => [c.name, c.id]));
+
+        // Step 3: Map collectionId to the product payload
+        const productsData = unmappedProductsData.map((p: any) => ({
+            ...p,
+            collectionId: collectionNameToId.get(p.category)
+        }));
 
         const result = await prisma.product.createMany({
             data: productsData,

@@ -74,7 +74,7 @@ export default function AdminPage() {
     const [showCollectionForm, setShowCollectionForm] = useState(false);
     const [editingCollection, setEditingCollection] = useState<any>(null);
     const [collectionFormData, setCollectionFormData] = useState({
-        name: '', description: ''
+        name: '', description: '', parentId: null as string | null, newSubcategories: [] as string[]
     });
 
     const [formData, setFormData] = useState({
@@ -333,7 +333,14 @@ export default function AdminPage() {
 
             <main className={styles.content}>
                 {activeTab === 'products' && <TabProducts products={products} collections={collections} onAdd={handleNewProduct} onEdit={handleEditProduct} onDelete={id => { if (confirm('¿Eliminar?')) { deleteProduct(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
-                {activeTab === 'collections' && <TabCollections collections={collections} onAdd={() => { setEditingCollection(null); setCollectionFormData({ name: '', description: '' }); setShowCollectionForm(true); }} onEdit={col => { setEditingCollection(col); setCollectionFormData({ name: col.name, description: col.description || '' }); setShowCollectionForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteCollection(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'collections' && <TabCollections collections={collections} onAdd={() => { setEditingCollection(null); setCollectionFormData({ name: '', description: '', parentId: null, newSubcategories: [] }); setShowCollectionForm(true); }} onEdit={col => { setEditingCollection(col); setCollectionFormData({ name: col.name, description: col.description || '', parentId: col.parentId || null, newSubcategories: [] }); setShowCollectionForm(true); }} onDelete={id => { 
+                    const colToDelete = collections.find((c: any) => c.id === id);
+                    const isParent = collections.some((c: any) => c.parentId === id);
+                    const msg = isParent 
+                        ? `⚠️ Atención: Borrar "${colToDelete?.name}" eliminará irrevocablemente todas sus subcategorías. ¿Estás absolutamente seguro?` 
+                        : `¿Eliminar la categoría "${colToDelete?.name}"?`;
+                    if (confirm(msg)) { deleteCollection(id); showToast("Eliminado"); } 
+                }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'settings' && (
                     <TabSettings
                         localSettings={localSettings} setLocalSettings={setLocalSettings} onSave={handleSaveSettings} isSaving={isSaving} onMenuClick={() => setMobileMenuOpen(true)}
@@ -365,7 +372,7 @@ export default function AdminPage() {
                 removeGalleryImage={idx => setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))} setEditingImageConfig={setEditingImageConfig}
             />
             <ModalMaterial showMaterialForm={showMaterialForm} setShowMaterialForm={setShowMaterialForm} editingMaterial={editingMaterial} materialFormData={materialFormData} setMaterialFormData={setMaterialFormData} handleSubmitMaterial={handleSubmitMaterial} onFileUpload={handleFileUpload} />
-            <ModalCollection showCollectionForm={showCollectionForm} setShowCollectionForm={setShowCollectionForm} editingCollection={editingCollection} collectionFormData={collectionFormData} setCollectionFormData={setCollectionFormData} handleSubmitCollection={handleSubmitCollection} />
+            <ModalCollection showCollectionForm={showCollectionForm} setShowCollectionForm={setShowCollectionForm} editingCollection={editingCollection} collectionFormData={collectionFormData} setCollectionFormData={setCollectionFormData} handleSubmitCollection={handleSubmitCollection} collections={collections} />
             <ModalTextConfig editingImageConfig={editingImageConfig} formData={formData} setEditingImageConfig={setEditingImageConfig} handleConfigChange={handleConfigChange} />
         </div>
     );

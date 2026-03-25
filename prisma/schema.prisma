@@ -33,7 +33,9 @@ model Product {
   id          String      @id @default(cuid())
   name        String
   price       Float
-  category    String
+  category     String
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id])
   description String
   image       String?
   displayMode String      @default("3d")
@@ -64,6 +66,13 @@ model Collection {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
+
+  parentId    String?
+  parent      Collection?  @relation("SubCollections", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Collection[] @relation("SubCollections")
+
+  products    Product[]
+
   createdAt   DateTime @default(now())
 }
 

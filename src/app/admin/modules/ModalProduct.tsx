@@ -155,7 +155,14 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                         value={formData.category}
                                         onChange={(e) => setFormData((prev: any) => ({ ...prev, category: e.target.value }))}
                                     >
-                                        {collections.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                        {collections.filter((c: any) => !c.parentId).map((parent: any) => (
+                                            <React.Fragment key={parent.id}>
+                                                <option value={parent.id}>{parent.name}</option>
+                                                {collections.filter((c: any) => c.parentId === parent.id).map((child: any) => (
+                                                    <option key={child.id} value={child.id}>&nbsp;&nbsp;&nbsp;↳ {child.name}</option>
+                                                ))}
+                                            </React.Fragment>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className={styles.inputGroup}>
