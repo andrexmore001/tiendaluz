@@ -80,6 +80,22 @@
     color: var(--text-muted);
 }
 
+.developer {
+    margin-top: 0.5rem;
+}
+
+.developer a {
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.developer a:hover {
+    text-decoration: underline;
+    opacity: 0.8;
+}
+
 @media (max-width: 768px) {
     .container {
         flex-direction: column;
