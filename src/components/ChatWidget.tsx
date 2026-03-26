@@ -19,11 +19,14 @@ export default function ChatWidget() {
   }
  
   return (
+    /* Chatbot script temporarily disabled
     <Script
       src="https://web-chat-self-beta.vercel.app/loader.js"
       data-business-id={settings.chatBusinessId}
       data-api-key={settings.chatApiKey}
       strategy="afterInteractive"
     />
+    */
+    null
   );
 }
