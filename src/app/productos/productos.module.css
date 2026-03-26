@@ -1,6 +1,6 @@
 .header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 2.5rem;
 }
 
 .header h1 {
@@ -15,21 +15,44 @@
 }
 
 .shopLayout {
-    display: flex;
-    gap: 3rem;
-    align-items: flex-start;
+    display: block;
     margin-bottom: 5rem;
 }
 
 .sidebar {
-    flex: 0 0 280px;
+    position: fixed;
+    top: 0;
+    left: -100%;
+    bottom: 0;
+    width: 300px;
+    z-index: 9999;
     background: white;
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-soft);
-    border: 1px solid #f8f8f8;
-    position: sticky;
-    top: 100px;
+    padding: 2rem 1.5rem;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    border-radius: 0;
+}
+
+.sidebarOpen {
+    left: 0;
+}
+
+.sidebarOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9998;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .sidebar h3 {
@@ -132,17 +155,36 @@
 }
 
 .mobileFilterBtn {
-    display: none;
+    position: fixed;
+    left: 0;
+    top: 35%;
+    z-index: 999;
     background: var(--primary);
     color: white;
+    padding: 1.2rem 0.6rem;
+    border-radius: 0 8px 8px 0;
     border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 30px;
-    font-weight: 500;
-    align-items: center;
-    gap: 0.5rem;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(232, 162, 162, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    transition: var(--transition);
+}
+
+.mobileFilterBtn span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.mobileFilterBtn:hover {
+    padding-left: 0.8rem;
+    background: var(--text-main);
 }
 
 /* Slider Custom Styles */
@@ -259,38 +301,6 @@
         flex-direction: column;
     }
     
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: -100%;
-        bottom: 0;
-        width: 300px;
-        z-index: 9999;
-        border-radius: 0;
-        transition: left 0.3s ease;
-        overflow-y: auto;
-        box-shadow: 5px 0 20px rgba(0,0,0,0.1);
-    }
-
-    .sidebarOpen {
-        left: 0;
-    }
-
-    .sidebarOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0,0,0,0.5);
-        z-index: 9998;
-        backdrop-filter: blur(2px);
-    }
-
-    .mobileFilterBtn {
-        display: flex;
-    }
-
     .toolbar {
         flex-direction: column;
         align-items: flex-start;

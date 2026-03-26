@@ -23,8 +23,8 @@ function ProductosContent() {
     const maxPrice = Number(searchParams.get('precio')) || 1000000;
     const sortBy = searchParams.get('ordenar') || 'newest';
     
-    // UI Mobile state (este sí se mantiene local)
-    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+    // UI state
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
     const [expandedParents, setExpandedParents] = useState<Record<string, boolean>>({});
 
     // Función auxiliar para actualizar filtros en la URL
@@ -53,7 +53,7 @@ function ProductosContent() {
                 updateFilters({ cat_id: id, sub_id: null });
             }
         }
-        setIsMobileFiltersOpen(false);
+        setIsFiltersOpen(false);
     };
 
     // Helpers de Categoría
@@ -95,17 +95,20 @@ function ProductosContent() {
                     <p>Explora nuestras creaciones diseñadas para cada historia especial.</p>
                 </header>
 
-                {isMobileFiltersOpen && <div className={styles.sidebarOverlay} onClick={() => setIsMobileFiltersOpen(false)} />}
+                <button className={styles.mobileFilterBtn} onClick={() => setIsFiltersOpen(true)}>
+                    <Filter size={18} />
+                    <span>Filtros</span>
+                </button>
+
+                {isFiltersOpen && <div className={styles.sidebarOverlay} onClick={() => setIsFiltersOpen(false)} />}
                 
                 <div className={styles.shopLayout}>
                     {/* Sidebar / Filtros */}
-                    <aside className={`${styles.sidebar} ${isMobileFiltersOpen ? styles.sidebarOpen : ''}`}>
-                        {isMobileFiltersOpen && (
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                                <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Filtros</h2>
-                                <button onClick={() => setIsMobileFiltersOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
-                            </div>
-                        )}
+                    <aside className={`${styles.sidebar} ${isFiltersOpen ? styles.sidebarOpen : ''}`}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '1.5rem', fontWeight: 600 }}>Filtros</h2>
+                            <button onClick={() => setIsFiltersOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
+                        </div>
 
                         <div className={styles.filterGroup}>
                             <h3>Categorías</h3>
@@ -181,10 +184,6 @@ function ProductosContent() {
                     {/* Área de Productos (Grilla) */}
                     <div className={styles.productArea}>
                         <div className={styles.toolbar}>
-                            <button className={styles.mobileFilterBtn} onClick={() => setIsMobileFiltersOpen(true)}>
-                                <Filter size={18} /> Filtros
-                            </button>
-                            
                             <div className={styles.breadcrumbs}>
                                 Explorando: <span>{currentCategoryName}</span>
                             </div>
