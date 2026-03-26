@@ -22,6 +22,10 @@ export interface SiteSettings {
     heroImages?: string[];
     chatBusinessId?: string;
     chatApiKey?: string;
+    tickerMessage?: string;
+    tickerVisible?: boolean;
+    tickerSpeed?: number;
+    tickerColor?: string;
     updatedAt?: string;
 }
 
@@ -43,7 +47,11 @@ export let siteSettings: SiteSettings = {
         facebook: 'artesana.detalles',
     },
     chatBusinessId: '',
-    chatApiKey: ''
+    chatApiKey: '',
+    tickerMessage: '',
+    tickerVisible: false,
+    tickerSpeed: 30,
+    tickerColor: '#E8A2A2'
 };
 
 export const collections: Collection[] = [];

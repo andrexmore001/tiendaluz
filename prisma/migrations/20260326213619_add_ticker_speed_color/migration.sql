@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Setting" ADD COLUMN     "tickerColor" TEXT NOT NULL DEFAULT '#E8A2A2',
+ADD COLUMN     "tickerSpeed" INTEGER NOT NULL DEFAULT 30;

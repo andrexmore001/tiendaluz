@@ -26,6 +26,10 @@ model Setting {
   heroImages      Json?
   chatBusinessId  String?  @default("mvp-test-123")
   chatApiKey      String?  @default("key_test_123")
+  tickerMessage   String   @default("")
+  tickerVisible   Boolean  @default(false)
+  tickerSpeed     Int      @default(30)
+  tickerColor     String   @default("#E8A2A2")
   updatedAt       DateTime @updatedAt
 }
 

@@ -7,6 +7,7 @@ import DynamicFavicon from '@/components/Branding/DynamicFavicon';
 import { SessionProvider } from 'next-auth/react';
 import { CartProvider } from '@/context/CartContext';
 import CartDrawer from '@/components/CartDrawer';
+import Ticker from '@/components/Ticker';
 
 const inter = Inter({
   variable: "--font-body",
@@ -38,6 +39,7 @@ export default function RootLayout({
             <CartProvider>
               <DynamicStyles />
               <DynamicFavicon />
+              <Ticker />
               {children}
               <CartDrawer />
               <ChatWidget />

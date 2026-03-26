@@ -8,7 +8,8 @@ import {
     MessageCircle,
     Smartphone,
     Mail,
-    MapPin
+    MapPin,
+    Bell
 } from 'lucide-react';
 import styles from '../admin.module.css';
 import { SiteSettings } from '@/lib/data';
@@ -357,6 +358,107 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                     </div>
                 </section>
  
+                <section className={styles.settingsSection}>
+                    <h3><Bell size={20} /> Barra de Noticias (Ticker)</h3>
+                    <div className={styles.formStack}>
+                        <div className={styles.formRow}>
+                            <div className={styles.inputGroup} style={{ flex: 1 }}>
+                                <label>Mensaje de la Barra</label>
+                                <input
+                                    type="text"
+                                    value={localSettings.tickerMessage || ''}
+                                    onChange={(e) => onChange('tickerMessage', e.target.value)}
+                                    placeholder="Ej: ¡Nuevas colecciones disponibles! Envío gratis"
+                                />
+                            </div>
+                            <div className={styles.inputGroup} style={{ flex: '0 0 120px' }}>
+                                <label>Estado</label>
+                                <div className={styles.toggleWrapper} style={{ marginTop: '0.8rem' }}>
+                                    <label className={styles.switch}>
+                                        <input
+                                            type="checkbox"
+                                            checked={localSettings.tickerVisible || false}
+                                            onChange={(e) => onChange('tickerVisible', e.target.checked)}
+                                        />
+                                        <span className={styles.slider}></span>
+                                    </label>
+                                    <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                                        {localSettings.tickerVisible ? 'On' : 'Off'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.formRow} style={{ marginTop: '1rem', gap: '2rem' }}>
+                            <div className={styles.inputGroup} style={{ flex: 1 }}>
+                                <label>Velocidad de Desplazamiento (Menos es más rápido)</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                    <input
+                                        type="range"
+                                        min="5"
+                                        max="60"
+                                        step="5"
+                                        value={localSettings.tickerSpeed || 30}
+                                        onChange={(e) => onChange('tickerSpeed', parseInt(e.target.value))}
+                                        style={{ flex: 1 }}
+                                    />
+                                    <span style={{ minWidth: '35px', fontWeight: '600', color: 'var(--primary)' }}>
+                                        {localSettings.tickerSpeed || 30}s
+                                    </span>
+                                </div>
+                            </div>
+                            <div className={styles.inputGroup} style={{ flex: 1 }}>
+                                <label>Color de la Barra</label>
+                                <div className={styles.colorWrapper}>
+                                    <input
+                                        type="color"
+                                        value={localSettings.tickerColor || '#E8A2A2'}
+                                        onChange={(e) => onChange('tickerColor', e.target.value)}
+                                    />
+                                    <input
+                                        type="text"
+                                        value={localSettings.tickerColor || '#E8A2A2'}
+                                        onChange={(e) => onChange('tickerColor', e.target.value)}
+                                        placeholder="#E8A2A2"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className={styles.colorSuggestions} style={{ marginTop: '0.5rem' }}>
+                            <label style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: '0.5rem' }}>
+                                Colores sugeridos para resaltar:
+                            </label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                {[
+                                    { name: 'Mora Vivo', hex: '#FF6B6B' },
+                                    { name: 'Dorado Artesana', hex: '#D4AF37' },
+                                    { name: 'Negro Elegante', hex: '#1e293b' },
+                                    { name: 'Rojo Alerta', hex: '#FF4B2B' }
+                                ].map((color) => (
+                                    <button
+                                        key={color.hex}
+                                        title={color.name}
+                                        onClick={() => onChange('tickerColor', color.hex)}
+                                        style={{
+                                            width: '24px',
+                                            height: '24px',
+                                            borderRadius: '4px',
+                                            backgroundColor: color.hex,
+                                            border: '1px solid #e2e8f0',
+                                            cursor: 'pointer'
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                        
+                        <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '1rem' }}>
+                            Tip: Colores como el **Dorado** o el **Rojo Alerta** harán que la barra destaque mucho más sobre el resto de la página.
+                        </p>
+                    </div>
+                </section>
+
                 {/* Info */}
                 <section className={styles.settingsSection}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

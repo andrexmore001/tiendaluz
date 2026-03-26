@@ -90,6 +90,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             heroImages: Array.isArray(resSettings.heroImages) ? resSettings.heroImages : [],
                             chatBusinessId: resSettings.chatBusinessId || '',
                             chatApiKey: resSettings.chatApiKey || '',
+                            tickerMessage: resSettings.tickerMessage || '',
+                            tickerVisible: resSettings.tickerVisible !== undefined ? resSettings.tickerVisible : false,
+                            tickerSpeed: resSettings.tickerSpeed || 30,
+                            tickerColor: resSettings.tickerColor || '#E8A2A2',
                             updatedAt: resSettings.updatedAt
                         });
                     }

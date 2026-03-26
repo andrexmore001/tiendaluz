@@ -54,6 +54,10 @@ export async function POST(request: Request) {
                 heroImages: JSON.stringify(rest?.heroImages || []),
                 chatBusinessId: rest?.chatBusinessId,
                 chatApiKey: rest?.chatApiKey,
+                tickerMessage: rest?.tickerMessage,
+                tickerVisible: rest?.tickerVisible,
+                tickerSpeed: rest?.tickerSpeed,
+                tickerColor: rest?.tickerColor,
             },
             create: {
                 id: 'site-settings',
@@ -73,6 +77,10 @@ export async function POST(request: Request) {
                 heroImages: JSON.stringify(rest?.heroImages || []),
                 chatBusinessId: rest?.chatBusinessId,
                 chatApiKey: rest?.chatApiKey,
+                tickerMessage: rest?.tickerMessage,
+                tickerVisible: rest?.tickerVisible,
+                tickerSpeed: rest?.tickerSpeed,
+                tickerColor: rest?.tickerColor,
             },
         });
 
