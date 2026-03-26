@@ -1,5 +1,6 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useSettings } from '@/context/SettingsContext';
@@ -9,18 +10,51 @@ import Link from 'next/link';
 import { ChevronDown, ChevronRight, Filter, X } from 'lucide-react';
 import styles from './productos.module.css';
 
-export default function ProductosPage() {
+function ProductosContent() {
     const { products, collections, materials } = useSettings();
     const { addToCart, getProductQuantity, updateQuantity, cartItems, openCart, getEffectivePrice } = useCart();
     
-    // Filtros
-    const [activeCollection, setActiveCollection] = useState("Todas");
-    const [expandedParents, setExpandedParents] = useState<Record<string, boolean>>({});
-    const [maxPrice, setMaxPrice] = useState(1000000); // 1 Millón max por defecto
-    const [sortBy, setSortBy] = useState('newest'); // 'newest', 'priceAsc', 'priceDesc'
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const pathname = usePathname();
+
+    // Filtros derivados directamente de la URL (Single Source of Truth)
+    const activeCollection = searchParams.get('sub_id') || searchParams.get('cat_id') || "Todas";
+    const maxPrice = Number(searchParams.get('precio')) || 1000000;
+    const sortBy = searchParams.get('ordenar') || 'newest';
     
-    // UI Mobile
+    // UI Mobile state (este sí se mantiene local)
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+    const [expandedParents, setExpandedParents] = useState<Record<string, boolean>>({});
+
+    // Función auxiliar para actualizar filtros en la URL
+    const updateFilters = (updates: Record<string, string | number | null>) => {
+        const params = new URLSearchParams(searchParams.toString());
+        
+        Object.entries(updates).forEach(([key, value]) => {
+            if (value === null || value === "Todas" || (key === 'precio' && value === 1000000) || (key === 'ordenar' && value === 'newest')) {
+                params.delete(key);
+            } else {
+                params.set(key, value.toString());
+            }
+        });
+
+        router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    };
+
+    const handleSelectCollection = (id: string) => {
+        if (id === "Todas") {
+            updateFilters({ cat_id: null, sub_id: null });
+        } else {
+            const col = collections.find((c: any) => c.id === id);
+            if (col?.parentId) {
+                updateFilters({ cat_id: col.parentId, sub_id: col.id });
+            } else {
+                updateFilters({ cat_id: id, sub_id: null });
+            }
+        }
+        setIsMobileFiltersOpen(false);
+    };
 
     // Helpers de Categoría
     const isParent = (id: string) => collections.some((c: any) => c.parentId === id);
@@ -78,7 +112,7 @@ export default function ProductosPage() {
                             <div className={styles.accordionItem}>
                                 <div 
                                     className={`${styles.accordionHeader} ${activeCollection === "Todas" ? styles.active : ''}`}
-                                    onClick={() => { setActiveCollection("Todas"); setIsMobileFiltersOpen(false); }}
+                                    onClick={() => handleSelectCollection("Todas")}
                                 >
                                     <span>Ver Todas</span>
                                 </div>
@@ -93,7 +127,7 @@ export default function ProductosPage() {
                                         <div className={styles.accordionHeader}>
                                             <span 
                                                 className={activeCollection === parent.id ? styles.active : ''}
-                                                onClick={() => { setActiveCollection(parent.id); setIsMobileFiltersOpen(false); }}
+                                                onClick={() => handleSelectCollection(parent.id)}
                                                 style={{ flex: 1, paddingRight: '1rem' }}
                                             >
                                                 {parent.name}
@@ -114,7 +148,7 @@ export default function ProductosPage() {
                                                     <button 
                                                         key={child.id}
                                                         className={`${styles.childBtn} ${activeCollection === child.id ? styles.active : ''}`}
-                                                        onClick={() => { setActiveCollection(child.id); setIsMobileFiltersOpen(false); }}
+                                                        onClick={() => handleSelectCollection(child.id)}
                                                     >
                                                         {child.name}
                                                     </button>
@@ -134,7 +168,7 @@ export default function ProductosPage() {
                                 max="2000000" 
                                 step="10000" 
                                 value={maxPrice} 
-                                onChange={(e) => setMaxPrice(Number(e.target.value))} 
+                                onChange={(e) => updateFilters({ precio: Number(e.target.value) })} 
                                 className={styles.rangeInput}
                             />
                             <div className={styles.priceLabels}>
@@ -158,7 +192,7 @@ export default function ProductosPage() {
                             <select 
                                 className={styles.sortSelect} 
                                 value={sortBy} 
-                                onChange={(e) => setSortBy(e.target.value)}
+                                onChange={(e) => updateFilters({ ordenar: e.target.value })}
                             >
                                 <option value="newest">Más Relevantes</option>
                                 <option value="priceAsc">Precio: Menor a Mayor</option>
@@ -247,7 +281,7 @@ export default function ProductosPage() {
                         {sortedProducts.length === 0 && (
                             <div className={styles.emptyState}>
                                 <p>No se encontraron productos que coincidan con estos filtros.</p>
-                                <button onClick={() => { setActiveCollection("Todas"); setMaxPrice(1000000); }} className="btn-secondary" style={{ marginTop: '1rem' }}>Limpiar Filtros</button>
+                                <button onClick={() => updateFilters({ cat_id: null, sub_id: null, precio: 1000000 })} className="btn-secondary" style={{ marginTop: '1rem' }}>Limpiar Filtros</button>
                             </div>
                         )}
                     </div>
@@ -255,5 +289,17 @@ export default function ProductosPage() {
             </section>
             <Footer />
         </main>
+    );
+}
+
+export default function ProductosPage() {
+    return (
+        <Suspense fallback={
+            <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <p>Cargando productos...</p>
+            </div>
+        }>
+            <ProductosContent />
+        </Suspense>
     );
 }
