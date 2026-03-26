@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   title: "Artesana | Cajas que cuentan historias.",
   description: "Marca femenina dedicada a la venta de cajas personalizadas y regalos especiales. Detalles hechos con amor.",
   verification: {
-    google: "L-unONIewkOPPkDdsS7Ppf6f7vlWOhKKELVm7swHgEA",
+    google: "NpuVXyBJdaV5XfhkdN1tWyR78GAykD7SI1m5Bcr4I4Y",
   },
 };
 
