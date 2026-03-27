@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+import { slugify } from '@/lib/slug';
 
 export const revalidate = 3600; // Recache every hour
 
@@ -23,10 +24,16 @@ export async function POST(request: Request) {
         const data = await request.json();
         const { id, parentId, newSubcategories, ...rest } = data;
 
+        const baseData = {
+            ...rest,
+            slug: rest.slug || slugify(rest.name),
+            parentId: parentId || null
+        };
+
         const collection = await prisma.collection.upsert({
             where: { id: id || 'new' },
-            update: { ...rest, parentId: parentId || null },
-            create: { ...rest, parentId: parentId || null, id: id || undefined },
+            update: baseData,
+            create: { ...baseData, id: id || undefined },
         });
 
         // Creación masiva de subcategorías vinculadas al padre
@@ -39,6 +46,7 @@ export async function POST(request: Request) {
                         await prisma.collection.create({
                             data: {
                                 name: cleanName,
+                                slug: slugify(cleanName),
                                 parentId: collection.id
                             }
                         });

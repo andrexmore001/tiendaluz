@@ -58,7 +58,7 @@ export default function Home() {
 
             return (
               <div key={product.id} className={styles.productCard} style={{ display: 'flex', flexDirection: 'column' }}>
-                <Link href={`/personalizar/${product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
+                <Link href={`/personalizar/${product.slug || product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
                   <div className={styles.productImage}>
                     <img src={getOptimizedUrl(product.image, 500) || '/placeholder.png'} alt={product.name} loading="lazy" />
                   </div>

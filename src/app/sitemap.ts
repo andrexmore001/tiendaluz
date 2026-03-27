@@ -38,11 +38,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // 2. Dynamic Collection Routes
   const collections = await prisma.collection.findMany({
-    select: { id: true, createdAt: true },
+    select: { id: true, slug: true, createdAt: true },
   });
 
   const collectionRoutes = collections.map((col) => ({
-    url: `${baseUrl}/productos?cat_id=${col.id}`,
+    url: `${baseUrl}/productos/${col.slug || col.id}`,
     lastModified: col.createdAt,
     changeFrequency: 'weekly' as const,
     priority: 0.7,
@@ -51,11 +51,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 3. Dynamic Product Routes
   const products = await prisma.product.findMany({
     where: { isVisible: true },
-    select: { id: true, updatedAt: true },
+    select: { id: true, slug: true, updatedAt: true },
   });
 
   const productRoutes = products.map((product) => ({
-    url: `${baseUrl}/personalizar/${product.id}`,
+    url: `${baseUrl}/personalizar/${product.slug || product.id}`,
     lastModified: product.updatedAt,
     changeFrequency: 'weekly' as const,
     priority: 0.6,

@@ -9,6 +9,7 @@ export interface Product {
     id: string;
     name: string;
     price: number;
+    slug?: string;
     description: string;
     category: string;
     image: string;      // Base image for cards
@@ -40,6 +41,7 @@ export interface Product {
 export interface Collection {
     id: string;
     name: string;
+    slug?: string;
     description: string;
     parentId?: string | null;
     createdAt?: string;

@@ -72,7 +72,7 @@ export async function GET() {
         return new NextResponse(JSON.stringify(bootstrapData), {
             headers: {
                 'Content-Type': 'application/json',
-                'Cache-Control': 'public, max-age=0, s-maxage=1, stale-while-revalidate=59, must-revalidate',
+                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
             },
         });
     } catch (error) {

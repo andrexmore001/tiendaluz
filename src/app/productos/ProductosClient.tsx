@@ -10,7 +10,11 @@ import Link from 'next/link';
 import { ChevronDown, ChevronRight, Filter, X } from 'lucide-react';
 import styles from './productos.module.css';
 
-export default function ProductosClient() {
+interface ProductosClientProps {
+    categorySlug?: string;
+}
+
+export default function ProductosClient({ categorySlug }: ProductosClientProps = {}) {
     const { products, collections, materials } = useSettings();
     const { addToCart, getProductQuantity, updateQuantity, cartItems, openCart, getEffectivePrice } = useCart();
     
@@ -18,7 +22,11 @@ export default function ProductosClient() {
     const router = useRouter();
     const pathname = usePathname();
 
-    const activeCollection = searchParams.get('sub_id') || searchParams.get('cat_id') || "Todas";
+    const activeCollectionFromSlug = categorySlug 
+        ? collections.find((c: any) => c.slug === categorySlug)?.id 
+        : null;
+    
+    const activeCollection = activeCollectionFromSlug || searchParams.get('sub_id') || searchParams.get('cat_id') || "Todas";
     const maxPrice = Number(searchParams.get('precio')) || 1000000;
     const sortBy = searchParams.get('ordenar') || 'newest';
     
@@ -39,13 +47,18 @@ export default function ProductosClient() {
 
     const handleSelectCollection = (id: string) => {
         if (id === "Todas") {
-            updateFilters({ cat_id: null, sub_id: null });
+            router.push('/productos');
         } else {
             const col = collections.find((c: any) => c.id === id);
-            if (col?.parentId) {
-                updateFilters({ cat_id: col.parentId, sub_id: col.id });
+            if (col?.slug) {
+                router.push(`/productos/${col.slug}`);
             } else {
-                updateFilters({ cat_id: id, sub_id: null });
+                // Fallback to legacy params if no slug
+                if (col?.parentId) {
+                    updateFilters({ cat_id: col.parentId, sub_id: col.id });
+                } else {
+                    updateFilters({ cat_id: id, sub_id: null });
+                }
             }
         }
         setIsFiltersOpen(false);
@@ -60,7 +73,14 @@ export default function ProductosClient() {
     const filteredProducts = activeCollection === "Todas"
         ? visibleProducts.filter(p => p.price <= maxPrice)
         : visibleProducts.filter(p => {
-            const isMatch = p.category === activeCollection || collections.find((c: any) => c.id === p.category)?.parentId === activeCollection;
+            const productCategory = collections.find((c: any) => c.id === p.category);
+            const isMatch = p.category === activeCollection || productCategory?.parentId === activeCollection;
+            
+            // Debugging log for the specific product mentioned or any product being filtered
+            if (activeCollection !== "Todas" && (p.name.toLowerCase().includes('rosas') || p.id === activeCollection)) {
+                console.log(`[FILTER DEBUG] Product: ${p.name}, Category: ${p.category}, Parent: ${productCategory?.parentId}, Active: ${activeCollection}, Match: ${isMatch}`);
+            }
+            
             return isMatch && p.price <= maxPrice;
         });
 
@@ -175,7 +195,7 @@ export default function ProductosClient() {
                                 };
                                 return (
                                     <div key={product.id} className={styles.card} style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <Link href={`/personalizar/${product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
+                                        <Link href={`/personalizar/${product.slug || product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
                                             <div className={styles.imageBox}>
                                                 <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />
                                             </div>

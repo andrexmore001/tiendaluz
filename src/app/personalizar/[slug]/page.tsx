@@ -1,18 +1,26 @@
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import CustomizerClient from './CustomizerClient';
 import { getOptimizedUrl } from '@/lib/cloudinary';
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
+  const { slug } = await params;
   
-  const product = await prisma.product.findUnique({
-    where: { id },
+  // Try finding by slug first, then by ID
+  let product = await prisma.product.findUnique({
+    where: { slug },
   });
+
+  if (!product) {
+    product = await prisma.product.findUnique({
+      where: { id: slug },
+    });
+  }
 
   if (!product) {
     return {
@@ -21,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = `${product.name} | Cajas Personalizadas Artesana`;
-  const description = product.description || `Personaliza tu ${product.name} en Artesana. Detalles hechos con amor para momentos especiales.`;
+  const description = product.description || `Personaliza tu ${product.name} en Artesana. Detalles hechos con amor para cada momento especial.`;
   const imageUrl = getOptimizedUrl(product.image, 1200);
 
   return {
@@ -48,12 +56,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function CustomizerPage({ params }: Props) {
-  const { id } = await params;
+export default async function CustomizerSlugPage({ params }: Props) {
+  const { slug } = await params;
   
-  const product = await prisma.product.findUnique({
-    where: { id },
+  // Try finding by slug first
+  let product = await prisma.product.findUnique({
+    where: { slug },
   });
+
+  // Fallback to ID if not found by slug
+  if (!product) {
+    product = await prisma.product.findUnique({
+      where: { id: slug },
+    });
+
+    // If found by ID and it HAS a slug, redirect to the clean URL
+    if (product?.slug) {
+      redirect(`/personalizar/${product.slug}`);
+    }
+  }
 
   if (!product) {
       return (
@@ -84,7 +105,7 @@ export default async function CustomizerPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <CustomizerClient id={id} />
+      <CustomizerClient id={product.id} />
     </>
   );
 }

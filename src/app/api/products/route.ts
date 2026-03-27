@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+import { slugify } from '@/lib/slug';
 
 export const revalidate = 3600; // Recache every hour
 
@@ -64,7 +65,8 @@ export async function POST(request: Request) {
             baseColor: rest.baseColor || '#F9F1E7',
             modelUrl: rest.modelUrl || '',
             images: images || [], // Now a JSON field
-            isVisible: rest.isVisible !== undefined ? rest.isVisible : true,
+            isVisible: rest.isVisible !== undefined ? (typeof rest.isVisible === 'boolean' ? rest.isVisible : rest.isVisible === 'true') : true,
+            slug: rest.slug || slugify(rest.name),
         };
 
         const tierOperations = priceTiers?.map((tier: any) => ({

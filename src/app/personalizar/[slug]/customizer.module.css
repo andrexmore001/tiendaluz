@@ -383,6 +383,7 @@
         box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
         border: none;
         border-top: 1px solid #f1f5f9;
+        background: white;
     }
 
     .totalValue {
@@ -393,28 +394,6 @@
         padding: 1rem;
         font-size: 1rem;
     }
-}
-
-.toggleOpen {
-    position: absolute;
-    bottom: 2rem;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    color: var(--primary);
-    border: 1px solid var(--primary);
-    padding: 0.8rem 2.5rem;
-    border-radius: 30px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    z-index: 10;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-}
-
-.toggleOpen:hover {
-    background: var(--primary);
-    color: white;
 }
 
 .textOverlay {

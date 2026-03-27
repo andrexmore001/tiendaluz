@@ -4,7 +4,7 @@ import "./globals.css";
 import { SettingsProvider } from '@/context/SettingsContext';
 import DynamicStyles from '@/components/DynamicStyles';
 import DynamicFavicon from '@/components/Branding/DynamicFavicon';
-import { SessionProvider } from 'next-auth/react';
+import NextAuthConfig from '@/components/NextAuthConfig';
 import { CartProvider } from '@/context/CartContext';
 import CartDrawer from '@/components/CartDrawer';
 import Ticker from '@/components/Ticker';
@@ -37,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} ${playfair.variable}`}>
-        <SessionProvider>
+        <NextAuthConfig>
           <SettingsProvider>
             <CartProvider>
               <DynamicStyles />
@@ -48,7 +48,7 @@ export default function RootLayout({
               <ChatWidget />
             </CartProvider>
           </SettingsProvider>
-        </SessionProvider>
+        </NextAuthConfig>
       </body>
     </html>
   );

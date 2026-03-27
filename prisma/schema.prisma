@@ -50,6 +50,7 @@ model Product {
   baseColor   String      @default("#F9F1E7")
   modelUrl    String?
   images      Json?
+  slug        String?     @unique
   isVisible   Boolean     @default(true)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -77,6 +78,7 @@ model Collection {
 
   products    Product[]
 
+  slug        String?  @unique
   createdAt   DateTime @default(now())
 }
 
