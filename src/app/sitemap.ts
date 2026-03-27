@@ -1,6 +1,9 @@
 import { MetadataRoute } from 'next';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXTAUTH_URL 
     ? process.env.NEXTAUTH_URL 
@@ -37,9 +40,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // 2. Dynamic Collection Routes
-  const collections = await prisma.collection.findMany({
+  const collections = (await prisma.collection.findMany({
     select: { id: true, slug: true, createdAt: true },
-  });
+  })) as any[];
 
   const collectionRoutes = collections.map((col) => ({
     url: `${baseUrl}/productos/${col.slug || col.id}`,
@@ -49,10 +52,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // 3. Dynamic Product Routes
-  const products = await prisma.product.findMany({
+  const products = (await prisma.product.findMany({
     where: { isVisible: true },
     select: { id: true, slug: true, updatedAt: true },
-  });
+  })) as any[];
 
   const productRoutes = products.map((product) => ({
     url: `${baseUrl}/personalizar/${product.slug || product.id}`,
