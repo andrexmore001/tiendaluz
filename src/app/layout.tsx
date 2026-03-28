@@ -20,10 +20,26 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Artesana | Cajas que cuentan historias.",
-  description: "Marca femenina dedicada a la venta de cajas personalizadas y regalos especiales. Detalles hechos con amor.",
+  title: "Artesana | Cajas, Insumos y Regalos Personalizados",
+  description: "Explora nuestra variedad de cajas (madera, cartón, cartulina), insumos para regalo (dulces, vinos, cervezas) y regalos 100% personalizados hechos a tu medida.",
   verification: {
     google: "NpuVXyBJdaV5XfhkdN1tWyR78GAykD7SI1m5Bcr4I4Y",
+  },
+  openGraph: {
+    title: "Artesana | Empaques, Insumos y Regalos Únicos",
+    description: "Cajas de madera y cartón (personalizadas o en blanco), dulces, licores y regalos hechos a tu medida. ¡Arma el detalle perfecto!",
+    url: "https://artessana.vercel.app",
+    siteName: "Artesana",
+    images: [
+      {
+        url: "https://artessana.vercel.app/hero-banner.png",
+        width: 1200,
+        height: 630,
+        alt: "Cajas personalizadas, insumos y regalos Artesana",
+      },
+    ],
+    locale: "es_CO",
+    type: "website",
   },
 };
 
