@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Artesana | Empaques, Insumos y Regalos Únicos",
-    description: "Cajas de madera y cartón (personalizadas o en blanco), dulces, licores y regalos hechos a tu medida. ¡Arma el detalle perfecto!",
+    description: "Cajas de madera y cartón (personalizadas o sin personalizar), dulces, licores y regalos hechos a tu medida. ¡Arma el detalle perfecto!",
     url: "https://artessana.vercel.app",
     siteName: "Artesana",
     images: [
