@@ -9,6 +9,17 @@ export interface Material {
     textureUrl?: string;
 }
 
+export interface SiteAttributeValue {
+    id: string;
+    value: string;
+}
+
+export interface SiteAttribute {
+    id: string;
+    name: string;
+    values: SiteAttributeValue[];
+}
+
 export interface ContactMessage {
     id: string;
     name: string;
@@ -33,6 +44,10 @@ interface SettingsContextType {
     addMaterial: (material: Material) => void;
     updateMaterial: (material: Material) => void;
     deleteMaterial: (id: string) => void;
+    attributes: SiteAttribute[];
+    addAttribute: (attribute: SiteAttribute) => void;
+    updateAttribute: (attribute: SiteAttribute) => void;
+    deleteAttribute: (id: string) => void;
     messages: ContactMessage[];
     deleteMessage: (id: string) => void;
     markMessageAsRead: (id: string) => void;
@@ -49,6 +64,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [products, setProducts] = useState<Product[]>(initialProducts);
     const [collections, setCollections] = useState<Collection[]>(initialCollections);
     const [materials, setMaterials] = useState<Material[]>([]);
+    const [attributes, setAttributes] = useState<SiteAttribute[]>([]);
     const [messages, setMessages] = useState<ContactMessage[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -65,7 +81,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 const data = await response.json();
 
                 if (data && !data.error) {
-                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials } = data;
+                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials, attributes: resAttributes } = data;
 
                     if (resSettings) {
                         setSettings({
@@ -101,6 +117,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                     if (Array.isArray(resProducts)) setProducts(resProducts);
                     if (Array.isArray(resCollections)) setCollections(resCollections);
                     if (Array.isArray(resMaterials)) setMaterials(resMaterials);
+                    if (Array.isArray(resAttributes)) setAttributes(resAttributes);
                     if (Array.isArray(data.messages)) setMessages(data.messages);
                 }
 
@@ -254,6 +271,66 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const addAttribute = async (attribute: SiteAttribute) => {
+        setAttributes(prev => [...prev, attribute]);
+        try {
+            const res = await fetch('/api/attributes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(attribute)
+            });
+            const data = await res.json();
+            
+            if (!res.ok) {
+                console.error("Error backend:", data.error);
+                setAttributes(prev => prev.filter(a => a.id !== attribute.id));
+                alert("Error: " + (data.error || "No se pudo crear. Reintenta."));
+                return;
+            }
+            
+            setAttributes(prev => prev.map(a => a.id === attribute.id ? data : a));
+        } catch (e) {
+            console.error("Error adding attribute", e);
+            setAttributes(prev => prev.filter(a => a.id !== attribute.id));
+        }
+    };
+
+    const updateAttribute = async (updatedAttribute: SiteAttribute) => {
+        const originalAttr = attributes.find(a => a.id === updatedAttribute.id);
+        setAttributes(prev => prev.map(a => a.id === updatedAttribute.id ? updatedAttribute : a));
+        try {
+            const res = await fetch('/api/attributes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedAttribute)
+            });
+            
+            if (!res.ok) {
+                const data = await res.json();
+                console.error("Error backend:", data.error);
+                if (originalAttr) setAttributes(prev => prev.map(a => a.id === updatedAttribute.id ? originalAttr : a));
+                alert("Error: " + (data.error || "No se pudo actualizar"));
+                return;
+            }
+            const data = await res.json();
+            setAttributes(prev => prev.map(a => a.id === updatedAttribute.id ? data : a));
+        } catch (e) {
+            console.error("Error updating attribute", e);
+            if (originalAttr) setAttributes(prev => prev.map(a => a.id === updatedAttribute.id ? originalAttr : a));
+        }
+    };
+
+    const deleteAttribute = async (id: string) => {
+        setAttributes(prev => prev.filter(a => a.id !== id));
+        try {
+            await fetch(`/api/attributes?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting attribute", e);
+        }
+    };
+
     const deleteMessage = async (id: string) => {
         setMessages(prev => prev.filter(m => m.id !== id));
         try {
@@ -323,6 +400,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             addMaterial,
             updateMaterial,
             deleteMaterial,
+            attributes,
+            addAttribute,
+            updateAttribute,
+            deleteAttribute,
             messages,
             deleteMessage,
             markMessageAsRead,

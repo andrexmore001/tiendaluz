@@ -5,6 +5,7 @@ import { useSettings } from './SettingsContext';
 export interface CartItem {
   id: string; // Unique ID for the cart item
   productId: string;
+  variantId?: string;
   name: string;
   image: string;
   quantity: number;
@@ -22,10 +23,10 @@ interface CartContextType {
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
-  getProductQuantity: (productId: string) => number;
+  getProductQuantity: (productId: string, variantId?: string | null) => number;
   cartTotal: number;
   cartCount: number;
-  getEffectivePrice: (productId: string, basePrice: number) => number;
+  getEffectivePrice: (item: { productId: string, variantId?: string, unitPrice: number, quantity: number }) => number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -64,7 +65,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     
     setCartItems(prev => {
       const existingItemIndex = prev.findIndex(
-        item => item.productId === newItem.productId && item.customText === normalizedCustomText
+        item => item.productId === newItem.productId && item.variantId === newItem.variantId && item.customText === normalizedCustomText
       );
 
       if (existingItemIndex >= 0) {
@@ -98,18 +99,26 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
-  const getProductQuantity = (productId: string) => {
+  const getProductQuantity = (productId: string, variantId?: string | null) => {
     return cartItems
-      .filter(item => item.productId === productId)
+      .filter(item => {
+        if (item.productId !== productId) return false;
+        if (variantId !== undefined) {
+          // match exacto de variante o null si no tiene
+          return (item.variantId || null) === variantId;
+        }
+        return true;
+      })
       .reduce((sum, item) => sum + item.quantity, 0);
   };
 
-  const getEffectivePrice = (productId: string, basePrice: number) => {
-    const totalQty = getProductQuantity(productId);
-    const productDef = products.find(p => p.id === productId);
+  const getEffectivePrice = (item: { productId: string, variantId?: string, unitPrice: number, quantity: number }) => {
+    // Calculamos el descuento basados estrictamente en la cantidad de ESTA variante exacta en el carrito
+    const totalQty = getProductQuantity(item.productId, item.variantId || null);
+    const productDef = products.find(p => p.id === item.productId);
     
     if (!productDef || !productDef.priceTiers || productDef.priceTiers.length === 0) {
-      return basePrice;
+      return item.unitPrice;
     }
 
     const activeTier = productDef.priceTiers.find(tier => {
@@ -118,13 +127,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return minMatch && maxMatch;
     });
 
-    return activeTier ? activeTier.unitPrice : basePrice;
+    if (!activeTier) return item.unitPrice;
+
+    // Si la variante tiene un precio diferente al base, sumar la diferencia sobre el precio de escala
+    const delta = item.unitPrice - productDef.price;
+    return activeTier.unitPrice + delta;
   };
 
   // Compute total dynamically using effective tiers
   const cartTotal = useMemo(() => {
     return cartItems.reduce((total, item) => {
-      const effectiveUnitPrice = getEffectivePrice(item.productId, item.unitPrice);
+      const effectiveUnitPrice = getEffectivePrice(item);
       return total + (effectiveUnitPrice * item.quantity);
     }, 0);
   }, [cartItems, products]);

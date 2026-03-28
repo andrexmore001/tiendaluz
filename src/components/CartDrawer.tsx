@@ -15,7 +15,7 @@ export default function CartDrawer() {
     if (cartItems.length === 0) return;
 
     let itemsText = cartItems.map((item, index) => {
-      const effectivePrice = getEffectivePrice(item.productId, item.unitPrice);
+      const effectivePrice = getEffectivePrice(item);
       let text = `${index + 1}. ${item.quantity}x ${item.name} - $${(effectivePrice * item.quantity).toLocaleString()}`;
       if (item.customText) {
         text += `\n   Texto: "${item.customText}"`;
@@ -49,7 +49,7 @@ export default function CartDrawer() {
             </div>
           ) : (
             cartItems.map((item) => {
-              const effectivePrice = getEffectivePrice(item.productId, item.unitPrice);
+              const effectivePrice = getEffectivePrice(item);
               const hasDiscount = effectivePrice < item.unitPrice;
 
               return (

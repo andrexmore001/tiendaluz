@@ -1,5 +1,5 @@
 "use client";
-import { useState, use, useEffect } from "react";
+import { useState, use, useEffect, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductModel from "@/components/Three/ProductModel";
@@ -24,17 +24,61 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
   const [text, setText] = useState("");
   const [quantity, setQuantity] = useState(1);
 
-  // Sync with global cart quantity for this specific generic product
+  // Variant Logic
+  const activeVariants = product?.variants?.filter((v: any) => v.isActive) || [];
+  
+  const availableAttributes = useMemo(() => {
+    if (!product || activeVariants.length === 0) return [];
+    const attrs = new Map<string, { id: string, name: string, values: Set<string> }>();
+    activeVariants.forEach((v: any) => {
+      if (v.attributes && Array.isArray(v.attributes)) {
+         v.attributes.forEach((attrObj: any) => {
+           const val = attrObj.attributeValue;
+           if (val && val.attribute) {
+               if (!attrs.has(val.attribute.name)) {
+                 attrs.set(val.attribute.name, { id: val.attribute.id, name: val.attribute.name, values: new Set() });
+               }
+               attrs.get(val.attribute.name)!.values.add(val.value);
+           }
+         });
+      }
+    });
+    return Array.from(attrs.values()).map((a: any) => ({ ...a, values: Array.from(a.values) }));
+  }, [activeVariants, product]);
+
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+
+  // Initialize selectedOptions with first available combination
+  useEffect(() => {
+      if (availableAttributes.length > 0 && Object.keys(selectedOptions).length === 0) {
+          const initial: Record<string, string> = {};
+          availableAttributes.forEach((a: any) => initial[a.name] = a.values[0]);
+          setSelectedOptions(initial);
+      }
+  }, [availableAttributes]);
+
+  const currentVariant = useMemo(() => {
+      if (availableAttributes.length === 0) return null;
+      return activeVariants.find((v: any) => {
+          if (!v.attributes) return false;
+          return availableAttributes.every((attr: any) => {
+              const variantAttr = v.attributes.find((a: any) => a.attributeValue.attribute.name === attr.name);
+              return variantAttr && variantAttr.attributeValue.value === selectedOptions[attr.name];
+          });
+      }) || activeVariants[0];
+  }, [selectedOptions, activeVariants, availableAttributes]);
+
+  // Sync with global cart quantity for this specific variant
   useEffect(() => {
     if (product) {
-      const globalQty = getProductQuantity(product.id);
+      const globalQty = getProductQuantity(product.id, currentVariant?.id || null);
       if (globalQty > 0) {
         setQuantity(globalQty);
       } else {
         setQuantity(1);
       }
     }
-  }, [product, getProductQuantity, cartItems]);
+  }, [product, getProductQuantity, cartItems, currentVariant?.id]);
 
   const currentMaterial = product ?
     (materials.find((m) => m.id === product.materialId) ||
@@ -61,16 +105,22 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
     );
   }
 
-  const displayPhotos = product.images && product.images.length > 0 ? product.images : [product.image];
+  const currentImage = currentVariant?.image || product.image;
+  const displayPhotos = product.images && product.images.length > 0 ? product.images : [currentImage];
 
   const getTieredPrice = () => {
-    if (!product.priceTiers || product.priceTiers.length === 0) return product.price;
+    const basePrice = currentVariant?.price !== null && currentVariant?.price !== undefined ? currentVariant.price : product.price;
+    if (!product.priceTiers || product.priceTiers.length === 0) return basePrice;
     const activeTier = product.priceTiers.find(tier => {
       const minMatch = quantity >= tier.minQty;
       const maxMatch = tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty;
       return minMatch && maxMatch;
     });
-    return activeTier ? activeTier.unitPrice : product.price;
+    if (!activeTier) return basePrice;
+    
+    // Si la variante tiene un precio diferente al base, sumar la diferencia sobre el precio de escala
+    const delta = basePrice - product.price;
+    return activeTier.unitPrice + delta;
   };
 
   const currentUnitPrice = getTieredPrice();
@@ -111,7 +161,13 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
             <div className={styles.photoGallery}>
               <div className={styles.mainPhotoWrapper}>
                 <div className={styles.imageRelativeWrapper}>
-                  <img src={getOptimizedUrl(displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || ''), 800)} alt={product.name} />
+                  {/* Si el currentVariant tiene imagen, usarla como base si no hay galerías custom */}
+                  <img src={getOptimizedUrl(
+                    (currentVariant?.image && displayPhotos.length === 1) 
+                        ? currentVariant.image 
+                        : (displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || '')), 
+                    800
+                  )} alt={product.name} />
                   {text && displayPhotos[activePhotoIdx] && (displayPhotos[activePhotoIdx] as any).isCustomizable && (
                     <div
                       className={styles.textOverlay}
@@ -168,8 +224,45 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 <span style={{ fontSize: '0.8rem', background: '#e0ffe0', color: '#008000', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 600 }}>¡Precio por Volumen!</span>
               )}
             </p>
-            <p className={styles.description} style={{ whiteSpace: 'pre-wrap' }}>{product.description}</p>
+            <p className={styles.description} style={{ whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>{product.description}</p>
           </div>
+
+          {availableAttributes.length > 0 && (
+             <div className={styles.variantsSection} style={{ marginBottom: '1.5rem', padding: '1.5rem', background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                {availableAttributes.map((attr: any) => (
+                   <div key={attr.id} style={{ marginBottom: '1rem' }}>
+                      <span style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#475569', marginBottom: '0.5rem' }}>{attr.name}</span>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {attr.values.map((val: any) => (
+                           <button
+                             key={val}
+                             onClick={() => setSelectedOptions(prev => ({ ...prev, [attr.name]: val }))}
+                             style={{
+                                padding: '0.5rem 1rem',
+                                borderRadius: '8px',
+                                border: selectedOptions[attr.name] === val ? '2px solid var(--primary)' : '1px solid #cbd5e1',
+                                background: selectedOptions[attr.name] === val ? '#fff1f2' : 'white',
+                                color: selectedOptions[attr.name] === val ? 'var(--primary)' : '#475569',
+                                fontWeight: selectedOptions[attr.name] === val ? 600 : 400,
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                             }}
+                           >
+                              {val}
+                           </button>
+                        ))}
+                      </div>
+                   </div>
+                ))}
+                {currentVariant && currentVariant.stock < 10 && currentVariant.stock > 0 && (
+                    <p style={{ color: '#d97706', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 600 }}>¡Solo {currentVariant.stock} disponibles!</p>
+                )}
+                {currentVariant && currentVariant.stock === 0 && (
+                     <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: 600 }}>Agotado en esta combinación</p>
+                )}
+             </div>
+          )}
+
           {product.priceTiers && product.priceTiers.length > 0 && (
             <div className={styles.pricingTableCard}>
               <div className={styles.tableHeader}>
@@ -180,20 +273,26 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 {product.priceTiers[0].minQty > 1 && (
                   <div className={`${styles.tableRow} ${quantity < product.priceTiers[0].minQty ? styles.activeRow : ''}`}>
                     <span>1 - {product.priceTiers[0].minQty - 1}</span>
-                    <span>${product.price.toLocaleString()}</span>
+                    <span>${(currentVariant?.price ?? product.price).toLocaleString()}</span>
                   </div>
                 )}
                 {product.priceTiers.map((tier, idx) => {
                   const isActive = quantity >= tier.minQty && (tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty);
                   const label = tier.maxQty ? `${tier.minQty} - ${tier.maxQty}` : `${tier.minQty}+`;
-                  const discount = product.price > 0 ? Math.round(((product.price - tier.unitPrice) / product.price) * 100) : 0;
+                  
+                  // Calcular dinámicamente el precio de esta escala basándose en la variante actual
+                  const basePrice = currentVariant?.price ?? product.price;
+                  const delta = basePrice - product.price;
+                  const tierPrice = tier.unitPrice + delta;
+                  const discount = basePrice > 0 ? Math.round(((basePrice - tierPrice) / basePrice) * 100) : 0;
+                  
                   return (
                     <div key={tier.id || idx} className={`${styles.tableRow} ${isActive ? styles.activeRow : ''}`}>
                       <div className={styles.tierInfo}>
                         <span>{label} unidades</span>
                         {discount > 0 && <span className={styles.savingsBadge}>Ahorra {discount}%</span>}
                       </div>
-                      <span className={styles.tierPrice}>${tier.unitPrice.toLocaleString()}</span>
+                      <span className={styles.tierPrice}>${tierPrice.toLocaleString()}</span>
                     </div>
                   );
                 })}
@@ -248,15 +347,23 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '1rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem' }}
                 onClick={() => {
                   const normalizedText = text || undefined;
-                  const existingItem = cartItems.find(item => item.productId === product.id && item.customText === normalizedText);
+                  const targetVariantId = currentVariant?.id;
+                  
+                  const existingItem = cartItems.find(item => 
+                      item.productId === product.id && 
+                      item.variantId === targetVariantId && 
+                      item.customText === normalizedText
+                  );
+
                   if (existingItem) updateQuantity(existingItem.id, quantity);
                   else {
                     addToCart({
                       productId: product.id,
-                      name: product.name,
-                      image: getOptimizedUrl(displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || '', 150) || '/placeholder.png',
+                      variantId: targetVariantId,
+                      name: currentVariant ? `${product.name} (${Object.values(selectedOptions).join(', ')})` : product.name,
+                      image: getOptimizedUrl((currentVariant?.image && displayPhotos.length === 1) ? currentVariant.image : (displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || ''), 150) || '/placeholder.png',
                       quantity: quantity,
-                      unitPrice: product.price,
+                      unitPrice: currentVariant?.price !== null && currentVariant?.price !== undefined ? currentVariant.price : product.price,
                       customText: normalizedText
                     });
                   }

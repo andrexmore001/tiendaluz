@@ -25,12 +25,14 @@ const TabProducts = dynamic(() => import('./modules/TabProducts'));
 const TabCollections = dynamic(() => import('./modules/TabCollections'));
 const TabSettings = dynamic(() => import('./modules/TabSettings'));
 const TabMaterials = dynamic(() => import('./modules/TabMaterials'));
+const TabAttributes = dynamic(() => import('./modules/TabAttributes'));
 const TabAccount = dynamic(() => import('./modules/TabAccount'));
 const TabQuotes = dynamic(() => import('./modules/TabQuotes'));
 const TabMessages = dynamic(() => import('./modules/TabMessages'));
 const ModalProduct = dynamic(() => import('./modules/ModalProduct'));
 const ModalMaterial = dynamic(() => import('./modules/ModalMaterial'));
 const ModalCollection = dynamic(() => import('./modules/ModalCollection'));
+const ModalAttribute = dynamic(() => import('./modules/ModalAttribute'));
 const ModalTextConfig = dynamic(() => import('./modules/ModalTextConfig'));
 
 export default function AdminPage() {
@@ -41,6 +43,8 @@ export default function AdminPage() {
         addCollection, updateCollection, deleteCollection,
         materials,
         addMaterial, updateMaterial, deleteMaterial,
+        attributes,
+        addAttribute, updateAttribute, deleteAttribute,
         messages, markMessageAsRead
     } = useSettings();
 
@@ -77,12 +81,19 @@ export default function AdminPage() {
         name: '', description: '', parentId: null as string | null, newSubcategories: [] as string[]
     });
 
+    const [showAttributeForm, setShowAttributeForm] = useState(false);
+    const [editingAttribute, setEditingAttribute] = useState<any>(null);
+    const [attributeFormData, setAttributeFormData] = useState({
+        name: '', values: [] as string[]
+    });
+
     const [formData, setFormData] = useState({
         name: '', price: 0, category: collections[0]?.id || 'Todas', description: '',
         image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
         images: [] as any[], width: 4, height: 2, depth: 4,
         materialId: '', baseColor: '#F9F1E7', modelUrl: '',
-        priceTiers: [] as any[]
+        priceTiers: [] as any[],
+        variants: [] as any[]
     });
 
     const [editingImageConfig, setEditingImageConfig] = useState<number | null>(null);
@@ -144,7 +155,8 @@ export default function AdminPage() {
             ...formData,
             name: '', price: 0, category: collections[0]?.id || 'Todas', description: '',
             image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
-            materialId: materials[0]?.id || ''
+            materialId: materials[0]?.id || '',
+            variants: []
         });
         setCurrentStep(1); setShowProductForm(true);
     };
@@ -161,7 +173,8 @@ export default function AdminPage() {
             width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
             materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
             modelUrl: p.modelUrl || '',
-            priceTiers: p.priceTiers || []
+            priceTiers: p.priceTiers || [],
+            variants: p.variants || []
         });
         setCurrentStep(1); setShowProductForm(true);
     };
@@ -270,6 +283,18 @@ export default function AdminPage() {
         showToast("Colección guardada"); setShowCollectionForm(false);
     };
 
+    const handleSubmitAttribute = (e?: React.FormEvent, overrideValues?: string[]) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const finalValues = overrideValues || attributeFormData.values.map((v: any) => typeof v === 'string' ? v : v.value);
+        const newAttr = {
+            id: editingAttribute ? editingAttribute.id : `attr_${Date.now()}`,
+            name: attributeFormData.name,
+            values: finalValues.map(v => ({ value: v }))
+        };
+        if (editingAttribute) updateAttribute(newAttr as any); else addAttribute(newAttr as any);
+        showToast("Atributo guardado"); setShowAttributeForm(false);
+    };
+
     const handleAccountSave = async (e: React.FormEvent) => {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
@@ -318,6 +343,7 @@ export default function AdminPage() {
                     <button className={activeTab === 'collections' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('collections'); setMobileMenuOpen(false); }}><Layers size={20} /><span>Colecciones</span></button>
                     <button className={activeTab === 'settings' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}><SettingsIcon size={20} /><span>Configuración</span></button>
                     <button className={activeTab === 'materials' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}><Palette size={20} /><span>Materiales</span></button>
+                    <button className={activeTab === 'attributes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('attributes'); setMobileMenuOpen(false); }}><Layers size={20} /><span>Atributos</span></button>
                     <button className={activeTab === 'quotes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('quotes'); setMobileMenuOpen(false); }}><FileText size={20} /><span>Cotizaciones</span></button>
                     <button className={activeTab === 'messages' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('messages'); setMobileMenuOpen(false); }}>
                         <div className={styles.navIconWrapper}>
@@ -348,6 +374,7 @@ export default function AdminPage() {
                     />
                 )}
                 {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'attributes' && <TabAttributes attributes={attributes} onAdd={() => { setEditingAttribute(null); setAttributeFormData({ name: '', values: [] }); setShowAttributeForm(true); }} onEdit={attr => { setEditingAttribute(attr); setAttributeFormData({ name: attr.name, values: attr.values.map((v:any) => v.value) }); setShowAttributeForm(true); }} onDelete={id => { if(confirm('¿Seguro que deseas eliminar este atributo? (Esto no afectará los productos ya migrados, pero evitará que el atributo se ponga en nuevos productos)')) deleteAttribute(id) }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
                 {activeTab === 'messages' && <TabMessages onMenuClick={() => setMobileMenuOpen(true)} />}
@@ -356,7 +383,7 @@ export default function AdminPage() {
             <ModalProduct
                 showProductForm={showProductForm} setShowProductForm={setShowProductForm} editingProduct={editingProduct}
                 formData={formData} setFormData={setFormData} isMobileView={isMobileView} currentStep={currentStep} totalSteps={totalSteps}
-                materials={materials} collections={collections}
+                materials={materials} collections={collections} attributes={attributes}
                 handleSubmitProduct={handleSubmitProduct} handleFileUpload={handleFileUpload}
                 handleAddTier={() => {
                     const lastTier = formData.priceTiers[formData.priceTiers.length - 1];
@@ -373,6 +400,7 @@ export default function AdminPage() {
             />
             <ModalMaterial showMaterialForm={showMaterialForm} setShowMaterialForm={setShowMaterialForm} editingMaterial={editingMaterial} materialFormData={materialFormData} setMaterialFormData={setMaterialFormData} handleSubmitMaterial={handleSubmitMaterial} onFileUpload={handleFileUpload} />
             <ModalCollection showCollectionForm={showCollectionForm} setShowCollectionForm={setShowCollectionForm} editingCollection={editingCollection} collectionFormData={collectionFormData} setCollectionFormData={setCollectionFormData} handleSubmitCollection={handleSubmitCollection} collections={collections} />
+            <ModalAttribute showAttributeForm={showAttributeForm} setShowAttributeForm={setShowAttributeForm} editingAttribute={editingAttribute} attributeFormData={attributeFormData} setAttributeFormData={setAttributeFormData} handleSubmitAttribute={handleSubmitAttribute} />
             <ModalTextConfig editingImageConfig={editingImageConfig} formData={formData} setEditingImageConfig={setEditingImageConfig} handleConfigChange={handleConfigChange} />
         </div>
     );

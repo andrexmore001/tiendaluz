@@ -15,6 +15,7 @@ const ProductModel = dynamic(() => import('@/components/Three/ProductModel'), {
     ssr: false,
     loading: () => <div className={styles.emptyState} style={{ height: '350px' }}>Cargando Modelo 3D...</div>
 });
+import ProductVariantsEditor from './ProductVariantsEditor';
 import styles from '../admin.module.css';
 
 interface ModalProductProps {
@@ -28,6 +29,7 @@ interface ModalProductProps {
     totalSteps: number;
     materials: any[];
     collections: any[];
+    attributes: any[];
     handleSubmitProduct: (e: React.FormEvent) => void;
     handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, field: any) => void;
     handleAddTier: () => void;
@@ -51,6 +53,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
     totalSteps,
     materials,
     collections,
+    attributes,
     handleSubmitProduct,
     handleFileUpload,
     handleAddTier,
@@ -422,9 +425,10 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                             )}
                         </div>
 
-                        {/* SHARED: VOLUME PRICING (Always on last step or visible on desktop) */}
                         <div className={`${styles.sectionDivider} ${styles.slideContent} ${(isMobileView && currentStep !== totalSteps) ? styles.hideOnMobile : ''}`} style={{ margin: '2rem 0', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <ProductVariantsEditor formData={formData} setFormData={setFormData} attributes={attributes} />
+                            
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '2rem 0 1rem 0' }}>
                                 <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>Precios por Volumen (Escalas)</h3>
                                 <button
                                     type="button"

@@ -1,0 +1,3 @@
+Nombre;Precio;Categoría;Descripción;Imagen;Material;Color;Ancho;Alto;Profundidad;Modo;Visible;Galeria
+Caja Grecia M;45000;Cajas Minimalistas;Caja estilo griego.;https://ejemplo.com/foto-ejemplo-1.jpg;carton-kraft;#F9F1E7;25;10;25;both;si;"https://ejemplo.com/galeria1.jpg;https://ejemplo.com/galeria2.jpg"
+Caja Especial Madera;65000;Cajas Madera;Espectacular caja tallada a la medida.;https://ejemplo.com/foto-ejemplo-2.jpg;madera-pino;#E8A2A2;30;15;40;photos;si;

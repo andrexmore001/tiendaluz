@@ -203,10 +203,10 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                                 <span className={styles.category}>{collections.find((c: any) => c.id === product.category)?.name || product.category}</span>
                                                 <h3>{product.name}</h3>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                    <p className={styles.price} style={getEffectivePrice(product.id, product.price) < product.price ? { fontWeight: 600, color: 'var(--primary)', margin: 0 } : { margin: 0 }}>
-                                                        ${getEffectivePrice(product.id, product.price).toLocaleString()}
+                                                    <p className={styles.price} style={getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price ? { fontWeight: 600, color: 'var(--primary)', margin: 0 } : { margin: 0 }}>
+                                                        ${getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }).toLocaleString()}
                                                     </p>
-                                                    {getEffectivePrice(product.id, product.price) < product.price && (
+                                                    {getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price && (
                                                         <span style={{ fontSize: '0.75rem', background: '#e0ffe0', color: '#008000', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>x Mayor</span>
                                                     )}
                                                 </div>

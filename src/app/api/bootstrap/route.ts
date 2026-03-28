@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         // Fetch all data in parallel to minimize wait time
-        const [settingsData, rawProducts, collections, materials, messages] = await Promise.all([
+        const [settingsData, rawProducts, collections, materials, messages, attributes] = await Promise.all([
             prisma.setting.findFirst(),
             prisma.product.findMany({
                 orderBy: {
@@ -20,6 +20,17 @@ export async function GET() {
                             minQty: 'asc'
                         }
                     },
+                    variants: {
+                        include: {
+                            attributes: {
+                                include: {
+                                    attributeValue: {
+                                        include: { attribute: true }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 },
             }),
             prisma.collection.findMany(),
@@ -28,6 +39,9 @@ export async function GET() {
                 orderBy: {
                     createdAt: 'desc'
                 }
+            }),
+            prisma.attribute.findMany({
+                include: { values: true }
             })
         ]);
 
@@ -59,6 +73,7 @@ export async function GET() {
             products,
             collections,
             materials,
+            attributes,
         };
 
         // Only include messages for authenticated admins

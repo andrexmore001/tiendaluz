@@ -17,6 +17,19 @@ export async function GET() {
                         minQty: 'asc'
                     }
                 },
+                variants: {
+                    include: {
+                        attributes: {
+                            include: {
+                                attributeValue: {
+                                    include: {
+                                        attribute: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             },
         });
 
@@ -44,7 +57,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const data = await request.json();
-        const { id, images, dimensions, priceTiers, materialId, ...rest } = data;
+        const { id, images, dimensions, priceTiers, materialId, variants, ...rest } = data;
 
         if (!materialId) {
             return NextResponse.json({ error: 'El ID de material es obligatorio' }, { status: 400 });
@@ -95,6 +108,67 @@ export async function POST(request: Request) {
                 priceTiers: true
             }
         });
+
+        // Asegurarnos que tenga al menos una variante si no se mandaron variantes (comportamiento legacy)
+        if (!variants || variants.length === 0) {
+            const existingVariants = await prisma.productVariant.count({ where: { productId: product.id } });
+            if (existingVariants === 0) {
+                const baseSku = product.name.toUpperCase().replace(/[^A-Z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+                
+                await prisma.productVariant.create({
+                    data: {
+                        productId: product.id,
+                        sku: `${baseSku}-DEFAULT-${product.id.substring(0, 4)}`,
+                        price: product.price,
+                        stock: 10,
+                        isActive: true,
+                        image: product.image
+                    }
+                });
+            }
+        } else {
+            // Lógica completa para guardar variantes desde el Frontend
+            await prisma.productVariant.deleteMany({ where: { productId: product.id } });
+
+            for (const v of variants) {
+                const variantAttributes = [];
+                if (v.attributes && Array.isArray(v.attributes)) {
+                    for (const a of v.attributes) {
+                        let targetAttrId = a.attrId;
+                        let targetValue = a.value;
+
+                        // Si viene desde la lectura de la base de datos (edición), 'a' tiene 'attributeValue'
+                        if (a.attributeValue) {
+                            targetAttrId = a.attributeValue.attributeId;
+                            targetValue = a.attributeValue.value;
+                        }
+
+                        if (targetAttrId && targetValue) {
+                            const attrVal = await prisma.attributeValue.findFirst({
+                                where: { attributeId: targetAttrId, value: String(targetValue) }
+                            });
+                            if (attrVal) {
+                                variantAttributes.push({ attributeValueId: attrVal.id });
+                            }
+                        }
+                    }
+                }
+
+                await prisma.productVariant.create({
+                    data: {
+                        productId: product.id,
+                        sku: v.sku || `SKU-${Date.now()}`,
+                        price: v.price !== undefined ? Number(v.price) : null,
+                        stock: v.stock !== undefined ? Number(v.stock) : 0,
+                        isActive: v.isActive !== undefined ? v.isActive : true,
+                        image: v.image || null,
+                        attributes: variantAttributes.length > 0 ? {
+                            create: variantAttributes
+                        } : undefined
+                    }
+                });
+            }
+        }
 
         revalidatePath('/api/products');
         revalidatePath('/api/bootstrap');

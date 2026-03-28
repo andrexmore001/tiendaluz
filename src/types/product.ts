@@ -5,6 +5,28 @@ export interface PriceTier {
     unitPrice: number;
 }
 
+export interface AttributeValue {
+    id: string;
+    value: string;
+    attribute: {
+        id: string;
+        name: string;
+    };
+}
+
+export interface ProductVariant {
+    id: string;
+    productId: string;
+    sku: string;
+    price: number | null;
+    stock: number;
+    image: string | null;
+    isActive: boolean;
+    attributes: {
+        attributeValue: AttributeValue;
+    }[];
+}
+
 export interface Product {
     id: string;
     name: string;
@@ -33,6 +55,7 @@ export interface Product {
     baseColor?: string;
     modelUrl?: string;
     priceTiers?: PriceTier[];
+    variants?: ProductVariant[];
     updatedAt?: string;
     createdAt?: string;
     isVisible?: boolean;

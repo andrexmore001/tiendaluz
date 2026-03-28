@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/auth';
 import { revalidatePath } from 'next/cache';
+import { slugify } from '@/lib/slug';
 
 export async function POST(req: Request) {
     const session = await auth();
@@ -85,6 +86,9 @@ export async function POST(req: Request) {
             if (!product.materialId) product.materialId = '';
             if (!product.baseColor) product.baseColor = '#F9F1E7';
 
+            // Generar slug automático para SEO y navegabilidad
+            product.slug = slugify(product.name);
+
             if (!validMaterialIds.has(product.materialId)) invalidMaterials.add(product.materialId);
 
             return product;
@@ -107,7 +111,11 @@ export async function POST(req: Request) {
         for (const cat of newCategories) {
             await prisma.collection.upsert({
                 where: { name: cat },
-                create: { name: cat, description: 'Creada desde carga masiva CSV' },
+                create: { 
+                    name: cat, 
+                    description: 'Creada desde carga masiva CSV',
+                    slug: slugify(cat) 
+                },
                 update: {}
             });
         }

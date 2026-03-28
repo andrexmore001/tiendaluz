@@ -27,6 +27,7 @@ export const metadata: Metadata = {
   },
 };
 
+
 import ChatWidget from '@/components/ChatWidget';
 
 export default function RootLayout({

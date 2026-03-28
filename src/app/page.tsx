@@ -65,10 +65,10 @@ export default function Home() {
                   <div className={styles.productInfo}>
                     <h3>{product.name}</h3>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                      <p className={styles.price} style={getEffectivePrice(product.id, product.price) < product.price ? { fontWeight: 600, color: 'var(--primary)' } : {}}>
-                        ${getEffectivePrice(product.id, product.price).toLocaleString()}
+                      <p className={styles.price} style={getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price ? { fontWeight: 600, color: 'var(--primary)' } : {}}>
+                        ${getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }).toLocaleString()}
                       </p>
-                      {getEffectivePrice(product.id, product.price) < product.price && (
+                      {getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price && (
                         <span style={{ fontSize: '0.75rem', background: '#e0ffe0', color: '#008000', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>x Mayor</span>
                       )}
                     </div>
