@@ -12,7 +12,7 @@ interface Props {
 
 export async function generateMetadata(): Promise<Metadata> {
     return {
-        title: 'Nuestras Colecciones | Artesana',
+        title: 'Nuestros Productos | Artesana',
         description: 'Explora nuestras cajas personalizadas y regalos especiales. Detalles hechos con amor para cada historia.',
     };
 }

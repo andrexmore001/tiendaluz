@@ -29,7 +29,7 @@ export default function Home() {
       <Features />
 
       <section className="section-padding container text-center">
-        <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Colecciones Destacadas</h2>
+        <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>Productos Destacados</h2>
         <p style={{ color: 'var(--text-muted)', maxWidth: '600px', margin: '0 auto 4rem' }}>
           Explora nuestras cajas más queridas, diseñadas para cada momento especial.
         </p>

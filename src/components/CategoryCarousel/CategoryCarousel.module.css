@@ -24,7 +24,7 @@
 }
 
 .scrollBtn {
-  display: none; /* Oculto en móviles */
+  display: flex; /* Ahora siempre es flex si React decide renderizarlo */
   position: absolute;
   top: 40%;
   transform: translateY(-50%);
@@ -162,10 +162,6 @@
     display: flex;
     justify-content: flex-start;
     padding: 0;
-  }
-
-  .scrollBtn {
-    display: flex; /* Mostrar solo en escritorio */
   }
 
   .scrollArea {

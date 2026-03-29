@@ -67,7 +67,7 @@ export default function Hero() {
                         Personalicemos algo juntos
                     </a>
                     <Link href="/productos" className={styles.secondaryBtn}>
-                        Ver Colecciones
+                        Ver Productos
                     </Link>
                 </div>
             </div>

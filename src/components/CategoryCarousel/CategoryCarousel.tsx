@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Collection, Product } from '@/types/product';
 import { getOptimizedUrl } from '@/lib/cloudinary';
@@ -13,11 +13,29 @@ interface CategoryCarouselProps {
 
 export default function CategoryCarousel({ collections, products, title }: CategoryCarouselProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(Math.ceil(scrollLeft + clientWidth) < scrollWidth);
+    }
+  };
+
+  useEffect(() => {
+    checkScroll(); // Comprobar en el montaje
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [collections]); // Recomprobar si cambian las colecciones
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
       const scrollAmount = 300;
       scrollRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+      // El timeout es para darle tiempo al scroll suave de avanzar antes de re-evaluar si ocultamos los botones
+      setTimeout(checkScroll, 350);
     }
   };
 
@@ -41,14 +59,20 @@ export default function CategoryCarousel({ collections, products, title }: Categ
         </div>
       )}
       <div className={styles.carouselContainer}>
-        <button 
-          className={`${styles.scrollBtn} ${styles.scrollLeft}`} 
-          onClick={() => handleScroll('left')}
-          aria-label="Desplazar a la izquierda"
+        {canScrollLeft && (
+          <button 
+            className={`${styles.scrollBtn} ${styles.scrollLeft}`} 
+            onClick={() => handleScroll('left')}
+            aria-label="Desplazar a la izquierda"
+          >
+            &#10094;
+          </button>
+        )}
+        <div 
+          className={styles.scrollArea} 
+          ref={scrollRef}
+          onScroll={checkScroll}
         >
-          &#10094;
-        </button>
-        <div className={styles.scrollArea} ref={scrollRef}>
           {collectionsWithImages.map((collection) => (
           <Link 
             key={collection.id} 
@@ -69,13 +93,15 @@ export default function CategoryCarousel({ collections, products, title }: Categ
           </Link>
         ))}
         </div>
-        <button 
-          className={`${styles.scrollBtn} ${styles.scrollRight}`} 
-          onClick={() => handleScroll('right')}
-          aria-label="Desplazar a la derecha"
-        >
-          &#10095;
-        </button>
+        {canScrollRight && (
+          <button 
+            className={`${styles.scrollBtn} ${styles.scrollRight}`} 
+            onClick={() => handleScroll('right')}
+            aria-label="Desplazar a la derecha"
+          >
+            &#10095;
+          </button>
+        )}
       </div>
     </div>
   );

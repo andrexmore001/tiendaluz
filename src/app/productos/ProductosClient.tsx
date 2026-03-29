@@ -103,7 +103,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
             <Navbar />
             <section className="section-padding container">
                 <header className={styles.header}>
-                    <h1>Nuestras Colecciones</h1>
+                    <h1>Nuestros Productos</h1>
                     <p>Explora nuestras creaciones diseñadas para cada historia especial.</p>
                 </header>
 

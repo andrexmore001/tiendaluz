@@ -29,7 +29,7 @@ export default function Footer() {
                 <div className={styles.linksSide}>
                     <div className={styles.linkColumn}>
                         <h4>Explorar</h4>
-                        <Link href="/productos">Colecciones</Link>
+                        <Link href="/productos">Productos</Link>
                         <Link href="/nosotros">Nosotros</Link>
                         <Link href="/contacto">Contacto</Link>
                     </div>

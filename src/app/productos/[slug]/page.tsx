@@ -10,7 +10,7 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { slug } = await params;
     
-    let title = 'Nuestras Colecciones | Artesana';
+    let title = 'Nuestros Productos | Artesana';
     let description = 'Explora nuestras cajas personalizadas y regalos especiales. Detalles hechos con amor para cada historia.';
 
     const category = await prisma.collection.findUnique({
