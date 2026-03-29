@@ -20,7 +20,7 @@ export default function Home() {
     <main className={styles.main}>
       <Navbar />
 
-      <section className="container" style={{ paddingTop: '0.8rem', paddingBottom: '0', display: 'flex', justifyContent: 'flex-start' }}>
+      <section className="container" style={{ paddingTop: '0.8rem', paddingBottom: '1.5rem', display: 'flex', justifyContent: 'flex-start' }}>
         <CategoryCarousel collections={collections} products={products} title="¿Buscas algo específico?" />
       </section>
 
