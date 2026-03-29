@@ -113,9 +113,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const getEffectivePrice = (item: { productId: string, variantId?: string, unitPrice: number, quantity: number }) => {
-    // Calculamos el descuento basados estrictamente en la cantidad de ESTA variante exacta en el carrito
-    const totalQty = getProductQuantity(item.productId, item.variantId || null);
     const productDef = products.find(p => p.id === item.productId);
+    
+    // Calculamos el descuento respetando la regla maestra del administrador
+    const totalQty = productDef?.combineVariantsForTiers 
+      ? getProductQuantity(item.productId) // Sumar todas las variantes si está activo
+      : getProductQuantity(item.productId, item.variantId || null); // Estricto por variante si no
     
     if (!productDef || !productDef.priceTiers || productDef.priceTiers.length === 0) {
       return item.unitPrice;

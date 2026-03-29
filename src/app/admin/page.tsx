@@ -93,7 +93,8 @@ export default function AdminPage() {
         images: [] as any[], width: 4, height: 2, depth: 4,
         materialId: '', baseColor: '#F9F1E7', modelUrl: '',
         priceTiers: [] as any[],
-        variants: [] as any[]
+        variants: [] as any[],
+        combineVariantsForTiers: false
     });
 
     const [editingImageConfig, setEditingImageConfig] = useState<number | null>(null);
@@ -156,7 +157,8 @@ export default function AdminPage() {
             name: '', price: 0, category: collections[0]?.id || 'Todas', description: '',
             image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
             materialId: materials[0]?.id || '',
-            variants: []
+            variants: [],
+            combineVariantsForTiers: false
         });
         setCurrentStep(1); setShowProductForm(true);
     };
@@ -174,7 +176,8 @@ export default function AdminPage() {
             materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
             modelUrl: p.modelUrl || '',
             priceTiers: p.priceTiers || [],
-            variants: p.variants || []
+            variants: p.variants || [],
+            combineVariantsForTiers: p.combineVariantsForTiers || false
         });
         setCurrentStep(1); setShowProductForm(true);
     };

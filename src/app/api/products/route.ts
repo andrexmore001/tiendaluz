@@ -80,6 +80,7 @@ export async function POST(request: Request) {
             images: images || [], // Now a JSON field
             isVisible: rest.isVisible !== undefined ? (typeof rest.isVisible === 'boolean' ? rest.isVisible : rest.isVisible === 'true') : true,
             slug: rest.slug || slugify(rest.name),
+            combineVariantsForTiers: Boolean(rest.combineVariantsForTiers || false),
         };
 
         const tierOperations = priceTiers?.map((tier: any) => ({

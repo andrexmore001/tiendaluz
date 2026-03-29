@@ -443,6 +443,24 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                 Define rangos de cantidad y el precio unitario correspondiente. El precio base se usará si no hay escalas.
                             </p>
 
+                            <div className={styles.inputGroup} style={{ flexDirection: 'row', alignItems: 'center', gap: '0.8rem', background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+                                <input
+                                    type="checkbox"
+                                    id="combineVariantsForTiers"
+                                    checked={formData.combineVariantsForTiers || false}
+                                    onChange={(e) => setFormData({ ...formData, combineVariantsForTiers: e.target.checked })}
+                                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#3b82f6' }}
+                                />
+                                <div>
+                                    <label htmlFor="combineVariantsForTiers" style={{ margin: 0, fontWeight: 600, color: '#334155', cursor: 'pointer', display: 'block' }}>
+                                        Combinar variantes para alcanzar el descuento por volumen
+                                    </label>
+                                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>
+                                        Si está activo, se sumarán las cantidades de todas las variantes elegidas de este producto para llegar a la mínima cantidad exigida.
+                                    </span>
+                                </div>
+                            </div>
+
                             {formData.priceTiers.length > 0 ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                                     {formData.priceTiers.map((tier: any, idx: number) => {

@@ -59,6 +59,7 @@ export interface Product {
     updatedAt?: string;
     createdAt?: string;
     isVisible?: boolean;
+    combineVariantsForTiers?: boolean;
 }
 
 export interface Collection {

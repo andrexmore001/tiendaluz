@@ -111,9 +111,17 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
   const getTieredPrice = () => {
     const basePrice = currentVariant?.price !== null && currentVariant?.price !== undefined ? currentVariant.price : product.price;
     if (!product.priceTiers || product.priceTiers.length === 0) return basePrice;
+
+    // Calcular la cantidad a evaluar considerando el estado de la regla híbrida
+    const totalOtherVariants = product.combineVariantsForTiers
+      ? getProductQuantity(product.id) - getProductQuantity(product.id, currentVariant?.id || null)
+      : 0;
+      
+    const evaluationQty = quantity + totalOtherVariants;
+
     const activeTier = product.priceTiers.find(tier => {
-      const minMatch = quantity >= tier.minQty;
-      const maxMatch = tier.maxQty === null || tier.maxQty === undefined || quantity <= tier.maxQty;
+      const minMatch = evaluationQty >= tier.minQty;
+      const maxMatch = tier.maxQty === null || tier.maxQty === undefined || evaluationQty <= tier.maxQty;
       return minMatch && maxMatch;
     });
     if (!activeTier) return basePrice;
@@ -300,7 +308,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
             </div>
           )}
           {(() => {
-            const is3D = product.displayMode === '3d' || product.displayMode === 'both' || !product.displayMode;
+            const is3D = (product.displayMode === '3d' || product.displayMode === 'both' || !product.displayMode) && !!product.modelUrl;
             const hasCustomGallery = product.images && product.images.some((img: any) => img && typeof img === 'object' && img.isCustomizable);
             if (is3D || hasCustomGallery) {
               return (

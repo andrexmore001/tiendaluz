@@ -52,6 +52,7 @@ model Product {
   images      Json?
   slug        String?     @unique
   isVisible   Boolean     @default(true)
+  combineVariantsForTiers Boolean @default(false)
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   priceTiers  PriceTier[]
