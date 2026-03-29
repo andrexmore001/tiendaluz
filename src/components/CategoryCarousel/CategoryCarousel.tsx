@@ -76,7 +76,7 @@ export default function CategoryCarousel({ collections, products, title }: Categ
           {collectionsWithImages.map((collection) => (
           <Link 
             key={collection.id} 
-            href={`/productos?coleccion=${collection.id}`} 
+            href={`/productos/${collection.slug || collection.id}`} 
             className={styles.storyLink}
           >
             <div className={styles.imageRing}>
