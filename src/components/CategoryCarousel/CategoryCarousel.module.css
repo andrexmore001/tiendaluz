@@ -121,13 +121,12 @@
 }
 
 .storyName {
-  font-size: 0.7rem; /* Reducido de 0.8rem para ser aún más discreto */
-  font-weight: 400; /* Más sutil, sin negrita fuerte */
+  font-size: 0.65rem; /* Letra aún más fina para ceder protagonismo al círculo */
+  font-weight: 400; 
   text-align: center;
-  color: #64748b; /* Gris más suave y elegante */
-  margin-top: 0; /* Quitamos el margin-top para que solo aplique el gap */
+  color: #64748b; 
+  margin-top: 0; 
   line-height: 1.2;
-  /* Esto corta el texto si es muy largo (como en instagram) */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -181,6 +180,6 @@
   }
 
   .storyName {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
   }
 }
