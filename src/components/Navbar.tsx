@@ -39,7 +39,9 @@ export default function Navbar() {
                 </div>
 
                 <div className={styles.navRight}>
-                    <SearchBar />
+                    <div className={styles.searchContainer}>
+                        <SearchBar />
+                    </div>
                     <div className={styles.actions}>
                         <button className={styles.actionBtn}>
                             <User size={20} />

@@ -475,3 +475,11 @@
     transform: translateY(-2px);
     border-color: #e2e8f0;
 }
+
+.customInfoText {
+    font-size: 0.8rem;
+    color: #ef4444;
+    font-style: italic;
+    margin-top: 0.5rem;
+    line-height: 1.3;
+}

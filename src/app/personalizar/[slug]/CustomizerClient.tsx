@@ -321,6 +321,9 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                     onChange={(e) => setText(e.target.value)}
                     className={styles.input}
                   />
+                  <p className={styles.customInfoText}>
+                    * Nota: La personalización cuenta con un costo adicional que no está incluido en el precio base del producto y será calculado al confirmar el pedido.
+                  </p>
                 </div>
               );
             }
