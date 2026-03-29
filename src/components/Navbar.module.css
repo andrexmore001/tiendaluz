@@ -1,5 +1,5 @@
 .navbar {
-    height: 115px;
+    height: 85px;
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.82);
@@ -23,7 +23,7 @@
 }
 
 .logoImg {
-    height: 105px;
+    height: 70px;
     width: auto;
     object-fit: contain;
     transition: var(--transition);
@@ -52,7 +52,7 @@
 .navRight {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 2.5rem;
 }
 
 .actions {
@@ -90,10 +90,20 @@
     color: var(--text-main);
 }
 
+.cartIcon {
+    width: 28px;
+    height: 28px;
+    transition: var(--transition);
+}
+
 @media (max-width: 768px) {
+    .cartIcon {
+        width: 24px;
+        height: 24px;
+    }
     .navbar {
         height: auto;
-        min-height: 115px;
+        min-height: 85px;
         padding: 1rem 0;
     }
 
@@ -113,7 +123,7 @@
     }
 
     .logoImg {
-        height: 85px;
+        height: 60px;
     }
 
     .navRight {
@@ -135,7 +145,7 @@
 
     .links {
         position: fixed;
-        top: 115px;
+        top: 85px;
         left: 0;
         right: 0;
         background: white;

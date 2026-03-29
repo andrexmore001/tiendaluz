@@ -5,6 +5,7 @@ import Hero from '@/components/Hero';
 import Features from '@/components/Features';
 
 import Footer from '@/components/Footer';
+import CategoryCarousel from '@/components/CategoryCarousel/CategoryCarousel';
 import { useSettings } from '@/context/SettingsContext';
 import { useCart } from '@/context/CartContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
@@ -12,12 +13,17 @@ import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function Home() {
-  const { products } = useSettings();
+  const { products, collections } = useSettings();
   const { addToCart, getProductQuantity, updateQuantity, cartItems, openCart, getEffectivePrice } = useCart();
 
   return (
     <main className={styles.main}>
       <Navbar />
+
+      <section className="container" style={{ paddingTop: '0.8rem', paddingBottom: '0', display: 'flex', justifyContent: 'flex-start' }}>
+        <CategoryCarousel collections={collections} products={products} title="¿Buscas algo específico?" />
+      </section>
+
       <Hero />
       <SplitHero />
       <Features />

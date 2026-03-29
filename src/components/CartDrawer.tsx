@@ -61,10 +61,24 @@ export default function CartDrawer() {
                   />
                   <div className={styles.itemDetails}>
                     <h4 className={styles.itemName}>{item.name}</h4>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <p className={styles.itemPrice} style={hasDiscount ? { fontWeight: 600, color: 'var(--primary)' } : {}}>
-                        ${effectivePrice.toLocaleString()} {hasDiscount && <span style={{ fontSize: '0.75rem', background: '#e0ffe0', color: '#008000', padding: '0.1rem 0.3rem', borderRadius: '4px', marginLeft: '0.2rem' }}>¡Precio por Volumen!</span>}
-                      </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      {hasDiscount ? (
+                        <>
+                          <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '0.85rem' }}>
+                            ${item.unitPrice.toLocaleString()}
+                          </span>
+                          <span className={styles.itemPrice} style={{ fontWeight: 600, color: 'var(--primary)' }}>
+                            ${effectivePrice.toLocaleString()}
+                          </span>
+                          <span style={{ fontSize: '0.75rem', background: '#e0ffe0', color: '#008000', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>
+                            ¡Precio por Volumen!
+                          </span>
+                        </>
+                      ) : (
+                        <p className={styles.itemPrice}>
+                          ${effectivePrice.toLocaleString()}
+                        </p>
+                      )}
                     </div>
                     
                     {item.customText && (

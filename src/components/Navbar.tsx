@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingBag, Menu, X, User } from 'lucide-react';
+import { ShoppingCart, Menu, X, User } from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useSettings } from '@/context/SettingsContext';
 import { useCart } from '@/context/CartContext';
@@ -43,11 +43,13 @@ export default function Navbar() {
                         <SearchBar />
                     </div>
                     <div className={styles.actions}>
+                        {/* Ícono de usuario oculto temporalmente por falta de sesiones
                         <button className={styles.actionBtn}>
                             <User size={20} />
                         </button>
+                        */}
                         <button className={styles.actionBtn} onClick={toggleCart} aria-label="Abrir carrito">
-                            <ShoppingBag size={20} />
+                            <ShoppingCart className={styles.cartIcon} />
                             {cartCount > 0 && (
                                 <span className={styles.cartCount}>{cartCount}</span>
                             )}
