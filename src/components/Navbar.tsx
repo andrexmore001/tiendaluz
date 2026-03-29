@@ -33,7 +33,7 @@ export default function Navbar() {
 
                 <div className={`${styles.links} ${isOpen ? styles.linksOpen : ''}`}>
                     <Link href="/" onClick={() => setIsOpen(false)}>Inicio</Link>
-                    <Link href="/productos" onClick={() => setIsOpen(false)}>Colecciones</Link>
+                    <Link href="/productos" onClick={() => setIsOpen(false)}>Productos</Link>
                     <Link href="/nosotros" onClick={() => setIsOpen(false)}>Nosotros</Link>
                     <Link href="/contacto" onClick={() => setIsOpen(false)}>Contacto</Link>
                 </div>
