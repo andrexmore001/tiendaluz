@@ -1,4 +1,5 @@
-import React from 'react';
+"use client";
+import React, { useRef } from 'react';
 import Link from 'next/link';
 import { Collection, Product } from '@/types/product';
 import { getOptimizedUrl } from '@/lib/cloudinary';
@@ -11,6 +12,15 @@ interface CategoryCarouselProps {
 }
 
 export default function CategoryCarousel({ collections, products, title }: CategoryCarouselProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 300;
+      scrollRef.current.scrollBy({ left: direction === 'left' ? -scrollAmount : scrollAmount, behavior: 'smooth' });
+    }
+  };
+
   // Solo mostraremos categorías que tengan al menos un producto para extraer su imagen.
   const collectionsWithImages = collections.map(collection => {
     // Buscar el primer producto que pertenezca a esta colección
@@ -31,7 +41,14 @@ export default function CategoryCarousel({ collections, products, title }: Categ
         </div>
       )}
       <div className={styles.carouselContainer}>
-        <div className={styles.scrollArea}>
+        <button 
+          className={`${styles.scrollBtn} ${styles.scrollLeft}`} 
+          onClick={() => handleScroll('left')}
+          aria-label="Desplazar a la izquierda"
+        >
+          &#10094;
+        </button>
+        <div className={styles.scrollArea} ref={scrollRef}>
           {collectionsWithImages.map((collection) => (
           <Link 
             key={collection.id} 
@@ -51,8 +68,15 @@ export default function CategoryCarousel({ collections, products, title }: Categ
             <span className={styles.storyName}>{collection.name}</span>
           </Link>
         ))}
+        </div>
+        <button 
+          className={`${styles.scrollBtn} ${styles.scrollRight}`} 
+          onClick={() => handleScroll('right')}
+          aria-label="Desplazar a la derecha"
+        >
+          &#10095;
+        </button>
       </div>
-    </div>
     </div>
   );
 }
