@@ -4,7 +4,8 @@
 
 .productGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 350px));
+  justify-content: center;
   gap: 1.5rem;
 }
 
@@ -28,6 +29,7 @@
   border: 1px solid rgba(0, 0, 0, 0.03);
   padding: 1rem;
   max-width: 400px;
+  margin: 0 auto;
 }
 
 .moreActions {
