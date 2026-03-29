@@ -1,7 +1,7 @@
 .footer {
-    background: white;
-    border-top: 1px solid #eee;
+    background-color: var(--secondary); /* Fondo beige suave y cálido */
     padding-top: 5rem;
+    color: var(--text-main);
 }
 
 .container {
@@ -29,17 +29,37 @@
     margin-bottom: 1.5rem;
 }
 
-.socials {
+.social {
     display: flex;
     gap: 1rem;
+    margin-top: 1.5rem;
 }
 
-.socials a {
-    color: var(--text-muted);
+.social a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: white; /* Resalta sobre el fondo beige */
+    color: var(--text-main);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
 }
 
-.socials a:hover {
-    color: var(--primary);
+.social a.instagram:hover {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    color: white;
+    transform: translateY(-4px); 
+    box-shadow: 0 10px 20px rgba(220, 39, 67, 0.25);
+}
+
+.social a.facebook:hover {
+    background: #1877F2;
+    color: white;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(24, 119, 242, 0.25);
 }
 
 .linksSide {
@@ -52,6 +72,8 @@
     font-size: 1rem;
     text-transform: uppercase;
     letter-spacing: 1px;
+    color: var(--text-main);
+    font-weight: 600;
 }
 
 .linkColumn {
@@ -61,23 +83,96 @@
 }
 
 .linkColumn a {
-    color: var(--text-muted);
-    font-size: 0.9rem;
+    color: var(--text-main);
+    opacity: 0.85;
+    font-size: 0.95rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.linkColumn a:hover {
+.exploreList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.exploreLink {
+    position: relative;
+    padding-left: 0;
+}
+
+.exploreLink:hover {
     color: var(--primary);
+    opacity: 1;
+    transform: translateX(8px);
+}
+
+.exploreIcon {
+    color: var(--primary);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: absolute;
+    left: -20px;
+}
+
+.exploreLink:hover .exploreIcon {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.contactList {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.contactItem {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-main);
+    opacity: 0.85;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.contactItem:is(a):hover {
+    color: var(--primary);
+    opacity: 1;
+    transform: translateX(5px);
+}
+
+.iconCircle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: white;
+    color: var(--primary);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
+}
+
+.contactItem:is(a):hover .iconCircle {
+    background-color: var(--primary);
+    color: white;
+    box-shadow: 0 6px 15px rgba(232, 162, 162, 0.35); /* Suave resplandor pastel */
 }
 
 .bottomBar {
-    border-top: 1px solid #f5f5f5;
+    border-top: 1px solid rgba(0,0,0,0.06); /* Línea un poco más oscura para el fondo beige */
     padding: 2rem 0;
     text-align: center;
-    font-size: 0.8rem;
-    color: var(--text-muted);
+    font-size: 0.85rem;
+    color: rgba(30, 41, 59, 0.7);
 }
 
 .developer {

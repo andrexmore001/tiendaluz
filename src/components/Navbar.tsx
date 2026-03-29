@@ -1,6 +1,7 @@
 "use client";
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ShoppingCart, Menu, X, User } from 'lucide-react';
 import styles from './Navbar.module.css';
 import { useSettings } from '@/context/SettingsContext';
@@ -9,6 +10,7 @@ import SearchBar from './SearchBar/SearchBar';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
     const { settings } = useSettings();
     const { cartCount, toggleCart } = useCart();
 
@@ -32,10 +34,10 @@ export default function Navbar() {
                 </Link>
 
                 <div className={`${styles.links} ${isOpen ? styles.linksOpen : ''}`}>
-                    <Link href="/" onClick={() => setIsOpen(false)}>Inicio</Link>
-                    <Link href="/productos" onClick={() => setIsOpen(false)}>Productos</Link>
-                    <Link href="/nosotros" onClick={() => setIsOpen(false)}>Nosotros</Link>
-                    <Link href="/contacto" onClick={() => setIsOpen(false)}>Contacto</Link>
+                    <Link href="/" className={pathname === '/' ? styles.active : ''} onClick={() => setIsOpen(false)}>Inicio</Link>
+                    <Link href="/productos" className={pathname.startsWith('/productos') ? styles.active : ''} onClick={() => setIsOpen(false)}>Productos</Link>
+                    <Link href="/nosotros" className={pathname === '/nosotros' ? styles.active : ''} onClick={() => setIsOpen(false)}>Nosotros</Link>
+                    <Link href="/contacto" className={pathname === '/contacto' ? styles.active : ''} onClick={() => setIsOpen(false)}>Contacto</Link>
                 </div>
 
                 <div className={styles.navRight}>

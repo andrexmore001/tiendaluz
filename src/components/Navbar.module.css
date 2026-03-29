@@ -44,7 +44,8 @@
     transition: var(--transition);
 }
 
-.links a:hover {
+.links a:hover,
+.links a.active {
     opacity: 1;
     color: var(--primary);
 }
