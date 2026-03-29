@@ -160,8 +160,12 @@
 
   .carouselContainer {
     display: flex;
-    justify-content: flex-start; 
+    justify-content: flex-start;
     padding: 0;
+  }
+
+  .scrollBtn {
+    display: flex; /* Mostrar solo en escritorio */
   }
 
   .scrollArea {
