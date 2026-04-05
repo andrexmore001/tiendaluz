@@ -141,9 +141,6 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
       <Navbar />
       <div className={`${styles.container} container`}>
         <div className={styles.visualizer}>
-          <div className={styles.badge}>
-            {currentView === '3d' ? 'Vista Previa' : 'Galería de Fotos'}
-          </div>
           {currentView === '3d' ? (
             <div style={{ width: '100%', height: '400px' }}>
               <ProductModel modelUrl={product.modelUrl} />
