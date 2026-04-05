@@ -25,7 +25,7 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
 
     // Filtration
     const filteredProducts = products.filter(p => {
-        const catName = collections.find((c: any) => c.id === p.category)?.name || p.category || '';
+        const catName = collections.find((c: any) => c.id === p.collectionId)?.name || '';
         return p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
         p.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         catName.toLowerCase().includes(searchQuery.toLowerCase());

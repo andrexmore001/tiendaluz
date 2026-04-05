@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
                 if (header === 'precio' || header === 'price') product.price = parseFloat(value) || 0;
                 else if (header === 'nombre' || header === 'name') product.name = value;
-                else if (header === 'categoría' || header === 'categoria' || header === 'category') product.category = value;
+                else if (header === 'colección' || header === 'coleccion' || header === 'collection' || header === 'categoría' || header === 'categoria' || header === 'category') product.categoryText = value;
                 else if (header === 'descripción' || header === 'descripcion' || header === 'description') product.description = value;
                 else if (header === 'imagen' || header === 'image') product.image = value;
                 else if (header === 'ancho' || header === 'width') product.width = parseFloat(value) || 0;
@@ -80,7 +80,7 @@ export async function POST(req: Request) {
 
             if (!product.name) product.name = `Producto en línea ${lineIndex + 2}`;
             if (product.price === undefined) product.price = 0;
-            if (!product.category) product.category = 'General';
+            if (!product.categoryText) product.categoryText = 'General';
             if (!product.description) product.description = '';
             if (!product.displayMode) product.displayMode = '3d';
             if (!product.materialId) product.materialId = '';
@@ -99,7 +99,7 @@ export async function POST(req: Request) {
         }
 
         // Step 2: Extract unique categories and ensure they exist
-        const uniqueCategories = [...new Set(unmappedProductsData.map((p: any) => p.category))];
+        const uniqueCategories = [...new Set(unmappedProductsData.map((p: any) => p.categoryText))];
         const existingCollections = await prisma.collection.findMany({
             where: { name: { in: uniqueCategories as string[] } }
         });
@@ -127,10 +127,13 @@ export async function POST(req: Request) {
         const collectionNameToId = new Map(finalCollections.map(c => [c.name, c.id]));
 
         // Step 3: Map collectionId to the product payload
-        const productsData = unmappedProductsData.map((p: any) => ({
-            ...p,
-            collectionId: collectionNameToId.get(p.category)
-        }));
+        const productsData = unmappedProductsData.map((p: any) => {
+            const { categoryText, ...rest } = p;
+            return {
+                ...rest,
+                collectionId: collectionNameToId.get(categoryText)
+            };
+        });
 
         const result = await prisma.product.createMany({
             data: productsData,

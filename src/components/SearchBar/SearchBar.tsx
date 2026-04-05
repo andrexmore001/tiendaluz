@@ -29,7 +29,7 @@ export default function SearchBar() {
 
   const filteredProducts = query.trim() === '' 
     ? [] 
-    : products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || getCategoryName(p.category).includes(query.toLowerCase())).slice(0, 5); // Limit to 5 results
+    : products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()) || getCategoryName(p.collectionId || '').includes(query.toLowerCase())).slice(0, 5); // Limit to 5 results
 
   const handleSelectProduct = (id: string) => {
     setIsOpen(false);

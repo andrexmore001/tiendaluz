@@ -37,7 +37,6 @@ model Product {
   id          String      @id @default(cuid())
   name        String
   price       Float
-  category     String
   collectionId String?
   collection   Collection? @relation(fields: [collectionId], references: [id])
   description String

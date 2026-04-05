@@ -73,12 +73,12 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
     const filteredProducts = activeCollection === "Todas"
         ? visibleProducts.filter(p => p.price <= maxPrice)
         : visibleProducts.filter(p => {
-            const productCategory = collections.find((c: any) => c.id === p.category);
-            const isMatch = p.category === activeCollection || productCategory?.parentId === activeCollection;
+            const productCategory = collections.find((c: any) => c.id === p.collectionId);
+            const isMatch = p.collectionId === activeCollection || productCategory?.parentId === activeCollection;
             
             // Debugging log for the specific product mentioned or any product being filtered
             if (activeCollection !== "Todas" && (p.name.toLowerCase().includes('rosas') || p.id === activeCollection)) {
-                console.log(`[FILTER DEBUG] Product: ${p.name}, Category: ${p.category}, Parent: ${productCategory?.parentId}, Active: ${activeCollection}, Match: ${isMatch}`);
+                console.log(`[FILTER DEBUG] Product: ${p.name}, Category: ${p.collectionId}, Parent: ${productCategory?.parentId}, Active: ${activeCollection}, Match: ${isMatch}`);
             }
             
             return isMatch && p.price <= maxPrice;
@@ -206,7 +206,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                                 <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />
                                             </div>
                                             <div className={styles.info}>
-                                                <span className={styles.category}>{collections.find((c: any) => c.id === product.category)?.name || product.category}</span>
+                                                <span className={styles.category}>{collections.find((c: any) => c.id === product.collectionId)?.name}</span>
                                                 <h3>{product.name}</h3>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <p className={styles.price} style={getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price ? { fontWeight: 600, color: 'var(--primary)', margin: 0 } : { margin: 0 }}>

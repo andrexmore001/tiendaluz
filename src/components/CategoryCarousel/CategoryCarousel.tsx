@@ -42,7 +42,7 @@ export default function CategoryCarousel({ collections, products, title }: Categ
   // Solo mostraremos categorías que tengan al menos un producto para extraer su imagen.
   const collectionsWithImages = collections.map(collection => {
     // Buscar el primer producto que pertenezca a esta colección
-    const firstProduct = products.find(p => p.category === collection.id);
+    const firstProduct = products.find(p => p.collectionId === collection.id);
     return {
       ...collection,
       coverImage: firstProduct?.image || null

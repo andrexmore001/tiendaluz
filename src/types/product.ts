@@ -33,7 +33,7 @@ export interface Product {
     price: number;
     slug?: string;
     description: string;
-    category: string;
+    collectionId?: string | null;
     image: string;      // Base image for cards
     displayMode?: 'photos' | '3d' | 'both';
     images?: {
