@@ -133,25 +133,8 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
 
   const currentUnitPrice = getTieredPrice();
 
-  const handleWhatsApp = () => {
-    const currentItemTotal = currentUnitPrice * quantity;
-    let message = "Hola, me gustaría realizar el siguiente pedido:\n\n";
-    let grandTotal = currentItemTotal;
-    message += `1. ${quantity}x ${product.name} - $${currentItemTotal.toLocaleString()}`;
-    if (text) message += `\n   Texto: "${text}"`;
-    message += "\n\n";
-    if (cartItems && cartItems.length > 0) {
-      cartItems.forEach((item, index) => {
-        const itemTotal = item.unitPrice * item.quantity;
-        grandTotal += itemTotal;
-        message += `${index + 2}. ${item.quantity}x ${item.name} - $${itemTotal.toLocaleString()}`;
-        if (item.customText) message += `\n   Texto: "${item.customText}"`;
-        message += "\n\n";
-      });
-    }
-    message += `*Total estimado:* $${grandTotal.toLocaleString()}COP`;
-    window.open(getWhatsAppLink(settings.contact.phone, message), "_blank");
-  };
+    // Handle WhatsApp removed as user requested global floating button instead
+    // const handleWhatsApp = () => { ... }
 
   return (
     <main style={{ minHeight: "100vh", background: "#fcfcfc" }}>
@@ -232,7 +215,6 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 <span style={{ fontSize: '0.8rem', background: '#e0ffe0', color: '#008000', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 600 }}>¡Precio por Volumen!</span>
               )}
             </p>
-            <p className={styles.description} style={{ whiteSpace: 'pre-wrap', marginBottom: '1.5rem' }}>{product.description}</p>
           </div>
 
           {availableAttributes.length > 0 && (
@@ -270,6 +252,12 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 )}
              </div>
           )}
+
+          <div className={styles.productHeader} style={{ marginBottom: '1.5rem' }}>
+            <p className={styles.description} style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{product.description}</p>
+          </div>
+
+
 
           {product.priceTiers && product.priceTiers.length > 0 && (
             <div className={styles.pricingTableCard}>
@@ -383,10 +371,6 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
               >
                 <ShoppingBag size={20} />
                 Añadir al Carrito
-              </button>
-              <button className={styles.whatsappBtn} onClick={handleWhatsApp}>
-                <MessageCircle size={20} />
-                Comprar Ahora
               </button>
             </div>
           </div>

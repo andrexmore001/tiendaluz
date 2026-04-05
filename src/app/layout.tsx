@@ -43,8 +43,8 @@ export const metadata: Metadata = {
   },
 };
 
-
 import ChatWidget from '@/components/ChatWidget';
+import WhatsAppButton from '@/components/WhatsAppButton';
 
 export default function RootLayout({
   children,
@@ -62,6 +62,7 @@ export default function RootLayout({
               <Ticker />
               {children}
               <CartDrawer />
+              <WhatsAppButton />
               <ChatWidget />
             </CartProvider>
           </SettingsProvider>
