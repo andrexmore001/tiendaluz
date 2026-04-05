@@ -88,7 +88,7 @@ export default function AdminPage() {
     });
 
     const [formData, setFormData] = useState({
-        name: '', price: 0, category: collections[0]?.id || 'Todas', description: '',
+        name: '', price: 0, collectionId: collections[0]?.id || 'Todas', description: '',
         image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
         images: [] as any[], width: 4, height: 2, depth: 4,
         materialId: '', baseColor: '#F9F1E7', modelUrl: '',
@@ -154,7 +154,7 @@ export default function AdminPage() {
         setEditingProduct(null);
         setFormData({
             ...formData,
-            name: '', price: 0, category: collections[0]?.id || 'Todas', description: '',
+            name: '', price: 0, collectionId: collections[0]?.id || 'Todas', description: '',
             image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
             materialId: materials[0]?.id || '',
             variants: [],
@@ -165,11 +165,11 @@ export default function AdminPage() {
 
     const handleEditProduct = (p: Product) => {
         setEditingProduct(p);
-        const matchedCollection = collections.find((c: any) => c.id === p.category || c.name === p.category);
+        const matchedCollection = collections.find((c: any) => c.id === p.collectionId);
         const categoryIdToEdit = matchedCollection ? matchedCollection.id : (collections[0]?.id || 'Todas');
 
         setFormData({
-            name: p.name, price: p.price, category: categoryIdToEdit, description: p.description,
+            name: p.name, price: p.price, collectionId: categoryIdToEdit, description: p.description,
             image: p.image || '', displayMode: p.displayMode || '3d',
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
             width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
