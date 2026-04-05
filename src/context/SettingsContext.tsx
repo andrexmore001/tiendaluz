@@ -1,7 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { SiteSettings, siteSettings as initialSettings, products as initialProducts, collections as initialCollections } from '@/lib/data';
-import { Product, Collection } from '@/types/product';
+import { Product, Collection, Supplier } from '@/types/product';
 
 export interface Material {
     id: string;
@@ -52,6 +52,10 @@ interface SettingsContextType {
     deleteMessage: (id: string) => void;
     markMessageAsRead: (id: string) => void;
     refreshMessages: () => Promise<void>;
+    suppliers: Supplier[];
+    addSupplier: (supplier: Supplier) => void;
+    updateSupplier: (supplier: Supplier) => void;
+    deleteSupplier: (id: string) => void;
     isLoaded: boolean;
     storageError: string | null;
     clearAllData: () => void;
@@ -66,6 +70,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [materials, setMaterials] = useState<Material[]>([]);
     const [attributes, setAttributes] = useState<SiteAttribute[]>([]);
     const [messages, setMessages] = useState<ContactMessage[]>([]);
+    const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [storageError, setStorageError] = useState<string | null>(null);
@@ -81,7 +86,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                 const data = await response.json();
 
                 if (data && !data.error) {
-                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials, attributes: resAttributes } = data;
+                    const { settings: resSettings, products: resProducts, collections: resCollections, materials: resMaterials, attributes: resAttributes, suppliers: resSuppliers } = data;
 
                     if (resSettings) {
                         setSettings({
@@ -118,6 +123,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                     if (Array.isArray(resCollections)) setCollections(resCollections);
                     if (Array.isArray(resMaterials)) setMaterials(resMaterials);
                     if (Array.isArray(resAttributes)) setAttributes(resAttributes);
+                    if (Array.isArray(resSuppliers)) setSuppliers(resSuppliers);
                     if (Array.isArray(data.messages)) setMessages(data.messages);
                 }
 
@@ -365,6 +371,43 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const addSupplier = async (supplier: Supplier) => {
+        setSuppliers(prev => [...prev, supplier]);
+        try {
+            await fetch('/api/suppliers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(supplier)
+            });
+        } catch (e) {
+            console.error("Error adding supplier", e);
+        }
+    };
+
+    const updateSupplier = async (updatedSupplier: Supplier) => {
+        setSuppliers(prev => prev.map(s => s.id === updatedSupplier.id ? updatedSupplier : s));
+        try {
+            await fetch('/api/suppliers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedSupplier)
+            });
+        } catch (e) {
+            console.error("Error updating supplier", e);
+        }
+    };
+
+    const deleteSupplier = async (id: string) => {
+        setSuppliers(prev => prev.filter(s => s.id !== id));
+        try {
+            await fetch(`/api/suppliers?id=${id}`, {
+                method: 'DELETE',
+            });
+        } catch (e) {
+            console.error("Error deleting supplier", e);
+        }
+    };
+
     // Auto-refresh messages every 30 minutes if in admin panel (or just always if safe)
     useEffect(() => {
         const interval = setInterval(() => {
@@ -408,6 +451,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
             deleteMessage,
             markMessageAsRead,
             refreshMessages,
+            suppliers,
+            addSupplier,
+            updateSupplier,
+            deleteSupplier,
             isLoaded,
             storageError,
             clearAllData

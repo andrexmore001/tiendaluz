@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
     try {
         // Fetch all data in parallel to minimize wait time
-        const [settingsData, rawProducts, collections, materials, messages, attributes] = await Promise.all([
+        const [settingsData, rawProducts, collections, materials, messages, attributes, suppliers] = await Promise.all([
             prisma.setting.findFirst(),
             prisma.product.findMany({
                 orderBy: {
@@ -42,7 +42,8 @@ export async function GET() {
             }),
             prisma.attribute.findMany({
                 include: { values: true }
-            })
+            }),
+            prisma.supplier.findMany()
         ]);
 
         // 1. Process Settings (Create defaults if missing)
@@ -74,6 +75,7 @@ export async function GET() {
             collections,
             materials,
             attributes,
+            suppliers,
         };
 
         // Only include messages for authenticated admins

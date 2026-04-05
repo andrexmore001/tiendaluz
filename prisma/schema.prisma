@@ -52,11 +52,22 @@ model Product {
   slug        String?     @unique
   isVisible   Boolean     @default(true)
   combineVariantsForTiers Boolean @default(false)
+  costPrice   Float?
+  supplierId  String?
+  supplier    Supplier?   @relation(fields: [supplierId], references: [id])
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   priceTiers  PriceTier[]
   material    Material    @relation(fields: [materialId], references: [id])
   variants    ProductVariant[]
+}
+
+model Supplier {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  contact     String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
 }
 
 model PriceTier {

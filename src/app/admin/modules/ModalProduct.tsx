@@ -30,6 +30,7 @@ interface ModalProductProps {
     materials: any[];
     collections: any[];
     attributes: any[];
+    suppliers: any[];
     handleSubmitProduct: (e: React.FormEvent) => void;
     handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, field: any) => void;
     handleAddTier: () => void;
@@ -54,6 +55,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
     materials,
     collections,
     attributes,
+    suppliers,
     handleSubmitProduct,
     handleFileUpload,
     handleAddTier,
@@ -169,12 +171,25 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                     </select>
                                 </div>
                                 <div className={styles.inputGroup}>
+                                    <label>Proveedor</label>
+                                    <select
+                                        value={formData.supplierId || ''}
+                                        onChange={(e) => setFormData((prev: any) => ({ ...prev, supplierId: e.target.value }))}
+                                    >
+                                        <option value="">Sin proveedor</option>
+                                        {suppliers.map((s: any) => (
+                                            <option key={s.id} value={s.id}>{s.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className={styles.inputGroup}>
                                     <label>Precio Base</label>
                                     <input
                                         type="number"
                                         value={formData.price}
                                         onChange={(e) => setFormData((prev: any) => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
                                         required
+                                        min="0"
                                     />
                                 </div>
                                 <div className={styles.inputGroup}>
@@ -521,6 +536,16 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                     <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0 }}>Sin escalas de precio.</p>
                                 </div>
                             )}
+                            <div className={styles.inputGroup} style={{ marginTop: '1rem' }}>
+                                <label>Costo de Compra (Referencia)</label>
+                                <input
+                                    type="number"
+                                    value={formData.costPrice || 0}
+                                    onChange={(e) => setFormData((prev: any) => ({ ...prev, costPrice: parseFloat(e.target.value) }))}
+                                    placeholder="Tu costo..."
+                                    min="0"
+                                />
+                            </div>
                         </div>
 
                         <div className={styles.modalFooter}>

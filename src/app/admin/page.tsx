@@ -5,13 +5,11 @@ import {
     Package,
     Settings as SettingsIcon,
     Layers,
-    Box,
-    X,
-    Palette,
-    User,
     LogOut,
     FileText,
-    MessageSquare
+    MessageSquare,
+    Truck,
+    User
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import { useSession, signOut } from 'next-auth/react';
@@ -34,6 +32,8 @@ const ModalMaterial = dynamic(() => import('./modules/ModalMaterial'));
 const ModalCollection = dynamic(() => import('./modules/ModalCollection'));
 const ModalAttribute = dynamic(() => import('./modules/ModalAttribute'));
 const ModalTextConfig = dynamic(() => import('./modules/ModalTextConfig'));
+const TabSuppliers = dynamic(() => import('./modules/TabSuppliers'));
+const ModalSupplier = dynamic(() => import('./modules/ModalSupplier'));
 
 export default function AdminPage() {
     const router = useRouter();
@@ -45,7 +45,9 @@ export default function AdminPage() {
         addMaterial, updateMaterial, deleteMaterial,
         attributes,
         addAttribute, updateAttribute, deleteAttribute,
-        messages, markMessageAsRead
+        messages, markMessageAsRead,
+        suppliers,
+        addSupplier, updateSupplier, deleteSupplier
     } = useSettings();
 
     const { data: session, status } = useSession();
@@ -87,8 +89,14 @@ export default function AdminPage() {
         name: '', values: [] as string[]
     });
 
+    const [showSupplierForm, setShowSupplierForm] = useState(false);
+    const [editingSupplier, setEditingSupplier] = useState<any>(null);
+    const [supplierFormData, setSupplierFormData] = useState({
+        name: '', contact: ''
+    });
+
     const [formData, setFormData] = useState({
-        name: '', price: 0, collectionId: collections[0]?.id || 'Todas', description: '',
+        name: '', price: 0, costPrice: 0, supplierId: '', collectionId: collections[0]?.id || 'Todas', description: '',
         image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
         images: [] as any[], width: 4, height: 2, depth: 4,
         materialId: '', baseColor: '#F9F1E7', modelUrl: '',
@@ -154,7 +162,7 @@ export default function AdminPage() {
         setEditingProduct(null);
         setFormData({
             ...formData,
-            name: '', price: 0, collectionId: collections[0]?.id || 'Todas', description: '',
+            name: '', price: 0, costPrice: 0, supplierId: '', collectionId: collections[0]?.id || 'Todas', description: '',
             image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
             materialId: materials[0]?.id || '',
             variants: [],
@@ -169,7 +177,7 @@ export default function AdminPage() {
         const categoryIdToEdit = matchedCollection ? matchedCollection.id : (collections[0]?.id || 'Todas');
 
         setFormData({
-            name: p.name, price: p.price, collectionId: categoryIdToEdit, description: p.description,
+            name: p.name, price: p.price, costPrice: p.costPrice || 0, supplierId: p.supplierId || '', collectionId: categoryIdToEdit, description: p.description,
             image: p.image || '', displayMode: p.displayMode || '3d',
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
             width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
@@ -298,6 +306,13 @@ export default function AdminPage() {
         showToast("Atributo guardado"); setShowAttributeForm(false);
     };
 
+    const handleSubmitSupplier = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newS = { id: editingSupplier ? editingSupplier.id : `sup_${Date.now()}`, ...supplierFormData };
+        if (editingSupplier) updateSupplier(newS as any); else addSupplier(newS as any);
+        showToast("Proveedor guardado"); setShowSupplierForm(false);
+    };
+
     const handleAccountSave = async (e: React.FormEvent) => {
         e.preventDefault();
         const form = e.target as HTMLFormElement;
@@ -346,6 +361,7 @@ export default function AdminPage() {
                     <button className={activeTab === 'collections' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('collections'); setMobileMenuOpen(false); }}><Layers size={20} /><span>Colecciones</span></button>
                     <button className={activeTab === 'settings' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('settings'); setMobileMenuOpen(false); }}><SettingsIcon size={20} /><span>Configuración</span></button>
                     <button className={activeTab === 'materials' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}><Palette size={20} /><span>Materiales</span></button>
+                    <button className={activeTab === 'suppliers' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('suppliers'); setMobileMenuOpen(false); }}><Truck size={20} /><span>Proveedores</span></button>
                     <button className={activeTab === 'attributes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('attributes'); setMobileMenuOpen(false); }}><Layers size={20} /><span>Atributos</span></button>
                     <button className={activeTab === 'quotes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('quotes'); setMobileMenuOpen(false); }}><FileText size={20} /><span>Cotizaciones</span></button>
                     <button className={activeTab === 'messages' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('messages'); setMobileMenuOpen(false); }}>
@@ -377,6 +393,7 @@ export default function AdminPage() {
                     />
                 )}
                 {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'suppliers' && <TabSuppliers suppliers={suppliers} onAdd={() => { setEditingSupplier(null); setSupplierFormData({ name: '', contact: '' }); setShowSupplierForm(true); }} onEdit={s => { setEditingSupplier(s); setSupplierFormData({ name: s.name, contact: s.contact || '' }); setShowSupplierForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteSupplier(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'attributes' && <TabAttributes attributes={attributes} onAdd={() => { setEditingAttribute(null); setAttributeFormData({ name: '', values: [] }); setShowAttributeForm(true); }} onEdit={attr => { setEditingAttribute(attr); setAttributeFormData({ name: attr.name, values: attr.values.map((v:any) => v.value) }); setShowAttributeForm(true); }} onDelete={id => { if(confirm('¿Seguro que deseas eliminar este atributo? (Esto no afectará los productos ya migrados, pero evitará que el atributo se ponga en nuevos productos)')) deleteAttribute(id) }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
@@ -386,7 +403,7 @@ export default function AdminPage() {
             <ModalProduct
                 showProductForm={showProductForm} setShowProductForm={setShowProductForm} editingProduct={editingProduct}
                 formData={formData} setFormData={setFormData} isMobileView={isMobileView} currentStep={currentStep} totalSteps={totalSteps}
-                materials={materials} collections={collections} attributes={attributes}
+                materials={materials} collections={collections} attributes={attributes} suppliers={suppliers}
                 handleSubmitProduct={handleSubmitProduct} handleFileUpload={handleFileUpload}
                 handleAddTier={() => {
                     const lastTier = formData.priceTiers[formData.priceTiers.length - 1];
@@ -404,6 +421,7 @@ export default function AdminPage() {
             <ModalMaterial showMaterialForm={showMaterialForm} setShowMaterialForm={setShowMaterialForm} editingMaterial={editingMaterial} materialFormData={materialFormData} setMaterialFormData={setMaterialFormData} handleSubmitMaterial={handleSubmitMaterial} onFileUpload={handleFileUpload} />
             <ModalCollection showCollectionForm={showCollectionForm} setShowCollectionForm={setShowCollectionForm} editingCollection={editingCollection} collectionFormData={collectionFormData} setCollectionFormData={setCollectionFormData} handleSubmitCollection={handleSubmitCollection} collections={collections} />
             <ModalAttribute showAttributeForm={showAttributeForm} setShowAttributeForm={setShowAttributeForm} editingAttribute={editingAttribute} attributeFormData={attributeFormData} setAttributeFormData={setAttributeFormData} handleSubmitAttribute={handleSubmitAttribute} />
+            <ModalSupplier showSupplierForm={showSupplierForm} setShowSupplierForm={setShowSupplierForm} editingSupplier={editingSupplier} supplierFormData={supplierFormData} setSupplierFormData={setSupplierFormData} handleSubmitSupplier={handleSubmitSupplier} />
             <ModalTextConfig editingImageConfig={editingImageConfig} formData={formData} setEditingImageConfig={setEditingImageConfig} handleConfigChange={handleConfigChange} />
         </div>
     );

@@ -57,7 +57,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const data = await request.json();
-        const { id, images, dimensions, priceTiers, materialId, variants, ...rest } = data;
+        const { id, images, dimensions, priceTiers, materialId, variants, costPrice, supplierId, ...rest } = data;
 
         if (!materialId) {
             return NextResponse.json({ error: 'El ID de material es obligatorio' }, { status: 400 });
@@ -80,6 +80,8 @@ export async function POST(request: Request) {
             isVisible: rest.isVisible !== undefined ? (typeof rest.isVisible === 'boolean' ? rest.isVisible : rest.isVisible === 'true') : true,
             slug: rest.slug || slugify(rest.name),
             combineVariantsForTiers: Boolean(rest.combineVariantsForTiers || false),
+            costPrice: costPrice !== undefined ? Number(costPrice) : null,
+            supplierId: supplierId || null,
         };
 
         const tierOperations = priceTiers?.map((tier: any) => ({

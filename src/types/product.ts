@@ -34,6 +34,8 @@ export interface Product {
     slug?: string;
     description: string;
     collectionId?: string | null;
+    supplierId?: string | null;
+    costPrice?: number;
     image: string;      // Base image for cards
     displayMode?: 'photos' | '3d' | 'both';
     images?: {
@@ -68,5 +70,12 @@ export interface Collection {
     slug?: string;
     description: string;
     parentId?: string | null;
+    createdAt?: string;
+}
+
+export interface Supplier {
+    id: string;
+    name: string;
+    contact?: string | null;
     createdAt?: string;
 }
