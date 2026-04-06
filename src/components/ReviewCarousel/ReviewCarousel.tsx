@@ -21,9 +21,9 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
 
     // Combina la Portada, las Reseñas y el CTA Final en un solo array circular
     const items = [
-        { type: 'cover' },
+        { type: 'cover', url: '' },
         ...reviews.map(url => ({ type: 'review', url })),
-        { type: 'cta' }
+        { type: 'cta', url: '' }
     ];
 
     // Rotación automática de las frases flotantes
@@ -113,7 +113,7 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
 
                             {item.type === 'review' && (
                                 <img 
-                                    src={getOptimizedUrl(item.url!, 600) || item.url} 
+                                    src={getOptimizedUrl(item.url, 600) || item.url} 
                                     alt={`Reseña ${index}`} 
                                     className={styles.reviewImage}
                                     loading="lazy"
