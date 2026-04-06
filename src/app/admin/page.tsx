@@ -215,7 +215,7 @@ export default function AdminPage() {
         showToast("Subiendo imagen...");
 
         try {
-            if (field === 'heroImages' || field === 'gallery') {
+            if (field === 'heroImages' || field === 'reviews' || field === 'gallery') {
                 const uploadPromises = Array.from(files).map(async (file) => {
                     const formData = new FormData();
                     formData.append('file', file);
@@ -229,6 +229,8 @@ export default function AdminPage() {
 
                 if (field === 'heroImages') {
                     setLocalSettings(prev => ({ ...prev, heroImages: [...(prev.heroImages || []), ...validUrls] }));
+                } else if (field === 'reviews') {
+                    setLocalSettings(prev => ({ ...prev, reviews: [...(prev.reviews || []), ...validUrls] }));
                 } else {
                     setFormData(prev => ({
                         ...prev,
