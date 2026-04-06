@@ -234,6 +234,8 @@
 
     .info h3 {
         font-size: 0.8rem;
+        font-weight: 400; /* Quitado el bold */
+        margin-top: 0;
         margin-bottom: 0.1rem;
         line-height: 1.1;
         display: -webkit-box;
@@ -259,13 +261,11 @@
 
     .imageBox {
         height: 120px;
+        margin-bottom: 0; /* Sin espacio inferior */
     }
 
     .category {
-        font-size: 0.5rem;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.1rem;
-        opacity: 0.8;
+        display: none; /* Ocultando la categoría en móvil */
     }
 }
 
