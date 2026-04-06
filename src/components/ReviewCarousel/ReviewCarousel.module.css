@@ -13,7 +13,7 @@
 
 .header {
     text-align: center;
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
 }
 
 .title {
@@ -23,120 +23,186 @@
     font-weight: 700;
 }
 
-.subtitle {
-    color: var(--text-muted);
-    font-size: 1.1rem;
-    max-width: 600px;
-    margin: 0 auto;
-}
-
+/* 3D Flow container */
 .carouselContainer {
     position: relative;
-    padding: 1rem 0;
-}
-
-.carouselTrack {
     display: flex;
-    gap: 1rem;
-    transition: transform 0.5s ease-in-out;
-    cursor: grab;
-    user-select: none;
+    justify-content: center;
+    align-items: center;
+    height: 600px; /* iPhone height + some margin */
+    perspective: 1200px; /* Profundidad 3D */
+    width: 100%;
+    margin: 0 auto;
+    overflow: visible;
 }
 
-.carouselTrack:active {
-    cursor: grabbing;
+/* The static iPhone frame that sits on top */
+.iphoneFrame {
+    position: absolute;
+    width: 300px;
+    height: 620px;
+    border-radius: 44px;
+    border: 14px solid #1a1a1a; /* Borde negro estilo iPhone */
+    background-color: transparent;
+    z-index: 50; /* Sits ABOVE the cards to enframe them */
+    pointer-events: none; /* Let touches pass through to cards */
+    box-shadow: 
+        inset 0 0 0 2px #333, /* Inner metal ring */
+        0 25px 50px rgba(0,0,0,0.15), /* Outer Drop shadow */
+        0 0 0 1px #444; /* Outer metal edge */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
 }
 
-.reviewCard {
-    flex: 0 0 170px;
+/* Dynamic Island */
+.dynamicIsland {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90px;
+    height: 26px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 51;
+}
+
+/* Sensor/Camera inside island */
+.dynamicIsland::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background: #111;
+    border-radius: 50%;
+    box-shadow: inset -1px -1px 2px rgba(255,255,255,0.2);
+}
+
+/* The actual Card container that holds content */
+.card {
+    position: absolute;
+    width: 272px; /* Inner width of iPhone frame: 300 - 28 */
+    height: 592px; /* Inner height: 620 - 28 */
+    border-radius: 32px;
     background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid #f1f5f9;
+    /* transition for smooth 3D movement */
+    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden; /* Crop images perfectly rounded inside */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    will-change: transform, opacity;
 }
 
-.coverCard {
-    flex: 0 0 240px;
+/* Positions for 3D Flow */
+.active {
+    transform: translateX(0) scale(1) translateZ(0);
+    z-index: 40; /* Right below the iPhone frame (50) */
+    opacity: 1;
+    filter: blur(0px);
+}
+
+.prev {
+    transform: translateX(-60%) scale(0.8) translateZ(-100px) rotateY(15deg);
+    z-index: 30;
+    opacity: 0.6;
+    filter: blur(2px) brightness(0.8);
+}
+
+.next {
+    transform: translateX(60%) scale(0.8) translateZ(-100px) rotateY(-15deg);
+    z-index: 30;
+    opacity: 0.6;
+    filter: blur(2px) brightness(0.8);
+}
+
+.prevHidden {
+    transform: translateX(-100%) scale(0.6) translateZ(-200px);
+    z-index: 20;
+    opacity: 0;
+}
+
+.nextHidden {
+    transform: translateX(100%) scale(0.6) translateZ(-200px);
+    z-index: 20;
+    opacity: 0;
+}
+
+/* Review Image */
+.reviewImage {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+/* Content specific slides */
+.coverSlide {
     background: linear-gradient(135deg, var(--primary) 0%, #ff8a80 100%);
-    border-radius: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem;
     color: white;
+    padding: 2rem;
     text-align: center;
-    box-shadow: 0 12px 32px rgba(232, 162, 162, 0.2);
-}
-
-.coverCard h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.ctaCard {
-    flex: 0 0 220px;
-    background: white;
-    border: 2px dashed var(--primary);
-    border-radius: 16px;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 1.5rem;
-    text-align: center;
-    gap: 1rem;
-    transition: all 0.3s ease;
 }
 
-.ctaCard:hover {
-    background: #fffafa;
-    transform: scale(1.02);
+.ctaSlide {
+    background: white;
+    border: 4px dashed var(--primary);
+    padding: 2rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
 }
 
 .ctaBtn {
     background: var(--primary);
     color: white;
-    padding: 0.8rem 1.2rem;
+    padding: 1rem 1.5rem;
     border-radius: 50px;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 1rem;
     text-decoration: none;
-    box-shadow: 0 4px 12px rgba(232, 162, 162, 0.3);
-    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(232, 162, 162, 0.4);
+    margin-top: 1rem;
+    display: inline-block;
+    transition: transform 0.2s;
 }
 
 .ctaBtn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(232, 162, 162, 0.4);
+    transform: scale(1.05);
 }
 
-.reviewCard:hover {
-    transform: translateY(-5px);
-}
-
-.reviewImage {
-    width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
-}
-
+/* Controls */
 .controls {
     display: flex;
     justify-content: center;
-    gap: 1rem;
-    margin-top: 3rem;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    position: relative;
+    z-index: 60; /* Above the 3d elements */
 }
 
 .controlBtn {
     background: white;
     border: 1px solid #e2e8f0;
-    width: 45px;
-    height: 45px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -144,37 +210,14 @@
     cursor: pointer;
     transition: all 0.2s ease;
     color: var(--text-main);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
 }
 
 .controlBtn:hover {
     background: var(--primary);
     color: white;
     border-color: var(--primary);
-    box-shadow: 0 5px 15px rgba(232, 162, 162, 0.3);
-}
-
-.controlBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-@media (max-width: 768px) {
-    .reviewCard {
-        flex: 0 0 140px;
-    }
-    .coverCard {
-        flex: 0 0 180px;
-        padding: 1rem;
-    }
-    .coverCard h3 {
-        font-size: 1.1rem;
-    }
-    .ctaCard {
-        flex: 0 0 180px;
-    }
-    .title {
-        font-size: 1.8rem;
-    }
+    transform: scale(1.1);
 }
 
 .floatingPhrases {
@@ -201,4 +244,19 @@
 .phraseActive {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* Responsividad móvil */
+@media (max-width: 768px) {
+    .carouselContainer {
+        height: 500px;
+    }
+    .iphoneFrame { 
+        transform: translate(-50%, -50%) scale(0.85); 
+    }
+    .active { transform: translateX(0) scale(0.85) translateZ(0); }
+    .prev { transform: translateX(-40%) scale(0.65) translateZ(-100px) rotateY(10deg); }
+    .next { transform: translateX(40%) scale(0.65) translateZ(-100px) rotateY(-10deg); }
+    .prevHidden { transform: translateX(-80%) scale(0.5); opacity: 0; }
+    .nextHidden { transform: translateX(80%) scale(0.5); opacity: 0; }
 }

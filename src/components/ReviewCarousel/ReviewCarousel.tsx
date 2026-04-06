@@ -1,6 +1,6 @@
 "use client";
-import React, { useRef, useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Quote, ShoppingCart, Star } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, ShoppingCart, Star } from 'lucide-react';
 import styles from './ReviewCarousel.module.css';
 import { getOptimizedUrl } from '@/lib/cloudinary';
 import Link from 'next/link';
@@ -16,26 +16,17 @@ const PHRASES = [
 ];
 
 const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(false);
+    const [activeIndex, setActiveIndex] = useState(0);
     const [activePhraseIndex, setActivePhraseIndex] = useState(0);
 
-    const checkScroll = () => {
-        if (scrollRef.current) {
-            const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-            setCanScrollLeft(scrollLeft > 0);
-            setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
-        }
-    };
+    // Combina la Portada, las Reseñas y el CTA Final en un solo array circular
+    const items = [
+        { type: 'cover' },
+        ...reviews.map(url => ({ type: 'review', url })),
+        { type: 'cta' }
+    ];
 
-    useEffect(() => {
-        checkScroll();
-        window.addEventListener('resize', checkScroll);
-        return () => window.removeEventListener('resize', checkScroll);
-    }, [reviews]);
-
-    // Rotación de frases
+    // Rotación automática de las frases flotantes
     useEffect(() => {
         const interval = setInterval(() => {
             setActivePhraseIndex((prev) => (prev + 1) % PHRASES.length);
@@ -43,35 +34,39 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
         return () => clearInterval(interval);
     }, []);
 
+    // Autoplay del carrusel 3D
     useEffect(() => {
         const interval = setInterval(() => {
-            if (scrollRef.current) {
-                const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-                if (scrollLeft >= scrollWidth - clientWidth - 10) {
-                    scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    scroll('right');
-                }
-            }
-        }, 5000); // Un poco más lento para permitir lectura
+            handleNext();
+        }, 5000); // 5 segundos para que de tiempo a leer
         return () => clearInterval(interval);
-    }, [reviews]);
+    }, [activeIndex, items.length]);
 
-    const scroll = (direction: 'left' | 'right') => {
-        if (scrollRef.current) {
-            const isMobile = window.innerWidth <= 768;
-            const scrollAmount = isMobile ? 160 : 200;
-            
-            const newScrollLeft = direction === 'left' 
-                ? scrollRef.current.scrollLeft - scrollAmount 
-                : scrollRef.current.scrollLeft + scrollAmount;
-            
-            scrollRef.current.scrollTo({
-                left: newScrollLeft,
-                behavior: 'smooth'
-            });
-            
-            setTimeout(checkScroll, 500);
+    const handleNext = () => {
+        setActiveIndex((prev) => (prev + 1) % items.length);
+    };
+
+    const handlePrev = () => {
+        setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+    };
+
+    const handleCardClick = (index: number) => {
+        setActiveIndex(index);
+    };
+
+    const getCardClass = (index: number) => {
+        if (index === activeIndex) return styles.active;
+        if (index === (activeIndex - 1 + items.length) % items.length) return styles.prev;
+        if (index === (activeIndex + 1) % items.length) return styles.next;
+        
+        // Lógica de tarjetas lejanas ocultas
+        const diffForward = (index - activeIndex + items.length) % items.length;
+        const diffBackward = (activeIndex - index + items.length) % items.length;
+        
+        if (diffForward < diffBackward) {
+            return styles.nextHidden;
+        } else {
+            return styles.prevHidden;
         }
     };
 
@@ -95,60 +90,66 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
                 </div>
 
                 <div className={styles.carouselContainer}>
-                    <div 
-                        className={styles.carouselTrack} 
-                        ref={scrollRef} 
-                        onScroll={checkScroll}
-                        style={{ overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
-                        {/* Slide de Portada */}
-                        <div className={styles.coverCard}>
-                            <Star fill="white" size={32} style={{ marginBottom: '1rem' }} />
-                            <h3>Nuestros clientes lo confirman 👇</h3>
-                        </div>
+                    {/* El Mockup de iPhone estático en el centro */}
+                    <div className={styles.iphoneFrame}>
+                        <div className={styles.dynamicIsland}></div>
+                    </div>
 
-                        {/* Slides de Reseñas */}
-                        {reviews.map((url, index) => (
-                            <div key={index} className={styles.reviewCard}>
+                    {/* Las tarjetas 3D flotantes */}
+                    {items.map((item, index) => (
+                        <div 
+                            key={index} 
+                            className={`${styles.card} ${getCardClass(index)}`}
+                            onClick={() => handleCardClick(index)}
+                        >
+                            {item.type === 'cover' && (
+                                <div className={styles.coverSlide}>
+                                    <Star fill="white" size={48} style={{ marginBottom: '1.5rem' }} />
+                                    <h3 style={{ fontSize: '1.8rem', fontWeight: 700, lineHeight: 1.2 }}>
+                                        Nuestros clientes lo confirman 👇
+                                    </h3>
+                                </div>
+                            )}
+
+                            {item.type === 'review' && (
                                 <img 
-                                    src={getOptimizedUrl(url, 400) || url} 
-                                    alt={`Reseña ${index + 1}`} 
+                                    src={getOptimizedUrl(item.url!, 600) || item.url} 
+                                    alt={`Reseña ${index}`} 
                                     className={styles.reviewImage}
                                     loading="lazy"
                                 />
-                            </div>
-                        ))}
+                            )}
 
-                        {/* Slide de CTA Final */}
-                        <div className={styles.ctaCard}>
-                            <ShoppingCart size={40} color="var(--primary)" />
-                            <p style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>
-                                Vive la experiencia Artessana
-                            </p>
-                            <Link href="/productos" className={styles.ctaBtn}>
-                                🛒 Haz tu pedido hoy
-                            </Link>
+                            {item.type === 'cta' && (
+                                <div className={styles.ctaSlide}>
+                                    <ShoppingCart size={48} color="var(--primary)" style={{ margin: '0 auto' }} />
+                                    <p style={{ fontWeight: 700, fontSize: '1.4rem', color: 'var(--text-main)', marginTop: '1rem', lineHeight: 1.2 }}>
+                                        Vive la experiencia Artessana
+                                    </p>
+                                    <Link href="/productos" className={styles.ctaBtn}>
+                                        🛒 Haz tu pedido hoy
+                                    </Link>
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    ))}
+                </div>
 
-                    <div className={styles.controls}>
-                        <button 
-                            className={styles.controlBtn} 
-                            onClick={() => scroll('left')} 
-                            disabled={!canScrollLeft}
-                            aria-label="Anterior"
-                        >
-                            <ChevronLeft size={24} />
-                        </button>
-                        <button 
-                            className={styles.controlBtn} 
-                            onClick={() => scroll('right')} 
-                            disabled={!canScrollRight}
-                            aria-label="Siguiente"
-                        >
-                            <ChevronRight size={24} />
-                        </button>
-                    </div>
+                <div className={styles.controls}>
+                    <button 
+                        className={styles.controlBtn} 
+                        onClick={handlePrev} 
+                        aria-label="Anterior"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                        className={styles.controlBtn} 
+                        onClick={handleNext} 
+                        aria-label="Siguiente"
+                    >
+                        <ChevronRight size={24} />
+                    </button>
                 </div>
             </div>
         </section>
