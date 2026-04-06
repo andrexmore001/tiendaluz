@@ -226,6 +226,37 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 0.8rem;
     }
+
+    .info {
+        padding: 0.8rem;
+    }
+
+    .info h3 {
+        font-size: 1rem;
+        margin-bottom: 0.4rem;
+        line-height: 1.2;
+    }
+
+    .price {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .productBtn {
+        padding: 0.6rem 1rem;
+        font-size: 0.75rem;
+        width: 100%;
+        border-radius: 8px;
+    }
+
+    .imageBox {
+        height: 160px;
+    }
+
+    .category {
+        font-size: 0.6rem;
+        letter-spacing: 1px;
+    }
 }
 
 .card {
