@@ -36,13 +36,13 @@
   }
 
   .productImage img {
-    object-fit: contain; /* Para que se vea completo el producto, como el de referencia */
+    object-fit: cover; /* Cambiado a cover para que la imagen llene la caja y no deje franjas blancas */
     display: block;
-    transform: none; /* Quitamos zoom forzado */
+    transform: none;
   }
 
   .productInfo {
-    padding: 0.8rem 0.8rem 0.2rem 0.8rem;
+    padding: 0.4rem 0.8rem 0.2rem 0.8rem; /* Padding superior aún más pequeño */
   }
 
   .cardFooter {
@@ -125,11 +125,11 @@
 .productImage img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover; /* Llenar la caja sin dejar espacios */
 }
 
 .productInfo {
-  padding: 1.5rem 1.5rem 0.5rem 1.5rem;
+  padding: 1rem 1.5rem 0.5rem 1.5rem; /* Padding superior reducido en PC */
 }
 
 .productInfo h3 {
