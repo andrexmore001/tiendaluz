@@ -9,7 +9,7 @@
   gap: 1.5rem;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .productGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.5rem;

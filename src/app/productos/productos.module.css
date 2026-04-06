@@ -217,13 +217,6 @@
 @media (max-width: 768px) {
     .grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .grid {
-        grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
         padding: 0 0.5rem;
     }
@@ -265,7 +258,7 @@
     }
 
     .category {
-        display: none; /* Ocultando la categoría en móvil */
+        display: none !important; /* Ocultando la categoría en móvil de manera forzada */
     }
 }
 
