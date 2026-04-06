@@ -115,6 +115,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             tickerVisible: resSettings.tickerVisible !== undefined ? resSettings.tickerVisible : false,
                             tickerSpeed: resSettings.tickerSpeed || 30,
                             tickerColor: resSettings.tickerColor || '#E8A2A2',
+                            reviews: Array.isArray(resSettings.reviews) ? resSettings.reviews : [],
+                            homepageLayout: Array.isArray(resSettings.homepageLayout) ? resSettings.homepageLayout : ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
                             updatedAt: resSettings.updatedAt
                         });
                     }

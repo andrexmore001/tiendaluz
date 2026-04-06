@@ -58,6 +58,8 @@ export async function POST(request: Request) {
                 tickerVisible: rest?.tickerVisible,
                 tickerSpeed: rest?.tickerSpeed,
                 tickerColor: rest?.tickerColor,
+                reviews: rest?.reviews || [],
+                homepageLayout: rest?.homepageLayout || ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
             },
             create: {
                 id: 'site-settings',
@@ -81,6 +83,8 @@ export async function POST(request: Request) {
                 tickerVisible: rest?.tickerVisible,
                 tickerSpeed: rest?.tickerSpeed,
                 tickerColor: rest?.tickerColor,
+                reviews: rest?.reviews || [],
+                homepageLayout: rest?.homepageLayout || ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
             },
         });
 

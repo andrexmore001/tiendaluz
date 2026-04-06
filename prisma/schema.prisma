@@ -30,6 +30,8 @@ model Setting {
   tickerVisible   Boolean  @default(false)
   tickerSpeed     Int      @default(30)
   tickerColor     String   @default("#E8A2A2")
+  reviews         Json?
+  homepageLayout  Json?
   updatedAt       DateTime @updatedAt
 }
 

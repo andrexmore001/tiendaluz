@@ -459,6 +459,108 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                     </div>
                 </section>
 
+                {/* Reviews Configuration */}
+                <section className={styles.settingsSection}>
+                    <h3><Plus size={20} /> Galería de Reseñas (Pantallazos)</h3>
+                    <div className={styles.formStack}>
+                        <div className={styles.inputGroup}>
+                            <label>Imágenes de Reseñas de Clientes</label>
+                            <div className={styles.heroImageGrid} style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
+                                {(localSettings.reviews || []).map((img, idx) => (
+                                    <div key={idx} className={styles.heroImageItem} style={{ height: '200px' }}>
+                                        <img src={img || '/placeholder.png'} alt={`Reseña ${idx + 1}`} style={{ height: '100%', objectFit: 'contain' }} />
+                                        <button
+                                            type="button"
+                                            className={styles.removeHeroBtn}
+                                            onClick={() => {
+                                                const newReviews = [...(localSettings.reviews || [])];
+                                                newReviews.splice(idx, 1);
+                                                onChange('reviews', newReviews);
+                                            }}
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                                <div className={styles.uploadBox} style={{ height: '200px', minWidth: '150px' }}>
+                                    <div className={styles.emptyUpload}>
+                                        <Plus size={24} />
+                                        <span>Subir Reseña</span>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        onChange={(e) => onFileUpload(e, 'reviews')}
+                                    />
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem' }}>
+                                Sube aquí los pantallazos de conversaciones o comentarios de tus clientes.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Homepage Layout Configuration */}
+                <section className={styles.settingsSection}>
+                    <h3><Plus size={20} /> Organización de la Página de Inicio (Home)</h3>
+                    <div className={styles.formStack}>
+                        <div className={styles.inputGroup}>
+                            <label>Orden de Bloques</label>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                {(localSettings.homepageLayout || ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews']).map((section, idx, layout) => {
+                                    const sectionNames: Record<string, string> = {
+                                        'categories': 'Carrusel de Categorías',
+                                        'hero': 'Portada Principal (Hero)',
+                                        'split-hero': 'Portada Dividida (Split Hero)',
+                                        'features': 'Características (Features)',
+                                        'products': 'Productos Destacados',
+                                        'reviews': 'Carrusel de Reseñas'
+                                    };
+                                    
+                                    const handleMove = (direction: 'up' | 'down') => {
+                                        const newLayout = [...layout];
+                                        const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+                                        if (newIdx >= 0 && newIdx < newLayout.length) {
+                                            [newLayout[idx], newLayout[newIdx]] = [newLayout[newIdx], newLayout[idx]];
+                                            onChange('homepageLayout', newLayout);
+                                        }
+                                    };
+
+                                    return (
+                                        <div key={section} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'white', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                                <span style={{ fontWeight: 600, color: 'var(--primary)', minWidth: '25px' }}>{idx + 1}.</span>
+                                                <span style={{ fontSize: '0.9rem', color: '#1e293b' }}>{sectionNames[section] || section}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button 
+                                                    onClick={() => handleMove('up')} 
+                                                    disabled={idx === 0}
+                                                    style={{ padding: '0.3rem', background: '#f8fafc', border: '1px solid #e2e8f0', cursor: 'pointer', borderRadius: '4px' }}
+                                                >
+                                                    ↑
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleMove('down')} 
+                                                    disabled={idx === layout.length - 1}
+                                                    style={{ padding: '0.3rem', background: '#f8fafc', border: '1px solid #e2e8f0', cursor: 'pointer', borderRadius: '4px' }}
+                                                >
+                                                    ↓
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem' }}>
+                                Usa las flechas para cambiar el orden en que aparecen las secciones en tu página de inicio.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Info */}
                 <section className={styles.settingsSection}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -26,6 +26,8 @@ export interface SiteSettings {
     tickerVisible?: boolean;
     tickerSpeed?: number;
     tickerColor?: string;
+    reviews?: string[];
+    homepageLayout?: string[];
     updatedAt?: string;
 }
 
@@ -51,7 +53,9 @@ export let siteSettings: SiteSettings = {
     tickerMessage: '',
     tickerVisible: false,
     tickerSpeed: 30,
-    tickerColor: '#E8A2A2'
+    tickerColor: '#E8A2A2',
+    reviews: [],
+    homepageLayout: ['categories', 'hero', 'split-hero', 'features', 'products']
 };
 
 export const collections: Collection[] = [];

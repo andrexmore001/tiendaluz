@@ -1,6 +1,11 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { NextResponse } from 'next/server';
 
+// Configure Cloudinary only for development to avoid SSL certificate issues on some local machines
+if (process.env.NODE_ENV === 'development') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
+
 // Configure Cloudinary
 cloudinary.config({
     cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
