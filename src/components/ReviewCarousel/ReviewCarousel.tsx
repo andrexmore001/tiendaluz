@@ -123,7 +123,7 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
                         <div className={styles.ctaCard}>
                             <ShoppingCart size={40} color="var(--primary)" />
                             <p style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>
-                                Vive la experiencia Tienda Luz
+                                Vive la experiencia Artessana
                             </p>
                             <Link href="/productos" className={styles.ctaBtn}>
                                 🛒 Haz tu pedido hoy
