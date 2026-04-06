@@ -11,12 +11,36 @@
 
 @media (max-width: 640px) {
   .productGrid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
   }
 
   .productCard {
     max-width: 100%;
+    padding: 0.6rem;
+    margin: 0;
+  }
+
+  .productImage {
+    height: 140px;
+    margin-bottom: 0.5rem;
+  }
+
+  .productInfo h3 {
+    font-size: 0.95rem;
+    line-height: 1.2;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    height: 2.4em;
+    margin-bottom: 0.2rem;
+  }
+
+  .price {
+    font-size: 0.95rem;
+    margin-bottom: 0.6rem;
   }
 }
 
