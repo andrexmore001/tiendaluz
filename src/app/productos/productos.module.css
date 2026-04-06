@@ -235,9 +235,9 @@
     }
 
     .info h3 {
-        font-size: 0.8rem;
-        font-weight: 400;
-        margin-top: 0;
+        font-size: 0.65rem; /* Reducción drástica del tamaño de la letra */
+        font-weight: 500;
+        margin-top: 0.2rem;
         margin-bottom: 0.1rem;
         line-height: 1.1;
         display: -webkit-box;
@@ -249,7 +249,7 @@
     }
 
     .price {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         margin-bottom: 0.4rem;
         font-weight: 700;
     }
@@ -264,19 +264,19 @@
     }
 
     .imageBox {
-        aspect-ratio: 1 / 1;
+        aspect-ratio: 4 / 3; /* Una caja más "plana" recorta automáticamente el espacio blanco de arriba y abajo */
         height: auto;
         width: 100%;
         margin-bottom: 0;
-        background: #fdfdfd;
-        display: flex; /* Flexbox elimina márgenes fantasma */
-        align-items: center;
-        justify-content: center;
+        background: transparent;
+        display: block; /* Quitado el flexbox para dejar que la imagen ocupe todo nativamente */
+        overflow: hidden; /* Asegura que el zoom no se salga de la caja */
     }
 
     .imageBox img {
-        object-fit: cover;
-        display: block; /* Elimina espacio descendente clásico de imágenes HTML */
+        object-fit: cover; /* Cubre toda la caja */
+        display: block;
+        transform: scale(1.15); /* Este "zoom" de 15% recorta el espacio vacío que viene "pegado" dentro de las fotos originales */
     }
 
 

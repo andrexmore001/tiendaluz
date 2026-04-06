@@ -26,19 +26,19 @@
   }
 
   .productImage {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     height: auto;
     width: 100%;
     margin-bottom: 0;
-    background: #fdfdfd;
-    display: flex; /* Flexbox para limpiar márgenes */
-    align-items: center;
-    justify-content: center;
+    background: transparent;
+    display: block;
+    overflow: hidden;
   }
 
   .productImage img {
     object-fit: cover;
-    display: block; /* Elimina margen descendente */
+    display: block;
+    transform: scale(1.15); /* Recorta espacio blanco empotrado en la imagen original */
   }
 
   .productInfo {
@@ -50,9 +50,9 @@
   }
 
   .productInfo h3 {
-    font-size: 0.8rem;
-    font-weight: 400;
-    margin-top: 0;
+    font-size: 0.65rem; /* Letra ultra pequeña */
+    font-weight: 500;
+    margin-top: 0.2rem;
     line-height: 1.1;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -64,7 +64,7 @@
   }
 
   .price {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     margin-bottom: 0.4rem;
     font-weight: 700;
   }
