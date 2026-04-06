@@ -225,6 +225,10 @@
         padding: 0 0.4rem 0.4rem 0.4rem; /* Sin padding arriba para pegar al borde de la imagen */
     }
 
+    .cardFooter {
+        padding: 0 0.4rem 0.4rem 0.4rem;
+    }
+
     .info h3 {
         font-size: 0.8rem;
         font-weight: 400;
@@ -283,6 +287,14 @@
     border: 1px solid #f8f8f8;
     max-width: 350px;
     margin: 0 auto;
+}
+
+.cardFooter {
+    padding: 0 1.5rem 1.5rem;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .card:hover {

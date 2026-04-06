@@ -43,6 +43,10 @@
     padding: 0 0.4rem 0.4rem 0.4rem; /* Sin padding arriba */
   }
 
+  .cardFooter {
+    padding: 0 0.4rem 0.4rem 0.4rem;
+  }
+
   .productInfo h3 {
     font-size: 0.8rem;
     font-weight: 400;
@@ -80,6 +84,14 @@
   padding: 1rem;
   max-width: 400px;
   margin: 0 auto;
+}
+
+.cardFooter {
+  padding: 0 1rem 1rem;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .moreActions {

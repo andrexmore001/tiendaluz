@@ -218,7 +218,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                                 </div>
                                             </div>
                                         </Link>
-                                        <div style={{ padding: '0 1.5rem 1.5rem', marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                        <div className={styles.cardFooter}>
                                             {qtyInCart > 0 && (
                                                 <div style={{ textAlign: 'center', padding: '0.4rem', background: '#f0fdf4', color: '#166534', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, border: '1px solid #dcfce3' }}>
                                                     Tienes {qtyInCart} en tu cesta
@@ -228,7 +228,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                                 <Link 
                                                     href={`/personalizar/${product.slug || product.id}`}
                                                     className={`${styles.productBtn} btn-primary`}
-                                                    style={{ textAlign: 'center', display: 'block', width: '100%', border: 'none', padding: '0.8rem', borderRadius: '8px', textDecoration: 'none', background: 'var(--primary)', color: 'white', fontWeight: 600 }}
+                                                    style={{ textAlign: 'center', display: 'block', border: 'none', textDecoration: 'none', background: 'var(--primary)', color: 'white', fontWeight: 600 }}
                                                 >
                                                     Elegir Variante
                                                 </Link>
@@ -236,14 +236,14 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                                                     {qtyInCart > 0 ? (
                                                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1, background: '#f9f9f9', padding: '0.5rem', borderRadius: '8px', border: '1px solid #eee' }}>
-                                                            <button onClick={handleDecrease} disabled={!baseCartItem} style={{ padding: '0.2rem 0.8rem', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: baseCartItem ? 'pointer' : 'not-allowed' }}>-</button>
+                                                            <button onClick={handleDecrease} disabled={!baseCartItem} style={{ padding: '0.2rem 0.5rem', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: baseCartItem ? 'pointer' : 'not-allowed' }}>-</button>
                                                             <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Añadir</span>
-                                                            <button onClick={handleIncrease} style={{ padding: '0.2rem 0.8rem', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}>+</button>
+                                                            <button onClick={handleIncrease} style={{ padding: '0.2rem 0.5rem', background: 'white', border: '1px solid #ddd', borderRadius: '4px', cursor: 'pointer' }}>+</button>
                                                         </div>
                                                     ) : (
                                                         <button 
                                                             className={`${styles.productBtn} btn-primary`}
-                                                            style={{ flex: 1, border: 'none', cursor: 'pointer', padding: '0.8rem', borderRadius: '8px', background: 'var(--primary)', color: 'white', fontWeight: 600 }}
+                                                            style={{ flex: 1, border: 'none', cursor: 'pointer', background: 'var(--primary)', color: 'white', fontWeight: 600 }}
                                                             onClick={(e) => {
                                                                 e.preventDefault();
                                                                 addToCart({ productId: product.id, name: product.name, image: getOptimizedUrl(product.image, 150) || '/placeholder.png', quantity: 1, unitPrice: product.price });
