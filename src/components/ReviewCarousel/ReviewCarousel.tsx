@@ -38,7 +38,7 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
     useEffect(() => {
         const interval = setInterval(() => {
             handleNext();
-        }, 5000); // 5 segundos para que de tiempo a leer
+        }, 30000); // 30 segundos de espera entre cada reseña
         return () => clearInterval(interval);
     }, [activeIndex, items.length]);
 
