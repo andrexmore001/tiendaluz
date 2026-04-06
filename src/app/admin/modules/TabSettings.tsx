@@ -465,10 +465,10 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                     <div className={styles.formStack}>
                         <div className={styles.inputGroup}>
                             <label>Imágenes de Reseñas de Clientes</label>
-                            <div className={styles.heroImageGrid} style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '0.8rem' }}>
+                            <div className={styles.heroImageGrid}>
                                 {(localSettings.reviews || []).map((img, idx) => (
-                                    <div key={idx} className={styles.heroImageItem} style={{ height: '120px' }}>
-                                        <img src={img || '/placeholder.png'} alt={`Reseña ${idx + 1}`} style={{ height: '100%', objectFit: 'contain', borderRadius: '8px' }} />
+                                    <div key={idx} className={styles.heroImageItem}>
+                                        <img src={img || '/placeholder.png'} alt={`Reseña ${idx + 1}`} />
                                         <button
                                             type="button"
                                             className={styles.removeHeroBtn}
