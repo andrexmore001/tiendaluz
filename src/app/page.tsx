@@ -45,7 +45,7 @@ export default function Home() {
             <div className={styles.productGrid}>
               {[...products]
                 .filter(p => p.isVisible !== false)
-                .slice(0, 4).map(product => {
+                .slice(0, 6).map(product => {
                 const qtyInCart = getProductQuantity(product.id);
                 const baseCartItem = cartItems.find(i => i.productId === product.id && !i.customText);
 
@@ -143,7 +143,7 @@ export default function Home() {
               })}
             </div>
 
-            {products.length > 4 && (
+            {products.length > 6 && (
               <div className={styles.moreActions}>
                 <Link href="/productos" className="btn-secondary">
                   Ver Todos los Productos
