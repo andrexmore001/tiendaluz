@@ -36,7 +36,8 @@
   }
 
   .productImage img {
-    object-fit: cover; /* Cambiado a cover para que la imagen llene la caja y no deje franjas blancas */
+    object-fit: contain; /* Ajusta sin recortar */
+    object-position: bottom; /* Ancla la imagen abajo para eliminar espacio sobre el texto */
     display: block;
     transform: none;
   }
@@ -125,7 +126,8 @@
 .productImage img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Llenar la caja sin dejar espacios */
+  object-fit: contain;
+  object-position: bottom;
 }
 
 .productInfo {
