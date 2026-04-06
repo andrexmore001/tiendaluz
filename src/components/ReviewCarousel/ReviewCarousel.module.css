@@ -8,7 +8,7 @@
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 1rem;
 }
 
 .header {
@@ -48,13 +48,70 @@
 }
 
 .reviewCard {
-    flex: 0 0 210px;
+    flex: 0 0 170px;
     background: white;
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid #f1f5f9;
+}
+
+.coverCard {
+    flex: 0 0 240px;
+    background: linear-gradient(135deg, var(--primary) 0%, #ff8a80 100%);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    color: white;
+    text-align: center;
+    box-shadow: 0 12px 32px rgba(232, 162, 162, 0.2);
+}
+
+.coverCard h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.ctaCard {
+    flex: 0 0 220px;
+    background: white;
+    border: 2px dashed var(--primary);
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    text-align: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.ctaCard:hover {
+    background: #fffafa;
+    transform: scale(1.02);
+}
+
+.ctaBtn {
+    background: var(--primary);
+    color: white;
+    padding: 0.8rem 1.2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(232, 162, 162, 0.3);
+    transition: all 0.3s ease;
+}
+
+.ctaBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(232, 162, 162, 0.4);
 }
 
 .reviewCard:hover {
@@ -103,9 +160,45 @@
 
 @media (max-width: 768px) {
     .reviewCard {
-        flex: 0 0 160px;
+        flex: 0 0 140px;
+    }
+    .coverCard {
+        flex: 0 0 180px;
+        padding: 1rem;
+    }
+    .coverCard h3 {
+        font-size: 1.1rem;
+    }
+    .ctaCard {
+        flex: 0 0 180px;
     }
     .title {
-        font-size: 2rem;
+        font-size: 1.8rem;
     }
+}
+
+.floatingPhrases {
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.phrase {
+    position: absolute;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 1rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+    white-space: nowrap;
+}
+
+.phraseActive {
+    opacity: 1;
+    transform: translateY(0);
 }
