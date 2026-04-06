@@ -216,9 +216,14 @@
 
 @media (max-width: 768px) {
     .grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr)); /* Evita que las columnas se expandan por su contenido */
         gap: 0.5rem;
         padding: 0 0.5rem;
+    }
+
+    .card {
+        width: 100%;
+        min-width: 0; /* Previene desbordamiento en Flexbox/Grid */
     }
 
     .info {
@@ -250,10 +255,12 @@
     }
 
     .productBtn {
-        padding: 0.4rem 0.5rem;
-        font-size: 0.7rem;
+        padding: 0.4rem 0.2rem;
+        font-size: 0.65rem; /* Botón aún más pequeño para pantallas estrechas */
         width: 100%;
         border-radius: 4px;
+        white-space: normal; /* Permitir que el texto del botón se parta si es necesario */
+        line-height: 1.2;
     }
 
     .imageBox {
