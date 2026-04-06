@@ -18,19 +18,34 @@
 
   .productCard {
     max-width: 100%;
-    padding: 0.4rem;
+    padding: 0; /* Quitado el padding de la tarjeta para que la imagen llene el borde superior */
     margin: 0;
     border-radius: 8px;
   }
 
   .productImage {
-    height: 120px;
-    margin-bottom: 0; /* Sin espacio inferior */
+    aspect-ratio: 1 / 1;
+    height: auto;
+    width: 100%;
+    margin-bottom: 0;
+    background: #fdfdfd;
+    display: flex; /* Flexbox para limpiar márgenes */
+    align-items: center;
+    justify-content: center;
+  }
+
+  .productImage img {
+    object-fit: cover;
+    display: block; /* Elimina margen descendente */
+  }
+
+  .productInfo {
+    padding: 0 0.4rem 0.4rem 0.4rem; /* Sin padding arriba */
   }
 
   .productInfo h3 {
     font-size: 0.8rem;
-    font-weight: 400; /* Quitado el bold */
+    font-weight: 400;
     margin-top: 0;
     line-height: 1.1;
     display: -webkit-box;

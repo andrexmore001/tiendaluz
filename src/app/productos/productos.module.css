@@ -222,12 +222,12 @@
     }
 
     .info {
-        padding: 0.4rem;
+        padding: 0 0.4rem 0.4rem 0.4rem; /* Sin padding arriba para pegar al borde de la imagen */
     }
 
     .info h3 {
         font-size: 0.8rem;
-        font-weight: 400; /* Quitado el bold */
+        font-weight: 400;
         margin-top: 0;
         margin-bottom: 0.1rem;
         line-height: 1.1;
@@ -253,9 +253,21 @@
     }
 
     .imageBox {
-        height: 120px;
-        margin-bottom: 0; /* Sin espacio inferior */
+        aspect-ratio: 1 / 1;
+        height: auto;
+        width: 100%;
+        margin-bottom: 0;
+        background: #fdfdfd;
+        display: flex; /* Flexbox elimina márgenes fantasma */
+        align-items: center;
+        justify-content: center;
     }
+
+    .imageBox img {
+        object-fit: cover;
+        display: block; /* Elimina espacio descendente clásico de imágenes HTML */
+    }
+
 
     .category {
         display: none !important; /* Ocultando la categoría en móvil de manera forzada */
