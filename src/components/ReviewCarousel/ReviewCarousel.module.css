@@ -37,7 +37,7 @@
 
 .carouselTrack {
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
     transition: transform 0.5s ease-in-out;
     cursor: grab;
     user-select: none;
@@ -48,7 +48,7 @@
 }
 
 .reviewCard {
-    flex: 0 0 350px;
+    flex: 0 0 210px;
     background: white;
     border-radius: 16px;
     overflow: hidden;
@@ -103,7 +103,7 @@
 
 @media (max-width: 768px) {
     .reviewCard {
-        flex: 0 0 280px;
+        flex: 0 0 160px;
     }
     .title {
         font-size: 2rem;

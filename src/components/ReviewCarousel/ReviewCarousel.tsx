@@ -27,9 +27,27 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
         return () => window.removeEventListener('resize', checkScroll);
     }, [reviews]);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (scrollRef.current) {
+                const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+                if (scrollLeft >= scrollWidth - clientWidth - 10) {
+                    scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scroll('right');
+                }
+            }
+        }, 4000); // Cambio cada 4 segundos
+        return () => clearInterval(interval);
+    }, [reviews]);
+
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
-            const scrollAmount = 350 + 32; // card width + gap
+            const isMobile = window.innerWidth <= 768;
+            const cardWidth = isMobile ? 160 : 210;
+            const gap = 16;
+            const scrollAmount = cardWidth + gap;
+            
             const newScrollLeft = direction === 'left' 
                 ? scrollRef.current.scrollLeft - scrollAmount 
                 : scrollRef.current.scrollLeft + scrollAmount;
@@ -39,7 +57,6 @@ const ReviewCarousel: React.FC<ReviewCarouselProps> = ({ reviews }) => {
                 behavior: 'smooth'
             });
             
-            // Wait for animation to finish before checking
             setTimeout(checkScroll, 500);
         }
     };
