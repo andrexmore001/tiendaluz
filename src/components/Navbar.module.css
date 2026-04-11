@@ -97,6 +97,21 @@
     transition: var(--transition);
 }
 
+.whatsappBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #25d366;
+    transition: var(--transition);
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.whatsappBtn:hover {
+    color: #128C7E;
+    transform: scale(1.15);
+}
+
 @media (max-width: 768px) {
     .cartIcon {
         width: 24px;

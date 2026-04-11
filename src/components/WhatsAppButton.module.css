@@ -2,8 +2,7 @@
     position: fixed;
     width: 60px;
     height: 60px;
-    /* PC: apilado sobre el chatbot, ambos en la esquina derecha */
-    bottom: 100px;
+    bottom: 25px;
     right: 25px;
     background-color: #25d366;
     color: #FFF;
@@ -29,9 +28,7 @@
     .floatButton {
         width: 50px;
         height: 50px;
-        /* Móvil: esquina inferior IZQUIERDA, opuesto al chatbot */
         bottom: 20px;
-        right: auto;
-        left: 15px;
+        right: 20px;
     }
 }
