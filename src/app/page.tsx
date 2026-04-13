@@ -45,8 +45,8 @@ export default function Home() {
             </p>
             <div className={styles.productGrid}>
               {[...products]
-                .filter(p => p.isVisible !== false)
-                .slice(0, 6).map(product => {
+                .filter((p: any) => p.isVisible !== false)
+                .slice(0, 6).map((product: any) => {
                 const qtyInCart = getProductQuantity(product.id);
                 const baseCartItem = cartItems.find(i => i.productId === product.id && !i.customText);
 
