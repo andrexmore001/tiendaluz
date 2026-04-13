@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingCart, Menu, X } from 'lucide-react';
@@ -11,12 +11,26 @@ import { getWhatsAppLink } from '@/lib/whatsapp';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+    const [hidden, setHidden] = useState(false);
     const pathname = usePathname();
     const { settings } = useSettings();
     const { cartCount, toggleCart } = useCart();
 
+    useEffect(() => {
+        let lastY = 0;
+        const onScroll = () => {
+            const y = window.scrollY;
+            setScrolled(y > 10);
+            setHidden(y > lastY && y > 80 && !isOpen);
+            lastY = y;
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, [isOpen]);
+
     return (
-        <nav className={styles.navbar}>
+        <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''} ${hidden ? styles.hidden : ''}`}>
             <div className={`${styles.container} container`}>
                 <button
                     className={styles.menuIcon}

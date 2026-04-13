@@ -4,10 +4,31 @@
     align-items: center;
     background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(12px);
-    position: sticky;
+    -webkit-backdrop-filter: blur(12px);
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 1000;
     border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease,
+                background 0.3s ease;
+}
+
+/* Compensar el espacio del header fijo */
+:global(body) {
+    padding-top: 85px;
+}
+
+.scrolled {
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 2px 24px rgba(0, 0, 0, 0.08);
+    border-bottom-color: rgba(0, 0, 0, 0.07);
+}
+
+.hidden {
+    transform: translateY(-100%);
 }
 
 .container {
