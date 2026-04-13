@@ -105,7 +105,10 @@ export default function AdminPage() {
         materialId: '', baseColor: '#F9F1E7', modelUrl: '',
         priceTiers: [] as any[],
         variants: [] as any[],
-        combineVariantsForTiers: false
+        combineVariantsForTiers: false,
+        hasRibbon: false,
+        ribbonText: '',
+        ribbonColor: '#D4AF37'
     });
 
     const [editingImageConfig, setEditingImageConfig] = useState<number | null>(null);
@@ -169,7 +172,10 @@ export default function AdminPage() {
             image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
             materialId: materials[0]?.id || '',
             variants: [],
-            combineVariantsForTiers: false
+            combineVariantsForTiers: false,
+            hasRibbon: false,
+            ribbonText: '',
+            ribbonColor: '#D4AF37'
         });
         setCurrentStep(1); setShowProductForm(true);
     };
@@ -188,7 +194,10 @@ export default function AdminPage() {
             modelUrl: p.modelUrl || '',
             priceTiers: p.priceTiers || [],
             variants: p.variants || [],
-            combineVariantsForTiers: p.combineVariantsForTiers || false
+            combineVariantsForTiers: p.combineVariantsForTiers || false,
+            hasRibbon: (p as any).hasRibbon || false,
+            ribbonText: (p as any).ribbonText || '',
+            ribbonColor: (p as any).ribbonColor || '#D4AF37'
         });
         setCurrentStep(1); setShowProductForm(true);
     };

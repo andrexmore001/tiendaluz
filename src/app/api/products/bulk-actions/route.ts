@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     try {
-        const { productIds, action } = await req.json();
+        const { productIds, action, ribbonText, ribbonColor } = await req.json();
 
         if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
             return NextResponse.json({ error: 'No product IDs provided' }, { status: 400 });
@@ -27,6 +27,16 @@ export async function POST(req: Request) {
             await prisma.product.updateMany({
                 where: { id: { in: productIds } },
                 data: { isVisible: true }
+            });
+        } else if (action === 'addRibbon') {
+            await prisma.product.updateMany({
+                where: { id: { in: productIds } },
+                data: { hasRibbon: true, ribbonText: ribbonText || 'Especial', ribbonColor: ribbonColor || '#D4AF37' }
+            });
+        } else if (action === 'removeRibbon') {
+            await prisma.product.updateMany({
+                where: { id: { in: productIds } },
+                data: { hasRibbon: false }
             });
         } else {
             return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

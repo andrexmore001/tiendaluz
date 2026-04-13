@@ -76,16 +76,24 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
         }
     };
 
-    const handleBulkAction = async (action: 'hide' | 'show' | 'delete') => {
+    const handleBulkAction = async (action: 'hide' | 'show' | 'delete' | 'addRibbon' | 'removeRibbon') => {
         if (selectedIds.size === 0) return;
         if (action === 'delete' && !confirm(`¿Estás seguro de que quieres eliminar ${selectedIds.size} productos?`)) return;
+
+        let payload: any = { productIds: Array.from(selectedIds), action };
+
+        if (action === 'addRibbon') {
+             const ribbonText = prompt('Texto de la cinta (Ej: Oferta, Especial Madres):', 'Especial');
+             if (ribbonText === null) return; // user cancelled
+             payload.ribbonText = ribbonText;
+        }
 
         setIsBulkLoading(true);
         try {
             const res = await fetch('/api/products/bulk-actions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ productIds: Array.from(selectedIds), action })
+                body: JSON.stringify(payload)
             });
 
             const data = await res.json();
@@ -176,10 +184,12 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                     {selectedIds.size > 0 && (
-                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#f8fafc', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', background: '#f8fafc', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid #e2e8f0', flexWrap: 'wrap' }}>
                             <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>{selectedIds.size} seleccionados</span>
                             <button onClick={() => handleBulkAction('show')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#dcfce7', color: '#166534' }}>Mostrar</button>
                             <button onClick={() => handleBulkAction('hide')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#fef9c3', color: '#854d0e' }}>Ocultar</button>
+                            <button onClick={() => handleBulkAction('addRibbon')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#fce7f3', color: '#9d174d' }}>+ Cinta</button>
+                            <button onClick={() => handleBulkAction('removeRibbon')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#f1f5f9', color: '#334155' }}>- Cinta</button>
                             <button onClick={() => handleBulkAction('delete')} disabled={isBulkLoading} style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer', borderRadius: '4px', border: 'none', background: '#fee2e2', color: '#991b1b' }}>Eliminar</button>
                         </div>
                     )}
