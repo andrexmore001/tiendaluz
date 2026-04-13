@@ -84,6 +84,11 @@ export default function Home() {
                         <img src={getOptimizedUrl(product.image, 500) || '/placeholder.png'} alt={product.name} loading="lazy" />
                       </div>
                       <div className={styles.productInfo}>
+                        {product.collectionId && (
+                          <span className={styles.productCategory}>
+                            {collections.find((c: any) => c.id === product.collectionId)?.name}
+                          </span>
+                        )}
                         <h3>{product.name}</h3>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                           <p className={styles.price} style={getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price ? { fontWeight: 600, color: 'var(--primary)' } : {}}>

@@ -285,7 +285,10 @@
 
 
     .category {
-        display: none !important; /* Ocultando la categoría en móvil de manera forzada */
+        display: inline-block !important;
+        font-size: 0.65rem;
+        letter-spacing: 1px;
+        margin-bottom: 0.2rem;
     }
 }
 

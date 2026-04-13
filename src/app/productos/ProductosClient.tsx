@@ -207,7 +207,11 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                                 <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />
                                             </div>
                                             <div className={styles.info}>
-                                                <span className={styles.category}>{collections.find((c: any) => c.id === product.collectionId)?.name}</span>
+                                                {product.collectionId && (
+                                                    <span className={styles.category}>
+                                                        {collections.find((c: any) => c.id === product.collectionId)?.name}
+                                                    </span>
+                                                )}
                                                 <h3>{product.name}</h3>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <p className={styles.price} style={getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price ? { fontWeight: 600, color: 'var(--primary)', margin: 0 } : { margin: 0 }}>
