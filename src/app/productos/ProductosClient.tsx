@@ -6,6 +6,7 @@ import Footer from '@/components/Footer';
 import { useSettings } from '@/context/SettingsContext';
 import { useCart } from '@/context/CartContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
+import { formatPrice } from '@/lib/format';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight, Filter, X } from 'lucide-react';
 import styles from './productos.module.css';
@@ -164,7 +165,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                             <input type="range" min="0" max="2000000" step="10000" value={maxPrice} onChange={(e) => updateFilters({ precio: Number(e.target.value) })} className={styles.rangeInput} />
                             <div className={styles.priceLabels}>
                                 <span>$0</span>
-                                <span>${maxPrice.toLocaleString()}</span>
+                                <span>${formatPrice(maxPrice)}</span>
                             </div>
                         </div>
                     </aside>
@@ -210,7 +211,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                                 <h3>{product.name}</h3>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <p className={styles.price} style={getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price ? { fontWeight: 600, color: 'var(--primary)', margin: 0 } : { margin: 0 }}>
-                                                        ${getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }).toLocaleString()}
+                                                        ${formatPrice(getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }))}
                                                     </p>
                                                     {getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price && (
                                                         <span style={{ fontSize: '0.75rem', background: '#e0ffe0', color: '#008000', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>x Mayor</span>

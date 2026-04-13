@@ -4,6 +4,7 @@ import { useCart } from '@/context/CartContext';
 import { useSettings } from '@/context/SettingsContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
 import { getWhatsAppLink } from '@/lib/whatsapp';
+import { formatPrice } from '@/lib/format';
 import { X, Trash2, ShoppingBag, MessageCircle } from 'lucide-react';
 import styles from './CartDrawer.module.css';
 
@@ -16,14 +17,14 @@ export default function CartDrawer() {
 
     let itemsText = cartItems.map((item, index) => {
       const effectivePrice = getEffectivePrice(item);
-      let text = `${index + 1}. ${item.quantity}x ${item.name} - $${(effectivePrice * item.quantity).toLocaleString()}`;
+      let text = `${index + 1}. ${item.quantity}x ${item.name} - $${formatPrice(effectivePrice * item.quantity)}`;
       if (item.customText) {
         text += `\n   Texto: "${item.customText}"`;
       }
       return text;
     }).join('\n\n');
 
-    const message = `Hola, me gustaría realizar el siguiente pedido:\n\n${itemsText}\n\n*Total estimado:* $${cartTotal.toLocaleString()}COP`;
+    const message = `Hola, me gustaría realizar el siguiente pedido:\n\n${itemsText}\n\n*Total estimado:* $${formatPrice(cartTotal)}COP`;
     window.open(getWhatsAppLink(settings.contact.phone, message), "_blank");
   };
 
@@ -65,10 +66,10 @@ export default function CartDrawer() {
                       {hasDiscount ? (
                         <>
                           <span style={{ textDecoration: 'line-through', color: '#94a3b8', fontSize: '0.85rem' }}>
-                            ${item.unitPrice.toLocaleString()}
+                            ${formatPrice(item.unitPrice)}
                           </span>
                           <span className={styles.itemPrice} style={{ fontWeight: 600, color: 'var(--primary)' }}>
-                            ${effectivePrice.toLocaleString()}
+                            ${formatPrice(effectivePrice)}
                           </span>
                           <span style={{ fontSize: '0.75rem', background: '#e0ffe0', color: '#008000', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>
                             ¡Precio por Volumen!
@@ -76,7 +77,7 @@ export default function CartDrawer() {
                         </>
                       ) : (
                         <p className={styles.itemPrice}>
-                          ${effectivePrice.toLocaleString()}
+                          ${formatPrice(effectivePrice)}
                         </p>
                       )}
                     </div>
@@ -116,7 +117,7 @@ export default function CartDrawer() {
         <div className={styles.footer}>
           <div className={styles.summary}>
             <p className={styles.summaryTitle}>Total</p>
-            <p className={styles.summaryValue}>${cartTotal.toLocaleString()}</p>
+            <p className={styles.summaryValue}>${formatPrice(cartTotal)}</p>
           </div>
           <button 
             className={styles.checkoutBtn}

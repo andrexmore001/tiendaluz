@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatPrice } from '@/lib/format';
 import { Page, Text, View, Document, StyleSheet, Image, Font } from '@react-pdf/renderer';
 
 // Standard fonts
@@ -236,10 +237,10 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl }) => {
                     {data.items.map((item, idx) => (
                         <View key={idx} style={styles.tableRow}>
                             <Text style={styles.colDesc}>{item.description}</Text>
-                            <Text style={styles.colQty}>{item.qty.toLocaleString()} Unidades</Text>
-                            <Text style={styles.colPrice}>{item.unitPrice.toLocaleString()}</Text>
-                            <Text style={styles.colTax}>{item.tax ? item.tax.toLocaleString() : '0,00'}</Text>
-                            <Text style={styles.colTotal}>$ {(item.qty * item.unitPrice).toLocaleString()}</Text>
+                            <Text style={styles.colQty}>{item.qty.toLocaleString('es-CO')} Unidades</Text>
+                            <Text style={styles.colPrice}>{formatPrice(item.unitPrice)}</Text>
+                            <Text style={styles.colTax}>{item.tax ? formatPrice(item.tax) : '0,00'}</Text>
+                            <Text style={styles.colTotal}>$ {formatPrice(item.qty * item.unitPrice)}</Text>
                         </View>
                     ))}
                 </View>
@@ -248,11 +249,11 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl }) => {
                     <View style={styles.summaryBlock}>
                         <View style={styles.summaryRow}>
                             <Text>Subtotal</Text>
-                            <Text>$ {subtotal.toLocaleString()}</Text>
+                            <Text>$ {formatPrice(subtotal)}</Text>
                         </View>
                         <View style={styles.totalRow}>
                             <Text>Total</Text>
-                            <Text>$ {total.toLocaleString()}</Text>
+                            <Text>$ {formatPrice(total)}</Text>
                         </View>
                     </View>
                 </View>

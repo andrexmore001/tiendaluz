@@ -4,6 +4,7 @@ import { Plus, Edit, Trash2, Package, Upload, Search, ChevronLeft, ChevronRight 
 import styles from '../admin.module.css';
 import { Product } from '@/types/product';
 import TabHeader from './TabHeader';
+import { formatPrice } from '@/lib/format';
 
 interface TabProductsProps {
     products: Product[];
@@ -221,7 +222,7 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
                             {p.isVisible === false && <span style={{ fontSize: '0.65rem', padding: '2px 6px', background: '#fee2e2', color: '#991b1b', borderRadius: '4px', fontWeight: 'bold' }}>OCULTO</span>}
                         </span>
                         <code className={styles.pCat} style={{ fontSize: '0.75rem', fontFamily: 'monospace', opacity: 0.7 }}>{p.id}</code>
-                        <span className={styles.pPrice}>${(p.price || 0).toLocaleString()}</span>
+                        <span className={styles.pPrice}>${formatPrice(p.price || 0)}</span>
                         <div className={styles.rowActions}>
                             <button className={styles.iconBtn} onClick={() => onEdit(p)} title="Editar">
                                 <Edit size={16} />

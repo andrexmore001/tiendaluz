@@ -6,6 +6,7 @@ import ProductModel from "@/components/Three/ProductModel";
 import { useSettings } from "@/context/SettingsContext";
 import { useCart } from "@/context/CartContext";
 import { getOptimizedUrl } from "@/lib/cloudinary";
+import { formatPrice } from "@/lib/format";
 import { getWhatsAppLink } from "@/lib/whatsapp";
 import { Type, Image as ImageIcon, MessageCircle, ShoppingBag } from "lucide-react";
 import styles from "./customizer.module.css";
@@ -207,7 +208,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
               )}
             </div>
             <p className={styles.price}>
-              ${currentUnitPrice.toLocaleString()} <span className={styles.unitText}>por unidad</span>
+              ${formatPrice(currentUnitPrice)} <span className={styles.unitText}>por unidad</span>
               {currentUnitPrice < product.price && (
                 <span style={{ fontSize: '0.8rem', background: '#e0ffe0', color: '#008000', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 600 }}>¡Precio por Volumen!</span>
               )}
@@ -266,7 +267,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 {product.priceTiers[0].minQty > 1 && (
                   <div className={`${styles.tableRow} ${quantity < product.priceTiers[0].minQty ? styles.activeRow : ''}`}>
                     <span>1 - {product.priceTiers[0].minQty - 1}</span>
-                    <span>${(currentVariant?.price ?? product.price).toLocaleString()}</span>
+                    <span>${formatPrice(currentVariant?.price ?? product.price)}</span>
                   </div>
                 )}
                 {product.priceTiers.map((tier, idx) => {
@@ -285,7 +286,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                         <span>{label} unidades</span>
                         {discount > 0 && <span className={styles.savingsBadge}>Ahorra {discount}%</span>}
                       </div>
-                      <span className={styles.tierPrice}>${tierPrice.toLocaleString()}</span>
+                      <span className={styles.tierPrice}>${formatPrice(tierPrice)}</span>
                     </div>
                   );
                 })}
@@ -334,7 +335,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
               </div>
               <div className={styles.totalInfo}>
                 <span className={styles.totalLabel}>Total:</span>
-                <span className={styles.totalValue}>${(currentUnitPrice * quantity).toLocaleString()}</span>
+                <span className={styles.totalValue}>${formatPrice(currentUnitPrice * quantity)}</span>
               </div>
             </div>
             <div style={{ display: 'flex', gap: '1rem', flexDirection: 'column' }}>

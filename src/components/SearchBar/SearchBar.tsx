@@ -3,6 +3,7 @@ import { useSettings } from '@/context/SettingsContext';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getOptimizedUrl } from '@/lib/cloudinary';
+import { formatPrice } from '@/lib/format';
 import styles from './SearchBar.module.css';
 
 export default function SearchBar() {
@@ -63,7 +64,7 @@ export default function SearchBar() {
                   <img src={getOptimizedUrl(product.image, 100) || '/placeholder.png'} alt={product.name} className={styles.resultImage} />
                   <div className={styles.resultInfo}>
                     <p className={styles.resultName}>{product.name}</p>
-                    <p className={styles.resultPrice}>${product.price.toLocaleString()}</p>
+                    <p className={styles.resultPrice}>${formatPrice(product.price)}</p>
                   </div>
                 </li>
               ))}

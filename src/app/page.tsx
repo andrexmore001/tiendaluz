@@ -10,6 +10,7 @@ import CategoryCarousel from '@/components/CategoryCarousel/CategoryCarousel';
 import { useSettings } from '@/context/SettingsContext';
 import { useCart } from '@/context/CartContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
+import { formatPrice } from '@/lib/format';
 import Link from 'next/link';
 import styles from './page.module.css';
 
@@ -86,7 +87,7 @@ export default function Home() {
                         <h3>{product.name}</h3>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                           <p className={styles.price} style={getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price ? { fontWeight: 600, color: 'var(--primary)' } : {}}>
-                            ${getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }).toLocaleString()}
+                            ${formatPrice(getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }))}
                           </p>
                           {getEffectivePrice({ productId: product.id, unitPrice: product.price, quantity: 0 }) < product.price && (
                             <span style={{ fontSize: '0.75rem', background: '#e0ffe0', color: '#008000', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>x Mayor</span>

@@ -17,6 +17,7 @@ import { Product } from '@/types/product';
 import styles from '../admin.module.css';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import QuotePDF from '@/components/Quotes/QuotePDF';
+import { formatPrice } from '@/lib/format';
 
 interface TabQuotesProps {
     products: Product[];
@@ -234,7 +235,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 <div key={idx} className={styles.quoteItemRow}>
                                     <div>
                                         <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{item.description}</p>
-                                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Unit: ${item.unitPrice.toLocaleString()}</p>
+                                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Unit: ${formatPrice(item.unitPrice)}</p>
                                     </div>
                                     <input
                                         type="number"
@@ -242,7 +243,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                         onChange={e => updateItemQty(idx, parseInt(e.target.value) || 1)}
                                         min="1"
                                     />
-                                    <p style={{ fontWeight: 'bold', textAlign: 'right' }}>${(item.qty * item.unitPrice).toLocaleString()}</p>
+                                    <p style={{ fontWeight: 'bold', textAlign: 'right' }}>${formatPrice(item.qty * item.unitPrice)}</p>
                                     <button className={styles.iconBtnDelete} onClick={() => removeItem(idx)}>
                                         <Trash2 size={16} />
                                     </button>
@@ -272,11 +273,11 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                         <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                                 <span>Subtotal</span>
-                                <span>${subtotal.toLocaleString()}</span>
+                                <span>${formatPrice(subtotal)}</span>
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.2rem', marginTop: '1rem', color: '#1e293b' }}>
                                 <span>Total</span>
-                                <span>${subtotal.toLocaleString()}</span>
+                                <span>${formatPrice(subtotal)}</span>
                             </div>
                         </div>
 
