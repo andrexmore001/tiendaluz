@@ -201,7 +201,12 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                 const requiresCustomization = hasConfigurableVariants || hasCustomGallery || is3D;
 
                                 return (
-                                    <div key={product.id} className={styles.card} style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <div key={product.id} className={styles.card} style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                                        {(product as any).hasRibbon && (
+                                            <div className="global-ribbon" style={{ backgroundColor: (product as any).ribbonColor || '#D4AF37' }}>
+                                                {(product as any).ribbonText || 'Especial'}
+                                            </div>
+                                        )}
                                         <Link href={`/personalizar/${product.slug || product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
                                             <div className={styles.imageBox}>
                                                 <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />

@@ -149,7 +149,12 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
           ) : (
             <div className={styles.photoGallery}>
               <div className={styles.mainPhotoWrapper}>
-                <div className={styles.imageRelativeWrapper}>
+                <div className={styles.imageRelativeWrapper} style={{ position: 'relative' }}>
+                  {(product as any).hasRibbon && (
+                    <div className="global-ribbon" style={{ backgroundColor: (product as any).ribbonColor || '#D4AF37' }}>
+                      {(product as any).ribbonText || 'Especial'}
+                    </div>
+                  )}
                   {/* Si el currentVariant tiene imagen, usarla como base si no hay galerías custom */}
                   <img src={getOptimizedUrl(
                     (currentVariant?.image && displayPhotos.length === 1) 
