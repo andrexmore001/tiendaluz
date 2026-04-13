@@ -98,40 +98,48 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: `Errores de validación en el CSV: Los siguientes materiales no existen: ${Array.from(invalidMaterials).join(', ')}` }, { status: 400 });
         }
 
-        // Step 2: Extract unique categories and ensure they exist
-        const uniqueCategories = [...new Set(unmappedProductsData.map((p: any) => p.categoryText))];
-        const existingCollections = await prisma.collection.findMany({
-            where: { name: { in: uniqueCategories as string[] } }
+        // Step 2: Resolver la columna Colección — acepta ID o nombre
+        // Prioridad: 1) ID exacto en BD, 2) Nombre exacto en BD, 3) Crear nueva colección
+        const allCollections = await prisma.collection.findMany({
+            select: { id: true, name: true }
         });
-        const existingColNames = new Set(existingCollections.map(c => c.name));
+        const colById  = new Map(allCollections.map(c => [c.id, c]));
+        const colByName = new Map(allCollections.map(c => [c.name.toLowerCase(), c]));
 
-        const newCategories = (uniqueCategories as string[]).filter(c => !existingColNames.has(c));
-        
-        // Create missing collections sequentially (createMany isn't supported on SQLite but is on Postgres, we use loop to be safe if fallback or handle nested in future)
-        for (const cat of newCategories) {
-            await prisma.collection.upsert({
-                where: { name: cat },
-                create: { 
-                    name: cat, 
-                    description: 'Creada desde carga masiva CSV',
-                    slug: slugify(cat) 
-                },
-                update: {}
-            });
+        // Construir mapa categoryText → collectionId definitivo
+        const categoryMap = new Map<string, string>();
+
+        for (const p of unmappedProductsData) {
+            const text: string = p.categoryText;
+            if (categoryMap.has(text)) continue;
+
+            if (colById.has(text)) {
+                // El CSV tiene el ID directamente → usarlo sin tocar la BD
+                categoryMap.set(text, text);
+            } else if (colByName.has(text.toLowerCase())) {
+                // El CSV tiene el nombre → resolver al ID correspondiente
+                categoryMap.set(text, colByName.get(text.toLowerCase())!.id);
+            } else {
+                // No existe ni por ID ni por nombre → crear colección nueva
+                const created = await prisma.collection.upsert({
+                    where: { name: text },
+                    create: {
+                        name: text,
+                        description: 'Creada desde carga masiva CSV',
+                        slug: slugify(text)
+                    },
+                    update: {}
+                });
+                categoryMap.set(text, created.id);
+            }
         }
 
-        // Fetch all again to get standard IDs map
-        const finalCollections = await prisma.collection.findMany({
-            where: { name: { in: uniqueCategories as string[] } }
-        });
-        const collectionNameToId = new Map(finalCollections.map(c => [c.name, c.id]));
-
-        // Step 3: Map collectionId to the product payload
+        // Step 3: Asignar collectionId a cada producto
         const productsData = unmappedProductsData.map((p: any) => {
             const { categoryText, ...rest } = p;
             return {
                 ...rest,
-                collectionId: collectionNameToId.get(categoryText)
+                collectionId: categoryMap.get(categoryText)
             };
         });
 
