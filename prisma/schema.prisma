@@ -55,6 +55,9 @@ model Product {
   isVisible   Boolean     @default(true)
   combineVariantsForTiers Boolean @default(false)
   costPrice   Float?
+  hasRibbon   Boolean     @default(false)
+  ribbonText  String?
+  ribbonColor String?
   supplierId  String?
   supplier    Supplier?   @relation(fields: [supplierId], references: [id])
   createdAt   DateTime    @default(now())

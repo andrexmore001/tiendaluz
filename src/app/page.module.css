@@ -91,6 +91,25 @@
   padding: 0;
   max-width: 400px;
   margin: 0 auto;
+  position: relative; /* Permite posicionar el ribbon */
+}
+
+.ribbon {
+  position: absolute;
+  top: 18px;
+  left: -35px;
+  padding: 0.4rem 2.5rem;
+  transform: rotate(-45deg);
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15), inset 0 -2px 0 rgba(0,0,0,0.05);
+  z-index: 10;
+  text-align: center;
+  text-shadow: 0px 1px 3px rgba(0,0,0,0.3);
+  width: 150px; /* Fuerza el ancho para que el texto justifique y los bordes caigan bien */
 }
 
 .cardFooter {

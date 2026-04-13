@@ -82,6 +82,9 @@ export async function POST(request: Request) {
             combineVariantsForTiers: Boolean(rest.combineVariantsForTiers || false),
             costPrice: costPrice !== undefined ? Number(costPrice) : null,
             supplierId: supplierId || null,
+            hasRibbon: rest.hasRibbon !== undefined ? Boolean(rest.hasRibbon) : false,
+            ribbonText: rest.ribbonText || null,
+            ribbonColor: rest.ribbonColor || null,
         };
 
         const tierOperations = priceTiers?.map((tier: any) => ({

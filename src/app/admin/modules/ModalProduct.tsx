@@ -143,6 +143,43 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                 </label>
                             </div>
 
+                            <div className={styles.inputGroup} style={{ marginBottom: '2rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none', marginBottom: formData.hasRibbon ? '1rem' : '0' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.hasRibbon || false}
+                                        onChange={(e) => setFormData((prev: any) => ({ ...prev, hasRibbon: e.target.checked }))}
+                                        style={{ marginRight: '0.75rem', width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                                    />
+                                    <span style={{ fontWeight: 600 }}>Activar Cinta Promocional (Ribbon)</span>
+                                </label>
+
+                                {formData.hasRibbon && (
+                                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                                        <div style={{ flex: 1, minWidth: '200px' }}>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.2rem' }}>Texto (Ej: Recomendado)</label>
+                                            <input
+                                                type="text"
+                                                value={formData.ribbonText || ''}
+                                                onChange={(e) => setFormData((prev: any) => ({ ...prev, ribbonText: e.target.value }))}
+                                                placeholder="Ej: Nuevo Lanzamiento"
+                                                maxLength={30}
+                                                style={{ width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: '4px' }}
+                                            />
+                                        </div>
+                                        <div style={{ width: '100px' }}>
+                                            <label style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.2rem' }}>Color Fondo</label>
+                                            <input
+                                                type="color"
+                                                value={formData.ribbonColor || '#D4AF37'}
+                                                onChange={(e) => setFormData((prev: any) => ({ ...prev, ribbonColor: e.target.value }))}
+                                                style={{ width: '100%', height: '36px', padding: '0', border: '1px solid #cbd5e1', borderRadius: '4px', cursor: 'pointer' }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
                             <div className={styles.formGrid}>
                                 <div className={styles.inputGroup}>
                                     <label>Nombre del Producto</label>

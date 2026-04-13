@@ -79,6 +79,11 @@ export default function Home() {
 
                 return (
                   <div key={product.id} className={styles.productCard} style={{ display: 'flex', flexDirection: 'column' }}>
+                    {product.hasRibbon && (
+                      <div className={styles.ribbon} style={{ backgroundColor: product.ribbonColor || '#D4AF37' }}>
+                        {product.ribbonText || 'Especial'}
+                      </div>
+                    )}
                     <Link href={`/personalizar/${product.slug || product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
                       <div className={styles.productImage}>
                         <img src={getOptimizedUrl(product.image, 500) || '/placeholder.png'} alt={product.name} loading="lazy" />
