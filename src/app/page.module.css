@@ -97,11 +97,11 @@
 .ribbon {
   position: absolute;
   top: 25px;
-  left: -50px;
-  width: 200px; /* Ancho suficiente para extenderse en las esquinas */
-  padding: 0.5rem 0; /* Sin padding lateral para que el texto ocupe todo el espacio central */
+  left: -65px;
+  width: 250px;
+  padding: 0.3rem 0;
   transform: rotate(-45deg);
-  font-size: 0.75rem; /* Levemente más grande para lectura */
+  font-size: 0.65rem; /* Ajuste para que la frase quepa holgada dentro de la diagonal */
   font-weight: 700;
   color: white;
   text-transform: uppercase;
