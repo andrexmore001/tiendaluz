@@ -201,6 +201,11 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'ID de producto requerido' }, { status: 400 });
         }
 
+        const productToDelete = await prisma.product.findUnique({
+            where: { id },
+            select: { slug: true }
+        });
+
         await prisma.product.delete({
             where: { id },
         });
@@ -208,10 +213,12 @@ export async function DELETE(request: Request) {
         revalidatePath('/api/products');
         revalidatePath('/api/bootstrap');
 
-        // Sync automático con Ventiq (fire-and-forget)
-        syncProductToVentiq({ id, slug: id }, 'delete').catch((err: Error) =>
-            console.warn('[VentiqSync] Error al eliminar producto en Ventiq:', err.message)
-        );
+        if (productToDelete?.slug) {
+            // Sync automático con Ventiq (fire-and-forget)
+            syncProductToVentiq({ id, slug: productToDelete.slug }, 'delete').catch((err: Error) =>
+                console.warn('[VentiqSync] Error al eliminar producto en Ventiq:', err.message)
+            );
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

@@ -11,7 +11,7 @@ function mapToVentiqProduct(p: any) {
         price: Number(p.price) || 0,
         category: p.collection?.name || p.collectionName || null,
         imageUrl: p.image || (Array.isArray(p.images) && p.images[0]) || null,
-        url: p.slug ? `${baseUrl}/productos/${p.slug}` : null,
+        url: p.slug ? `${baseUrl}/personalizar/${p.slug}` : null,
         isActive: p.isVisible !== false,
     };
 }
@@ -54,7 +54,7 @@ export async function syncProductToVentiq(product: any, action: 'upsert' | 'dele
                   action: 'delete',
                   product: {
                       url: product.slug
-                          ? `${process.env.NEXT_PUBLIC_SITE_URL || 'https://artessana.vercel.app'}/productos/${product.slug}`
+                          ? `${process.env.NEXT_PUBLIC_SITE_URL || 'https://artessana.vercel.app'}/personalizar/${product.slug}`
                           : null,
                   },
               }
