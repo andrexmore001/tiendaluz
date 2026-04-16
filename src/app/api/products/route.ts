@@ -111,7 +111,8 @@ export async function POST(request: Request) {
                 }
             },
             include: {
-                priceTiers: true
+                priceTiers: true,
+                collection: { select: { name: true } }
             }
         });
 
