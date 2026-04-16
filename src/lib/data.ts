@@ -22,6 +22,7 @@ export interface SiteSettings {
     heroImages?: string[];
     chatBusinessId?: string;
     chatApiKey?: string;
+    chatSyncUrl?: string;
     tickerMessage?: string;
     tickerVisible?: boolean;
     tickerSpeed?: number;
@@ -50,6 +51,7 @@ export let siteSettings: SiteSettings = {
     },
     chatBusinessId: '',
     chatApiKey: '',
+    chatSyncUrl: 'https://web-chat-self-beta.vercel.app',
     tickerMessage: '',
     tickerVisible: false,
     tickerSpeed: 30,
