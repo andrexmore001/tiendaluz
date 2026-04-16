@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { slugify } from '@/lib/slug';
+import { syncProductToVentiq } from '@/lib/ventiqSync';
 
 export const revalidate = 3600; // Recache every hour
 
@@ -177,6 +178,12 @@ export async function POST(request: Request) {
 
         revalidatePath('/api/products');
         revalidatePath('/api/bootstrap');
+
+        // Sync automático con Ventiq (fire-and-forget, no bloquea la respuesta)
+        syncProductToVentiq(product, 'upsert').catch((err: Error) =>
+            console.warn('[VentiqSync] Error al sincronizar producto:', err.message)
+        );
+
         return NextResponse.json(product);
     } catch (error) {
         console.error('Error saving product:', error);
@@ -199,6 +206,12 @@ export async function DELETE(request: Request) {
 
         revalidatePath('/api/products');
         revalidatePath('/api/bootstrap');
+
+        // Sync automático con Ventiq (fire-and-forget)
+        syncProductToVentiq({ id, slug: id }, 'delete').catch((err: Error) =>
+            console.warn('[VentiqSync] Error al eliminar producto en Ventiq:', err.message)
+        );
+
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error deleting product:', error);
