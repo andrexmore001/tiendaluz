@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { auth } from '@/auth';
 import { syncAllProductsToVentiq } from '@/lib/ventiqSync';
 
 /**
@@ -10,7 +10,7 @@ import { syncAllProductsToVentiq } from '@/lib/ventiqSync';
  * Llamado desde el botón "Sincronizar catálogo" en el admin.
  */
 export async function POST() {
-    const session = await getServerSession();
+    const session = await auth();
     if (!session) {
         return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
