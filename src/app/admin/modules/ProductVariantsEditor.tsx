@@ -17,10 +17,18 @@ export default function ProductVariantsEditor({ formData, setFormData, attribute
         const attrId = e.target.value;
         if (!attrId || selectedAttributes.find(a => a.attrId === attrId)) return;
         
-        const attrDef = attributes.find(a => a.id === attrId);
-        const allValues = attrDef ? attrDef.values.map((v: any) => typeof v === 'string' ? v : v.value) : [];
-        
-        setSelectedAttributes([...selectedAttributes, { attrId, values: allValues }]);
+        setSelectedAttributes([...selectedAttributes, { attrId, values: [] }]);
+    };
+
+    const handleBulkSelect = (attrIdx: number, selectAll: boolean) => {
+        const newAttrs = [...selectedAttributes];
+        const attrDef = attributes.find(a => a.id === newAttrs[attrIdx].attrId);
+        if (selectAll && attrDef) {
+            newAttrs[attrIdx].values = attrDef.values.map((v: any) => typeof v === 'string' ? v : v.value);
+        } else {
+            newAttrs[attrIdx].values = [];
+        }
+        setSelectedAttributes(newAttrs);
     };
 
     const handleRemoveAttribute = (idx: number) => {
@@ -127,26 +135,33 @@ export default function ProductVariantsEditor({ formData, setFormData, attribute
                                 <strong>{attrDef.name}</strong>
                                 <button type="button" onClick={() => handleRemoveAttribute(idx)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={16}/></button>
                             </div>
-                            <div style={{ position: 'relative', marginBottom: '1rem', maxWidth: '400px' }}>
-                                <Search size={14} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-                                <input 
-                                    type="text" 
-                                    placeholder={`Buscar en ${attrDef.name}...`}
-                                    value={searchTerms[sa.attrId] || ''}
-                                    onChange={(e) => setSearchTerms({ ...searchTerms, [sa.attrId]: e.target.value })}
-                                    style={{
-                                        width: '100%',
-                                        padding: '0.5rem 0.8rem 0.5rem 2.2rem',
-                                        fontSize: '0.85rem',
-                                        borderRadius: '8px',
-                                        border: '1px solid #e2e8f0',
-                                        background: '#f8fafc',
-                                        outline: 'none',
-                                        transition: 'all 0.2s'
-                                    }}
-                                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
-                                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                                />
+                            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                                <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+                                    <Search size={14} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                                    <input 
+                                        type="text" 
+                                        placeholder={`Buscar en ${attrDef.name}...`}
+                                        value={searchTerms[sa.attrId] || ''}
+                                        onChange={(e) => setSearchTerms({ ...searchTerms, [sa.attrId]: e.target.value })}
+                                        style={{
+                                            width: '100%',
+                                            padding: '0.5rem 0.8rem 0.5rem 2.2rem',
+                                            fontSize: '0.85rem',
+                                            borderRadius: '8px',
+                                            border: '1px solid #e2e8f0',
+                                            background: '#f8fafc',
+                                            outline: 'none',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                                        onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Seleccionar:</span>
+                                    <button type="button" onClick={() => handleBulkSelect(idx, true)} style={{ fontSize: '0.75rem', background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '0.3rem 0.7rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, color: '#334155' }}>Todos</button>
+                                    <button type="button" onClick={() => handleBulkSelect(idx, false)} style={{ fontSize: '0.75rem', background: 'white', border: '1px solid #cbd5e1', padding: '0.3rem 0.7rem', borderRadius: '6px', cursor: 'pointer', fontWeight: 500, color: '#334155' }}>Ninguno</button>
+                                </div>
                             </div>
 
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto', padding: '2px' }}>
