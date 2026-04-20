@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Plus, Trash2, RefreshCcw, Layers, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, RefreshCcw, Layers, Search, Image as ImageIcon } from 'lucide-react';
 import styles from '../admin.module.css';
 
 interface ProductVariantsEditorProps {
@@ -11,6 +11,7 @@ interface ProductVariantsEditorProps {
 
 export default function ProductVariantsEditor({ formData, setFormData, attributes }: ProductVariantsEditorProps) {
     const [selectedAttributes, setSelectedAttributes] = useState<{ attrId: string, values: string[] }[]>([]);
+    const [searchTerms, setSearchTerms] = useState<{[key: string]: string}>({});
 
     const handleAddAttribute = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const attrId = e.target.value;
@@ -126,29 +127,68 @@ export default function ProductVariantsEditor({ formData, setFormData, attribute
                                 <strong>{attrDef.name}</strong>
                                 <button type="button" onClick={() => handleRemoveAttribute(idx)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}><Trash2 size={16}/></button>
                             </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                                {attrDef.values.map((v: any, vIdx: number) => {
+                            <div style={{ position: 'relative', marginBottom: '1rem', maxWidth: '400px' }}>
+                                <Search size={14} style={{ position: 'absolute', left: '0.8rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                                <input 
+                                    type="text" 
+                                    placeholder={`Buscar en ${attrDef.name}...`}
+                                    value={searchTerms[sa.attrId] || ''}
+                                    onChange={(e) => setSearchTerms({ ...searchTerms, [sa.attrId]: e.target.value })}
+                                    style={{
+                                        width: '100%',
+                                        padding: '0.5rem 0.8rem 0.5rem 2.2rem',
+                                        fontSize: '0.85rem',
+                                        borderRadius: '8px',
+                                        border: '1px solid #e2e8f0',
+                                        background: '#f8fafc',
+                                        outline: 'none',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onFocus={(e) => e.target.style.borderColor = 'var(--primary)'}
+                                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                                />
+                            </div>
+
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto', padding: '2px' }}>
+                                {attrDef.values
+                                    .filter((v: any) => {
+                                        const valStr = typeof v === 'string' ? v : v.value;
+                                        const term = (searchTerms[sa.attrId] || '').toLowerCase();
+                                        return valStr.toLowerCase().includes(term);
+                                    })
+                                    .map((v: any, vIdx: number) => {
+                                        const valStr = typeof v === 'string' ? v : v.value;
+                                        const isSelected = sa.values.includes(valStr);
+                                        return (
+                                            <button
+                                                key={vIdx}
+                                                type="button"
+                                                onClick={() => handleToggleValue(idx, valStr)}
+                                                style={{
+                                                    padding: '0.4rem 1rem',
+                                                    borderRadius: '20px',
+                                                    border: isSelected ? '1px solid var(--primary)' : '1px solid #cbd5e1',
+                                                    background: isSelected ? 'var(--primary)' : 'white',
+                                                    color: isSelected ? 'white' : '#475569',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.85rem',
+                                                    transition: 'all 0.2s ease',
+                                                    boxShadow: isSelected ? '0 2px 4px var(--primary-shadow)' : 'none'
+                                                }}
+                                            >
+                                                {valStr}
+                                            </button>
+                                        );
+                                    })}
+                                {attrDef.values.filter((v: any) => {
                                     const valStr = typeof v === 'string' ? v : v.value;
-                                    const isSelected = sa.values.includes(valStr);
-                                    return (
-                                        <button
-                                            key={vIdx}
-                                            type="button"
-                                            onClick={() => handleToggleValue(idx, valStr)}
-                                            style={{
-                                                padding: '0.3rem 0.8rem',
-                                                borderRadius: '20px',
-                                                border: isSelected ? '1px solid var(--primary)' : '1px solid #cbd5e1',
-                                                background: isSelected ? 'var(--primary)' : 'white',
-                                                color: isSelected ? 'white' : '#475569',
-                                                cursor: 'pointer',
-                                                fontSize: '0.85rem'
-                                            }}
-                                        >
-                                            {valStr}
-                                        </button>
-                                    );
-                                })}
+                                    const term = (searchTerms[sa.attrId] || '').toLowerCase();
+                                    return valStr.toLowerCase().includes(term);
+                                }).length === 0 && (
+                                    <div style={{ fontSize: '0.85rem', color: '#94a3b8', padding: '0.5rem' }}>
+                                        No se encontraron resultados para "{searchTerms[sa.attrId]}"
+                                    </div>
+                                )}
                             </div>
                         </div>
                     );
