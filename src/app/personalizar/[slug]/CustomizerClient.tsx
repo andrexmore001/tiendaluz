@@ -12,6 +12,25 @@ import { Type, Image as ImageIcon, MessageCircle, ShoppingBag } from "lucide-rea
 import styles from "./customizer.module.css";
 import { Product } from "@/types/product";
 
+interface GalleryItem {
+  url: string;
+  origin: 'product' | 'variant';
+  variantId?: string;
+  isCustomizable?: boolean;
+  textConfig?: any;
+}
+
+// Ayudante para comparar URLs de forma robusta (ignora protocolo y versiones de Cloudinary)
+const normalizeUrl = (url: string | null | undefined): string => {
+  if (!url) return '';
+  return url
+    .toLowerCase()
+    .replace(/^https?:\/\//, '') // Quitar http:// o https://
+    .replace(/\/v\d+\//, '/')     // Quitar versiones de Cloudinary (/v123456789/)
+    .split('?')[0]               // Quitar parámetros de búsqueda
+    .trim();
+};
+
 interface CustomizerClientProps {
     id: string;
 }
@@ -110,7 +129,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
     if (!product) return [];
     
     // 1. Fotos generales del producto
-    const basePhotos = (product.images && product.images.length > 0) 
+    const basePhotos: GalleryItem[] = (product.images && product.images.length > 0) 
         ? product.images.map((img: any) => ({
             url: typeof img === 'string' ? img : img.url,
             isCustomizable: img.isCustomizable,
@@ -120,7 +139,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
         : [{ url: product.image, origin: 'product' }];
 
     // 2. Fotos de las variantes activas (solo las que tengan imagen propia)
-    const variantPhotos = activeVariants
+    const variantPhotos: GalleryItem[] = activeVariants
         .filter((v: any) => v.image)
         .map((v: any) => ({
             url: v.image,
@@ -128,19 +147,23 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
             origin: 'variant'
         }));
 
-    // Unificar y eliminar duplicados por URL
-    const uniqueGallery: any[] = [];
-    const seenUrls = new Set();
+    // Unificar y eliminar duplicados por URL normalizada
+    const uniqueGallery: GalleryItem[] = [];
+    const seenNormalizedUrls = new Set<string>();
 
     [...basePhotos, ...variantPhotos].forEach(photo => {
         if (!photo.url) return;
-        if (!seenUrls.has(photo.url)) {
-            seenUrls.add(photo.url);
+        const normalized = normalizeUrl(photo.url);
+        
+        if (!seenNormalizedUrls.has(normalized)) {
+            seenNormalizedUrls.add(normalized);
             uniqueGallery.push(photo);
         } else if (photo.variantId) {
-            // Si la foto ya existe pero esta entrada tiene un variantId, vincularlo a la existente
-            const existing = uniqueGallery.find(p => p.url === photo.url);
-            if (existing && !existing.variantId) existing.variantId = photo.variantId;
+            // Si la foto ya existe (quizá como foto general) pero esta entrada tiene un variantId, vincularlo
+            const existing = uniqueGallery.find(p => normalizeUrl(p.url) === normalized);
+            if (existing && !existing.variantId) {
+                existing.variantId = photo.variantId;
+            }
         }
     });
 
@@ -150,7 +173,8 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
   // Sincronizar Variante -> Foto: Cuando cambia la variante, saltar a su foto en la galería
   useEffect(() => {
     if (currentVariant && currentVariant.image) {
-      const idx = combinedGallery.findIndex(p => p.url === currentVariant.image);
+      const targetNormalized = normalizeUrl(currentVariant.image);
+      const idx = combinedGallery.findIndex(p => normalizeUrl(p.url) === targetNormalized);
       if (idx !== -1) {
         setActivePhotoIdx(idx);
       }
