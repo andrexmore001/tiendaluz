@@ -145,6 +145,27 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
         reader.readAsText(file);
     };
 
+    const handleSyncToVentiq = async () => {
+        if (!confirm('¿Deseas sincronizar TODO el catálogo con el chatbot? Esto reemplazará los productos actuales en Ventiq por los de Artesana. ¿Continuar?')) return;
+        
+        setIsBulkLoading(true);
+        try {
+            const res = await fetch('/api/products/sync', { method: 'POST' });
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert(`Sincronización masiva exitosa. Productos sincronizados: ${data.synced}`);
+            } else {
+                alert(`Error al sincronizar: ${data.error}`);
+            }
+        } catch (error) {
+            console.error('Error syncing:', error);
+            alert('Error de conexión al sincronizar con el chatbot.');
+        } finally {
+            setIsBulkLoading(false);
+        }
+    };
+
     return (
         <div className={styles.tabContent}>
             <TabHeader title="Gestión de Productos" onMenuClick={onMenuClick}>
@@ -163,6 +184,14 @@ const TabProducts: React.FC<TabProductsProps> = ({ products, onAdd, onEdit, onDe
                     >
                         {isUploading ? <Upload className={styles.animateSpin} size={18} /> : <Upload size={18} />}
                         <span>{isUploading ? 'Subiendo...' : 'Carga Masiva (CSV)'}</span>
+                    </button>
+                    <button
+                        className={styles.secondaryBtn}
+                        onClick={handleSyncToVentiq}
+                        disabled={isBulkLoading}
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={isBulkLoading ? styles.animateSpin : ''}><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" /><path d="M16 21v-5h5" /></svg>
+                        <span>{isBulkLoading ? 'Sincronizando...' : 'Sincronizar a Chatbot'}</span>
                     </button>
                     <button className="btn-primary" onClick={onAdd}>
                         <Plus size={20} /> Agregar Producto

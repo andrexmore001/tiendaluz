@@ -26,6 +26,7 @@ model Setting {
   heroImages      Json?
   chatBusinessId  String?  @default("mvp-test-123")
   chatApiKey      String?  @default("key_test_123")
+  chatSyncUrl     String?  @default("https://web-chat-self-beta.vercel.app")
   tickerMessage   String   @default("")
   tickerVisible   Boolean  @default(false)
   tickerSpeed     Int      @default(30)

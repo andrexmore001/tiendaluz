@@ -354,6 +354,15 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                                     placeholder="Ej: key_test_123"
                                 />
                             </div>
+                            <div className={styles.inputGroup}>
+                                <label>URL de Sincronización</label>
+                                <input
+                                    type="text"
+                                    value={localSettings.chatSyncUrl || ''}
+                                    onChange={(e) => onChange('chatSyncUrl', e.target.value)}
+                                    placeholder="https://web-chat-self-beta.vercel.app"
+                                />
+                            </div>
                         </div>
                     </div>
                 </section>

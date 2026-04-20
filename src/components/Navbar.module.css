@@ -6,7 +6,7 @@
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     position: fixed;
-    top: 0;
+    top: var(--ticker-height, 0px);
     left: 0;
     right: 0;
     z-index: 1000;
@@ -16,9 +16,9 @@
                 background 0.3s ease;
 }
 
-/* Compensar el espacio del header fijo */
+/* Compensar el espacio del header fijo + ticker */
 :global(body) {
-    padding-top: 85px;
+    padding-top: calc(85px + var(--ticker-height, 0px));
 }
 
 .scrolled {
