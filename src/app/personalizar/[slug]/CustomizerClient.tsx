@@ -106,8 +106,74 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
     );
   }
 
-  const currentImage = currentVariant?.image || product.image;
-  const displayPhotos = product.images && product.images.length > 0 ? product.images : [currentImage];
+  const combinedGallery = useMemo(() => {
+    if (!product) return [];
+    
+    // 1. Fotos generales del producto
+    const basePhotos = (product.images && product.images.length > 0) 
+        ? product.images.map((img: any) => ({
+            url: typeof img === 'string' ? img : img.url,
+            isCustomizable: img.isCustomizable,
+            textConfig: img.textConfig,
+            origin: 'product'
+        }))
+        : [{ url: product.image, origin: 'product' }];
+
+    // 2. Fotos de las variantes activas (solo las que tengan imagen propia)
+    const variantPhotos = activeVariants
+        .filter((v: any) => v.image)
+        .map((v: any) => ({
+            url: v.image,
+            variantId: v.id,
+            origin: 'variant'
+        }));
+
+    // Unificar y eliminar duplicados por URL
+    const uniqueGallery: any[] = [];
+    const seenUrls = new Set();
+
+    [...basePhotos, ...variantPhotos].forEach(photo => {
+        if (!photo.url) return;
+        if (!seenUrls.has(photo.url)) {
+            seenUrls.add(photo.url);
+            uniqueGallery.push(photo);
+        } else if (photo.variantId) {
+            // Si la foto ya existe pero esta entrada tiene un variantId, vincularlo a la existente
+            const existing = uniqueGallery.find(p => p.url === photo.url);
+            if (existing && !existing.variantId) existing.variantId = photo.variantId;
+        }
+    });
+
+    return uniqueGallery;
+  }, [product, activeVariants]);
+
+  // Sincronizar Variante -> Foto: Cuando cambia la variante, saltar a su foto en la galería
+  useEffect(() => {
+    if (currentVariant && currentVariant.image) {
+      const idx = combinedGallery.findIndex(p => p.url === currentVariant.image);
+      if (idx !== -1) {
+        setActivePhotoIdx(idx);
+      }
+    }
+  }, [currentVariant?.id, combinedGallery]);
+
+  // Función para manejar el clic en miniatura con sincronización inversa
+  const handlePhotoClick = (idx: number) => {
+    setActivePhotoIdx(idx);
+    const photo = combinedGallery[idx];
+    
+    // Si la foto pertenece a una variante, actualizar los selectores de atributos
+    if (photo && photo.variantId) {
+      const variant = activeVariants.find((v: any) => v.id === photo.variantId);
+      if (variant && variant.attributes) {
+        const newOptions = { ...selectedOptions };
+        variant.attributes.forEach((attrObj: any) => {
+          newOptions[attrObj.attributeValue.attribute.name] = attrObj.attributeValue.value;
+        });
+        setSelectedOptions(newOptions);
+      }
+    }
+  };
 
   const getTieredPrice = () => {
     const basePrice = currentVariant?.price !== null && currentVariant?.price !== undefined ? currentVariant.price : product.price;
@@ -157,18 +223,16 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                   )}
                   {/* Si el currentVariant tiene imagen, usarla como base si no hay galerías custom */}
                   <img src={getOptimizedUrl(
-                    (currentVariant?.image && displayPhotos.length === 1) 
-                        ? currentVariant.image 
-                        : (displayPhotos[activePhotoIdx] ? (typeof displayPhotos[activePhotoIdx] === 'string' ? displayPhotos[activePhotoIdx] : (displayPhotos[activePhotoIdx] as any).url) : (product.image || '')), 
+                    combinedGallery[activePhotoIdx]?.url || product.image || '', 
                     800
                   )} alt={product.name} />
-                  {text && displayPhotos[activePhotoIdx] && (displayPhotos[activePhotoIdx] as any).isCustomizable && (
+                  {text && combinedGallery[activePhotoIdx]?.isCustomizable && (
                     <div
                       className={styles.textOverlay}
                       style={{
-                        top: `${(displayPhotos[activePhotoIdx] as any).textConfig?.y ?? 50}%`,
-                        left: `${(displayPhotos[activePhotoIdx] as any).textConfig?.x ?? 50}%`,
-                        transform: `translate(-50%, -50%) rotate(${(displayPhotos[activePhotoIdx] as any).textConfig?.rotation ?? 0}deg) scale(${(displayPhotos[activePhotoIdx] as any).textConfig?.scale ?? 1})`,
+                        top: `${(combinedGallery[activePhotoIdx] as any).textConfig?.y ?? 50}%`,
+                        left: `${(combinedGallery[activePhotoIdx] as any).textConfig?.x ?? 50}%`,
+                        transform: `translate(-50%, -50%) rotate(${(combinedGallery[activePhotoIdx] as any).textConfig?.rotation ?? 0}deg) scale(${(combinedGallery[activePhotoIdx] as any).textConfig?.scale ?? 1})`,
                       }}
                     >
                       {text}
@@ -177,12 +241,12 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 </div>
               </div>
               <div className={styles.photoThumbs}>
-                {displayPhotos.map((img: any, idx) => (
+                {combinedGallery.map((img: any, idx) => (
                   <img
                     key={idx}
-                    src={getOptimizedUrl(typeof img === 'string' ? img : img.url, 150)}
+                    src={getOptimizedUrl(img.url, 150)}
                     alt={`Thumb ${idx}`}
-                    onClick={() => setActivePhotoIdx(idx)}
+                    onClick={() => handlePhotoClick(idx)}
                     style={{ border: activePhotoIdx === idx ? '2px solid var(--primary)' : undefined }}
                   />
                 ))}
@@ -363,7 +427,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                       productId: product.id,
                       variantId: targetVariantId,
                       name: currentVariant ? `${product.name} (${Object.values(selectedOptions).join(', ')})` : product.name,
-                      image: getOptimizedUrl((currentVariant?.image && displayPhotos.length === 1) ? currentVariant.image : (displayPhotos[0] ? (typeof displayPhotos[0] === 'string' ? displayPhotos[0] : (displayPhotos[0] as any).url) : product.image || ''), 150) || '/placeholder.png',
+                      image: getOptimizedUrl(combinedGallery[0]?.url || product.image || '/placeholder.png', 150),
                       quantity: quantity,
                       unitPrice: currentVariant?.price !== null && currentVariant?.price !== undefined ? currentVariant.price : product.price,
                       customText: normalizedText
