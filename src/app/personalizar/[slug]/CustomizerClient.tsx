@@ -127,9 +127,9 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
     });
     if (!activeTier) return basePrice;
     
-    // Si la variante tiene un precio diferente al base, sumar la diferencia sobre el precio de escala
-    const delta = basePrice - product.price;
-    return activeTier.unitPrice + delta;
+    // Aplicar el descuento proporcionalmente según el precio de la variante
+    const discountFactor = product.price > 0 ? (activeTier.unitPrice / product.price) : 1;
+    return Math.round(basePrice * discountFactor);
   };
 
   const currentUnitPrice = getTieredPrice();
@@ -281,8 +281,8 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                   
                   // Calcular dinámicamente el precio de esta escala basándose en la variante actual
                   const basePrice = currentVariant?.price ?? product.price;
-                  const delta = basePrice - product.price;
-                  const tierPrice = tier.unitPrice + delta;
+                  const discountFactor = product.price > 0 ? (tier.unitPrice / product.price) : 1;
+                  const tierPrice = Math.round(basePrice * discountFactor);
                   const discount = basePrice > 0 ? Math.round(((basePrice - tierPrice) / basePrice) * 100) : 0;
                   
                   return (

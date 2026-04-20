@@ -63,7 +63,12 @@
     top: 0;
     height: 100vh;
     z-index: 2000;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebarCollapsed {
+    width: 80px;
+    padding: 2rem 0.8rem;
 }
 
 @media (max-width: 1024px) {
@@ -108,6 +113,44 @@
     background: #25D366;
     border-radius: 50%;
     display: inline-block;
+}
+
+.sidebarCollapsed .navItem span,
+.sidebarCollapsed .adminUser,
+.sidebarCollapsed .adminTitle,
+.sidebarCollapsed .sidebarHeader img {
+    display: none;
+}
+
+.sidebarCollapsed .navItem,
+.sidebarCollapsed .navItemActive {
+    justify-content: center;
+    padding: 0.8rem;
+}
+
+.toggleSidebarBtn {
+    position: absolute;
+    top: 1.5rem;
+    right: -12px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2001;
+    color: #64748b;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+
+.toggleSidebarBtn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
 }
 
 .nav {
@@ -191,7 +234,6 @@
 .content {
     flex: 1;
     padding: 4rem;
-    max-width: 1200px;
     width: 100%;
 }
 

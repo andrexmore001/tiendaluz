@@ -12,7 +12,10 @@ import {
     FileText,
     MessageSquare,
     Truck,
-    User
+    User,
+    ChevronLeft,
+    ChevronRight,
+    Search
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import { useSession, signOut } from 'next-auth/react';
@@ -61,6 +64,7 @@ export default function AdminPage() {
     const [notification, setNotification] = useState<string | null>(null);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [isMobileView, setIsMobileView] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     // Sync settings
     useEffect(() => { if (settings) setLocalSettings(settings); }, [settings]);
@@ -358,8 +362,20 @@ export default function AdminPage() {
 
             {mobileMenuOpen && <div className={styles.sidebarOverlay} onClick={() => setMobileMenuOpen(false)} />}
 
-            <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.sidebarOpen : ''}`}>
+            <aside className={`${styles.sidebar} ${isSidebarCollapsed ? styles.sidebarCollapsed : ''} ${mobileMenuOpen ? styles.sidebarOpen : ''}`}>
                 <div className={styles.mobileClose}><button onClick={() => setMobileMenuOpen(false)}><X size={24} /></button></div>
+                
+                {!isMobileView && (
+                    <button 
+                        type="button" 
+                        className={styles.toggleSidebarBtn}
+                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                        title={isSidebarCollapsed ? "Expandir menú" : "Colapsar menú"}
+                    >
+                        {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                    </button>
+                )}
+
                 <div className={styles.sidebarHeader}>
                     {settings.logo ? (
                         <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
