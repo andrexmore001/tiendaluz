@@ -8,6 +8,7 @@ import NextAuthConfig from '@/components/NextAuthConfig';
 import { CartProvider } from '@/context/CartContext';
 import CartDrawer from '@/components/CartDrawer';
 import Ticker from '@/components/Ticker';
+import MetaPixel from '@/components/MetaPixel';
 
 const inter = Inter({
   variable: "--font-body",
@@ -53,6 +54,7 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} ${playfair.variable}`}>
+        <MetaPixel />
         <NextAuthConfig>
           <SettingsProvider>
             <CartProvider>
