@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ShoppingCart, Menu, X } from 'lucide-react';
@@ -17,6 +17,8 @@ export default function Navbar() {
     const { settings } = useSettings();
     const { cartCount, toggleCart } = useCart();
 
+    const navRef = useRef<HTMLElement>(null);
+
     useEffect(() => {
         let lastY = 0;
         const onScroll = () => {
@@ -29,8 +31,27 @@ export default function Navbar() {
         return () => window.removeEventListener('scroll', onScroll);
     }, [isOpen]);
 
+    // Actualiza --nav-height basado en la altura real del componente
+    useEffect(() => {
+        const el = navRef.current;
+        if (!el) return;
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const h = entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height;
+                document.documentElement.style.setProperty('--nav-height', `${h}px`);
+            }
+        });
+
+        observer.observe(el);
+        // Set inicial
+        document.documentElement.style.setProperty('--nav-height', `${el.offsetHeight}px`);
+
+        return () => observer.disconnect();
+    }, []);
+
     return (
-        <nav className={`${styles.navbar} ${scrolled ? styles.scrolled : ''} ${hidden ? styles.hidden : ''}`}>
+        <nav ref={navRef} className={`${styles.navbar} ${scrolled ? styles.scrolled : ''} ${hidden ? styles.hidden : ''}`}>
             <div className={`${styles.container} container`}>
                 <button
                     className={styles.menuIcon}

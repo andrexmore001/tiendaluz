@@ -18,7 +18,7 @@
 
 /* Compensar el espacio del header fijo + ticker */
 :global(body) {
-    padding-top: calc(85px + var(--ticker-height, 0px));
+    padding-top: calc(var(--nav-height, 85px) + var(--ticker-height, 0px));
 }
 
 .scrolled {
