@@ -113,18 +113,6 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
     }
   }, [product?.displayMode]);
 
-  if (!isLoaded || !product) {
-    return (
-      <main style={{ minHeight: "100vh", background: "#fcfcfc", display: 'flex', flexDirection: 'column' }}>
-        <Navbar />
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <p>{!isLoaded ? "Cargando producto..." : "Producto no encontrado"}</p>
-        </div>
-        <Footer />
-      </main>
-    );
-  }
-
   const combinedGallery = useMemo(() => {
     if (!product) return [];
     
@@ -180,6 +168,18 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
       }
     }
   }, [currentVariant?.id, combinedGallery]);
+
+  if (!isLoaded || !product) {
+    return (
+      <main style={{ minHeight: "100vh", background: "#fcfcfc", display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p>{!isLoaded ? "Cargando producto..." : "Producto no encontrado"}</p>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   // Función para manejar el clic en miniatura con sincronización inversa
   const handlePhotoClick = (idx: number) => {

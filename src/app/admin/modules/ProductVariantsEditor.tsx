@@ -15,9 +15,24 @@ export default function ProductVariantsEditor({ formData, setFormData, attribute
 
     const handleAddAttribute = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const attrId = e.target.value;
-        if (!attrId || selectedAttributes.find(a => a.attrId === attrId)) return;
+        if (!attrId) return;
         
-        setSelectedAttributes([...selectedAttributes, { attrId, values: [] }]);
+        setSelectedAttributes(prev => {
+            // Si ya existe, no hacer nada
+            if (prev.find(a => a.attrId === attrId)) return prev;
+            // Forzar explícitamente el array de valores a vacío
+            return [...prev, { attrId, values: [] }];
+        });
+        
+        // Resetear el buscador para este atributo
+        setSearchTerms(prev => ({ ...prev, [attrId]: '' }));
+    };
+
+    const clearAllSelections = () => {
+        if (confirm('¿Deseas quitar todos los atributos seleccionados?')) {
+            setSelectedAttributes([]);
+            setSearchTerms({});
+        }
     };
 
     const handleBulkSelect = (attrIdx: number, selectAll: boolean) => {
@@ -118,6 +133,15 @@ export default function ProductVariantsEditor({ formData, setFormData, attribute
         <div style={{ background: '#f8fafc', padding: '1.5rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginTop: '1rem' }}>
             <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Layers size={18} /> Opciones y Variantes
+                {selectedAttributes.length > 0 && (
+                    <button 
+                        type="button" 
+                        onClick={clearAllSelections}
+                        style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#ef4444', background: '#fef2f2', border: '1px solid #fecaca', padding: '0.2rem 0.5rem', borderRadius: '4px', cursor: 'pointer' }}
+                    >
+                        Limpiar Todo
+                    </button>
+                )}
             </h3>
             
             <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.5rem' }}>
