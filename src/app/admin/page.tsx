@@ -257,7 +257,7 @@ export default function AdminPage() {
                 const data = await res.json();
 
                 if (data.url) {
-                    if (field === 'logo') setLocalSettings(prev => ({ ...prev, logo: data.url }));
+                    if (field === 'logo' || field === 'nequiQr') setLocalSettings(prev => ({ ...prev, [field]: data.url }));
                     else if (field === 'textureUrl') setMaterialFormData(prev => ({ ...prev, [field]: data.url }));
                     else {
                         setFormData(prev => {
