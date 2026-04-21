@@ -268,7 +268,7 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
                     {nequiQrUrl && (
                         <View style={{ width: 80, alignItems: 'center' }}>
                             <Image src={nequiQrUrl} style={{ width: 70, height: 70, objectFit: 'contain' }} />
-                            <Text style={{ fontSize: 7, color: '#64748b', marginTop: 4 }}>Paga con Nequi</Text>
+                            <Text style={{ fontSize: 7, color: '#64748b', marginTop: 4 }}>Paga con cualquier banco</Text>
                         </View>
                     )}
                 </View>
