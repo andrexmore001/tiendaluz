@@ -261,7 +261,7 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 30 }}>
                     <View style={{ flex: 1, paddingRight: 20 }}>
-                        <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, fontWeight: 'bold' }}>Términos y condiciones: https://www.artesana.com.co/terms</Text>
+                        <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, fontWeight: 'bold' }}>Términos y condiciones: https://artessana.vercel.app/</Text>
                         <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 5 }}>Términos de pago: {data.paymentTerms || 'pago inmediato'}</Text>
                         {data.notes && <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 10 }}>Notas: {data.notes}</Text>}
                     </View>
