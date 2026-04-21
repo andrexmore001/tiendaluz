@@ -93,6 +93,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             title: resSettings.title,
                             slug: resSettings.slug,
                             logo: resSettings.logo || '',
+                            nequiQr: resSettings.nequiQr || '',
                             colors: {
                                 primary: resSettings.primaryColor,
                                 secondary: resSettings.secondaryColor,

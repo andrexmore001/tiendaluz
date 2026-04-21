@@ -40,6 +40,7 @@ export async function POST(request: Request) {
             update: {
                 ...rest,
                 logo: rest?.logo,
+                nequiQr: rest?.nequiQr,
                 primaryColor: colors?.primary,
                 secondaryColor: colors?.secondary,
                 accentColor: colors?.accent,
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
                 id: 'site-settings',
                 ...rest,
                 logo: rest?.logo,
+                nequiQr: rest?.nequiQr,
                 primaryColor: colors?.primary,
                 secondaryColor: colors?.secondary,
                 accentColor: colors?.accent,
