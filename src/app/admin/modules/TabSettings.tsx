@@ -261,6 +261,56 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                     </div>
                 </section>
 
+                {/* Pagos y Cotizaciones */}
+                <section className={styles.settingsSection}>
+                    <h3><Plus size={20} /> Pagos y Cotizaciones</h3>
+                    <div className={styles.formStack}>
+                        <div className={styles.inputGroup}>
+                            <label>Código QR de Nequi / Daviplata</label>
+                            <div className={styles.formRow} style={{ marginTop: '0.5rem', gap: '2rem' }}>
+                                <div className={styles.uploadBox} style={{ flex: '0 0 150px' }}>
+                                    {localSettings.nequiQr ? (
+                                        <>
+                                            <img src={localSettings.nequiQr} alt="Nequi QR preview" className={styles.previewImg} />
+                                            <button
+                                                className={styles.deleteFileBtn}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setLocalSettings(prev => ({ ...prev, nequiQr: '' }));
+                                                }}
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <div className={styles.emptyUpload}>
+                                            <Plus size={24} />
+                                            <span>Subir QR</span>
+                                            <input type="file" accept="image/*" onChange={(e) => onFileUpload(e, 'nequiQr')} />
+                                        </div>
+                                    )}
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div className={styles.inputGroup} style={{ margin: 0 }}>
+                                        <label style={{ fontSize: '0.8rem', color: '#64748b' }}>O pega una URL de Cloudinary:</label>
+                                        <input
+                                            type="text"
+                                            value={localSettings.nequiQr || ''}
+                                            onChange={(e) => onChange('nequiQr', e.target.value)}
+                                            placeholder="https://res.cloudinary.com/..."
+                                            style={{ fontSize: '0.85rem' }}
+                                        />
+                                    </div>
+                                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>
+                                        <p style={{ margin: 0 }}>PNG o JPG recomendado. Tamaño sugerido: 400x400px.</p>
+                                        <p style={{ margin: '0.2rem 0 0 0' }}>El QR se incluirá en la parte inferior de los PDFs de cotización de forma automática.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Contact */}
                 <section className={styles.settingsSection}>
                     <h3><MessageCircle size={20} /> Información de Contacto</h3>

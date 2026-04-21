@@ -4,6 +4,7 @@ export interface SiteSettings {
     title: string;
     slug: string;
     logo?: string;
+    nequiQr?: string;
     colors: {
         primary: string;
         secondary: string;
@@ -36,6 +37,7 @@ export let siteSettings: SiteSettings = {
     title: 'Artesana',
     slug: 'artesana',
     logo: '',
+    nequiQr: '',
     colors: {
         primary: '#E8A2A2',
         secondary: '#F9F1E7',

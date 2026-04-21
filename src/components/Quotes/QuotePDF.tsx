@@ -176,9 +176,10 @@ interface QuotePDFProps {
         paymentTerms?: string;
     };
     logoUrl?: string;
+    nequiQrUrl?: string;
 }
 
-const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl }) => {
+const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
     const subtotal = data.items.reduce((acc, item) => acc + (item.qty * item.unitPrice), 0);
     const total = subtotal; // Simplified for now
 
@@ -258,10 +259,18 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl }) => {
                     </View>
                 </View>
 
-                <View style={styles.notes}>
-                    <Text style={{ fontWeight: 'bold' }}>Términos y condiciones: https://www.artesana.com.co/terms</Text>
-                    <Text style={{ marginTop: 5 }}>Términos de pago: {data.paymentTerms || 'pago inmediato'}</Text>
-                    {data.notes && <Text style={{ marginTop: 10 }}>Notas: {data.notes}</Text>}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 30 }}>
+                    <View style={{ flex: 1, paddingRight: 20 }}>
+                        <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, fontWeight: 'bold' }}>Términos y condiciones: https://www.artesana.com.co/terms</Text>
+                        <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 5 }}>Términos de pago: {data.paymentTerms || 'pago inmediato'}</Text>
+                        {data.notes && <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 10 }}>Notas: {data.notes}</Text>}
+                    </View>
+                    {nequiQrUrl && (
+                        <View style={{ width: 80, alignItems: 'center' }}>
+                            <Image src={nequiQrUrl} style={{ width: 70, height: 70, objectFit: 'contain' }} />
+                            <Text style={{ fontSize: 7, color: '#64748b', marginTop: 4 }}>Paga con Nequi</Text>
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.footer}>

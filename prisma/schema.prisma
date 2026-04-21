@@ -12,6 +12,7 @@ model Setting {
   title           String   @default("Artesana")
   slug            String   @default("artesana")
   logo            String?
+  nequiQr         String?
   primaryColor    String   @default("#E8A2A2")
   secondaryColor  String   @default("#F9F1E7")
   accentColor     String   @default("#D4AF37")

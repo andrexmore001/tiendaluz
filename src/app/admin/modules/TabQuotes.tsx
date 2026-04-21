@@ -342,7 +342,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
 
                         <div style={{ marginTop: '3rem' }}>
                             <PDFDownloadLink
-                                document={<QuotePDF data={quoteData} logoUrl={settings.logo} />}
+                                document={<QuotePDF data={quoteData} logoUrl={settings.logo} nequiQrUrl={settings.nequiQr} />}
                                 fileName={`Cotizacion_${quoteData.quoteNumber}_${quoteData.clientName}.pdf`}
                                 className="btn-primary"
                                 style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.5rem', textDecoration: 'none' }}
