@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     FileText,
     Plus,
@@ -45,6 +45,19 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedProductId, setSelectedProductId] = useState('');
+    const [searchOpen, setSearchOpen] = useState(false);
+    const comboboxRef = useRef<HTMLDivElement>(null);
+
+    // Cerrar el dropdown al hacer clic fuera del combobox
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
+                setSearchOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         fetchQuotes();
@@ -113,6 +126,12 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         p.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const selectProduct = (product: Product) => {
+        setSelectedProductId(product.id);
+        setSearchTerm(product.name);
+        setSearchOpen(false);
+    };
+
     const addItem = () => {
         const product = products.find(p => p.id === selectedProductId);
         if (!product) return;
@@ -124,10 +143,13 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 description: `${product.name} (${product.dimensions?.width}x${product.dimensions?.height}x${product.dimensions?.depth})`,
                 qty: 1,
                 unitPrice: product.price,
-                originalProduct: product // Keep reference for price tier calculation
+                originalProduct: product
             }]
         }));
+        // Limpiar selección
         setSelectedProductId('');
+        setSearchTerm('');
+        setSearchOpen(false);
     };
 
     const removeItem = (idx: number) => {
@@ -211,21 +233,58 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
 
                     <div className={styles.formGroup} style={{ marginTop: '2rem' }}>
                         <h3 className={styles.formGroupTitle}>Productos</h3>
-                        <div className={styles.addItemRow} style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-                            <div className={styles.searchSelectWrapper} style={{ flex: 1, position: 'relative' }}>
-                                <select
-                                    value={selectedProductId}
-                                    onChange={e => setSelectedProductId(e.target.value)}
-                                    className={styles.pSelect}
-                                    style={{ width: '100%' }}
-                                >
-                                    <option value="">Seleccionar producto...</option>
-                                    {products.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name} - ${p.price}</option>
-                                    ))}
-                                </select>
+                        <div className={styles.addItemRow} style={{ marginBottom: '1.5rem' }}>
+                            {/* Combobox con búsqueda */}
+                            <div className={styles.productSearchCombobox} ref={comboboxRef}>
+                                <div className={styles.searchBar}>
+                                    <Search size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Buscar producto por nombre..."
+                                        value={searchTerm}
+                                        onChange={e => {
+                                            setSearchTerm(e.target.value);
+                                            setSelectedProductId('');
+                                            setSearchOpen(true);
+                                        }}
+                                        onFocus={() => setSearchOpen(true)}
+                                    />
+                                    {searchTerm && (
+                                        <button
+                                            className={styles.clearSearchBtn}
+                                            onClick={() => {
+                                                setSearchTerm('');
+                                                setSelectedProductId('');
+                                                setSearchOpen(false);
+                                            }}
+                                            title="Limpiar"
+                                        >
+                                            ✕
+                                        </button>
+                                    )}
+                                </div>
+
+                                {searchOpen && searchTerm && (
+                                    <div className={styles.searchDropdown}>
+                                        {filteredProducts.length === 0 ? (
+                                            <p className={styles.searchDropdownEmpty}>No se encontraron productos</p>
+                                        ) : (
+                                            filteredProducts.slice(0, 8).map(p => (
+                                                <div
+                                                    key={p.id}
+                                                    className={`${styles.searchDropdownItem} ${selectedProductId === p.id ? styles.searchDropdownItemActive : ''}`}
+                                                    onClick={() => selectProduct(p)}
+                                                >
+                                                    <span className={styles.searchDropdownName}>{p.name}</span>
+                                                    <span className={styles.productBadgePrice}>${formatPrice(p.price)}</span>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                )}
                             </div>
-                            <button className="btn-primary" onClick={addItem} disabled={!selectedProductId}>
+
+                            <button className="btn-primary" onClick={addItem} disabled={!selectedProductId} title="Agregar producto">
                                 <Plus size={18} />
                             </button>
                         </div>
