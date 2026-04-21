@@ -18,7 +18,7 @@ export async function GET() {
             orderBy: { updatedAt: 'desc' },
         });
 
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://artesana.com.co';
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://artessana.vercel.app';
 
         const items = products.map((product: any) => {
             // Precio: si hay tiers, usar el precio del primer tier (menor cantidad), si no el precio base
@@ -43,7 +43,7 @@ export async function GET() {
             <availability>in stock</availability>
             <condition>new</condition>
             <price>${formatPrice(price)} COP</price>
-            <link>${baseUrl}/productos/${escapeXml(product.slug)}</link>
+            <link>${baseUrl}/personalizar/${escapeXml(product.slug)}</link>
             <image_link>${escapeXml(product.image || '')}</image_link>
             ${additionalImgTags}
             <brand>Artesana</brand>
