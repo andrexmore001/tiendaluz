@@ -114,3 +114,30 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+export async function DELETE(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const quoteNumber = searchParams.get('quoteNumber');
+
+        if (!quoteNumber) {
+            return NextResponse.json({ error: 'Quote number is required' }, { status: 400 });
+        }
+
+        // QuoteItem delete cascade is typically handled by Prisma if configured,
+        // but to be safe, we can delete items first or rely on onDelete: Cascade.
+        // Let's delete items first explicitly to avoid relation errors just in case.
+        await prisma.quoteItem.deleteMany({
+            where: { quote: { quoteNumber } }
+        });
+
+        await prisma.quote.delete({
+            where: { quoteNumber }
+        });
+
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting quote:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

@@ -44,6 +44,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const [isLoadingQuotes, setIsLoadingQuotes] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [historySearchTerm, setHistorySearchTerm] = useState('');
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [searchOpen, setSearchOpen] = useState(false);
     const comboboxRef = useRef<HTMLDivElement>(null);
@@ -100,26 +101,23 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         }
     };
 
-    const loadQuote = (quote: any) => {
-        setQuoteData({
-            quoteNumber: quote.quoteNumber,
-            date: quote.date,
-            expiryDate: quote.expiryDate,
-            vendor: quote.vendor,
-            clientName: quote.clientName,
-            clientNit: quote.clientNit,
-            billingAddress: quote.billingAddress,
-            shippingAddress: quote.shippingAddress,
-            items: quote.items.map((item: any) => {
-                const product = products.find(p => p.name === item.description.split(' (')[0]);
-                return {
-                    ...item,
-                    originalProduct: product
-                };
-            }),
-            notes: quote.notes || '',
-            paymentTerms: quote.paymentTerms || 'pago inmediato'
-        });
+    const deleteQuote = async (quoteNumber: string) => {
+        if (!confirm(`¿Estás seguro de que deseas eliminar la cotización ${quoteNumber}? Esta acción no se puede deshacer.`)) return;
+        setIsLoadingQuotes(true);
+        try {
+            const res = await fetch(`/api/quotes?quoteNumber=${quoteNumber}`, { method: 'DELETE' });
+            if (res.ok) {
+                setPastQuotes(prev => prev.filter(q => q.quoteNumber !== quoteNumber));
+                alert('Cotización eliminada con éxito');
+            } else {
+                alert('Error al eliminar la cotización');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error de conexión al eliminar');
+        } finally {
+            setIsLoadingQuotes(false);
+        }
     };
 
     const searchableItems = useMemo(() => {
@@ -157,6 +155,29 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         });
         return items;
     }, [products]);
+
+    const loadQuote = (quote: any) => {
+        setQuoteData({
+            quoteNumber: quote.quoteNumber,
+            date: quote.date,
+            expiryDate: quote.expiryDate,
+            vendor: quote.vendor,
+            clientName: quote.clientName,
+            clientNit: quote.clientNit,
+            billingAddress: quote.billingAddress,
+            shippingAddress: quote.shippingAddress,
+            items: quote.items.map((item: any) => {
+                const searchItem = searchableItems.find(si => si.name === item.description.split(' (')[0]);
+                return {
+                    ...item,
+                    originalProduct: searchItem?.originalProduct,
+                    variantId: searchItem?.variantId
+                };
+            }),
+            notes: quote.notes || '',
+            paymentTerms: quote.paymentTerms || 'pago inmediato'
+        });
+    };
 
     const filteredItems = searchableItems.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -433,21 +454,48 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                     <div className={styles.formGroup} style={{ marginTop: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h3 className={styles.formGroupTitle} style={{ margin: 0 }}><History size={16} /> Historial Reciente</h3>
-                            <button className={styles.refreshBtn} onClick={fetchQuotes} title="Actualizar">
-                                <RefreshCw size={14} className={isLoadingQuotes ? styles.animateSpin : ''} />
-                            </button>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <div style={{ position: 'relative' }}>
+                                    <Search size={14} style={{ position: 'absolute', left: '0.5rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Buscar por # o cliente..." 
+                                        value={historySearchTerm}
+                                        onChange={(e) => setHistorySearchTerm(e.target.value)}
+                                        style={{ padding: '0.3rem 0.5rem 0.3rem 1.8rem', fontSize: '0.8rem', borderRadius: '6px', border: '1px solid #cbd5e1', outline: 'none', width: '160px' }}
+                                    />
+                                </div>
+                                <button className={styles.refreshBtn} onClick={fetchQuotes} title="Actualizar">
+                                    <RefreshCw size={14} className={isLoadingQuotes ? styles.animateSpin : ''} />
+                                </button>
+                            </div>
                         </div>
-                        <div className={styles.quoteHistoryBox} style={{ maxHeight: '200px', overflowY: 'auto', background: '#f8fafc', borderRadius: '12px', padding: '0.5rem', border: '1px solid #e2e8f0' }}>
+                        <div className={styles.quoteHistoryBox} style={{ maxHeight: '250px', overflowY: 'auto', background: '#f8fafc', borderRadius: '12px', padding: '0.5rem', border: '1px solid #e2e8f0' }}>
                             {pastQuotes.length === 0 ? (
                                 <p style={{ fontSize: '0.8rem', color: '#94a3b8', textAlign: 'center', padding: '1rem' }}>No hay cotizaciones registradas.</p>
                             ) : (
-                                pastQuotes.map((q, idx) => (
-                                    <div key={idx} onClick={() => loadQuote(q)} style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0', cursor: 'pointer', transition: 'background 0.2s' }} className={styles.historyRow}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                                            <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{q.quoteNumber}</span>
-                                            <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{q.date}</span>
+                                pastQuotes
+                                .filter(q => 
+                                    q.quoteNumber.toLowerCase().includes(historySearchTerm.toLowerCase()) || 
+                                    (q.clientName || '').toLowerCase().includes(historySearchTerm.toLowerCase())
+                                )
+                                .map((q, idx) => (
+                                    <div key={idx} style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className={styles.historyRow}>
+                                        <div onClick={() => loadQuote(q)} style={{ cursor: 'pointer', flex: 1 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', paddingRight: '1rem' }}>
+                                                <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{q.quoteNumber}</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{q.date}</span>
+                                            </div>
+                                            <p style={{ fontSize: '0.8rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{q.clientName || 'Sin cliente'}</p>
                                         </div>
-                                        <p style={{ fontSize: '0.8rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{q.clientName || 'Sin cliente'}</p>
+                                        <button 
+                                            type="button" 
+                                            onClick={(e) => { e.stopPropagation(); deleteQuote(q.quoteNumber); }}
+                                            style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.3rem', borderRadius: '4px' }}
+                                            title="Eliminar cotización"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
                                     </div>
                                 ))
                             )}
