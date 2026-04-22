@@ -203,6 +203,8 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const hasData = quoteData.clientName || quoteData.items.length > 0 || quoteData.notes || quoteData.clientNit || quoteData.billingAddress || quoteData.shippingAddress;
+
     const selectProduct = (item: any) => {
         setSelectedItem(item);
         setSearchTerm(item.name);
@@ -448,13 +450,15 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 Guardar en Historial
                             </button>
 
-                            <button
-                                className={styles.secondaryBtn}
-                                style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', color: '#ef4444', borderColor: '#fecaca' }}
-                                onClick={resetForm}
-                            >
-                                <RotateCcw size={18} /> Limpiar Cotización
-                            </button>
+                            {hasData && (
+                                <button
+                                    className={styles.secondaryBtn}
+                                    style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', color: '#ef4444', borderColor: '#fecaca' }}
+                                    onClick={resetForm}
+                                >
+                                    <RotateCcw size={18} /> Limpiar Cotización
+                                </button>
+                            )}
 
                             <p style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', marginTop: '1rem' }}>
                                 Al descargar o guardar, la cotización quedará registrada en el historial.
