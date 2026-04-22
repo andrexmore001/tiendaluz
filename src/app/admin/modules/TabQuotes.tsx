@@ -11,7 +11,8 @@ import {
     MapPin,
     Hash,
     History,
-    RefreshCw
+    RefreshCw,
+    RotateCcw
 } from 'lucide-react';
 import { Product } from '@/types/product';
 import styles from '../admin.module.css';
@@ -177,6 +178,25 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             notes: quote.notes || '',
             paymentTerms: quote.paymentTerms || 'pago inmediato'
         });
+    };
+
+    const resetForm = () => {
+        if (!confirm('¿Estás seguro de que deseas limpiar todos los campos de la cotización actual?')) return;
+        setQuoteData({
+            quoteNumber: `S${Math.floor(10000 + Math.random() * 90000)}`,
+            date: new Date().toLocaleDateString('es-ES'),
+            expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
+            vendor: 'Administrador Artesana',
+            clientName: '',
+            clientNit: '',
+            billingAddress: '',
+            shippingAddress: '',
+            items: [] as any[],
+            notes: '',
+            paymentTerms: 'pago inmediato'
+        });
+        setSearchTerm('');
+        setSelectedItem(null);
     };
 
     const filteredItems = searchableItems.filter(item =>
@@ -426,6 +446,14 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                             >
                                 {isSaving ? <RefreshCw className={styles.animateSpin} size={18} /> : <FileText size={18} />}
                                 Guardar en Historial
+                            </button>
+
+                            <button
+                                className={styles.secondaryBtn}
+                                style={{ width: '100%', marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', color: '#ef4444', borderColor: '#fecaca' }}
+                                onClick={resetForm}
+                            >
+                                <RotateCcw size={18} /> Limpiar Cotización
                             </button>
 
                             <p style={{ fontSize: '0.75rem', color: '#94a3b8', textAlign: 'center', marginTop: '1rem' }}>
