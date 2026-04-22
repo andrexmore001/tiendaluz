@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     FileText,
     Plus,
@@ -44,7 +44,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const [isLoadingQuotes, setIsLoadingQuotes] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedProductId, setSelectedProductId] = useState('');
+    const [selectedItem, setSelectedItem] = useState<any>(null);
     const [searchOpen, setSearchOpen] = useState(false);
     const comboboxRef = useRef<HTMLDivElement>(null);
 
@@ -122,32 +122,70 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         });
     };
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const searchableItems = useMemo(() => {
+        const items: any[] = [];
+        products.forEach(p => {
+            if (p.variants && p.variants.length > 0) {
+                // Si tiene variantes, agregamos cada variante
+                p.variants.forEach(v => {
+                    const variantAttributesStr = v.attributes.map((a: any) => a.attributeValue.value).join(' - ');
+                    const variantName = `${p.name} - ${variantAttributesStr}`;
+                    items.push({
+                        id: v.id,
+                        productId: p.id,
+                        variantId: v.id,
+                        name: variantName,
+                        price: v.price ?? p.price,
+                        originalProduct: p,
+                        variant: v,
+                        dimensions: p.dimensions
+                    });
+                });
+            } else {
+                // Si no tiene variantes, agregamos el producto base
+                items.push({
+                    id: p.id,
+                    productId: p.id,
+                    name: p.name,
+                    price: p.price,
+                    originalProduct: p,
+                    dimensions: p.dimensions
+                });
+            }
+        });
+        return items;
+    }, [products]);
+
+    const filteredItems = searchableItems.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const selectProduct = (product: Product) => {
-        setSelectedProductId(product.id);
-        setSearchTerm(product.name);
+    const selectProduct = (item: any) => {
+        setSelectedItem(item);
+        setSearchTerm(item.name);
         setSearchOpen(false);
     };
 
     const addItem = () => {
-        const product = products.find(p => p.id === selectedProductId);
-        if (!product) return;
+        if (!selectedItem) return;
+
+        const dimensionsStr = selectedItem.dimensions 
+            ? ` (${selectedItem.dimensions.width}x${selectedItem.dimensions.height}x${selectedItem.dimensions.depth})`
+            : '';
 
         setQuoteData(prev => ({
             ...prev,
             items: [...prev.items, {
-                id: product.id,
-                description: `${product.name} (${product.dimensions?.width}x${product.dimensions?.height}x${product.dimensions?.depth})`,
+                id: selectedItem.variantId || selectedItem.productId,
+                description: selectedItem.name + dimensionsStr,
                 qty: 1,
-                unitPrice: product.price,
-                originalProduct: product
+                unitPrice: selectedItem.price,
+                originalProduct: selectedItem.originalProduct,
+                variantId: selectedItem.variantId
             }]
         }));
         // Limpiar selección
-        setSelectedProductId('');
+        setSelectedItem(null);
         setSearchTerm('');
         setSearchOpen(false);
     };
@@ -244,7 +282,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                         value={searchTerm}
                                         onChange={e => {
                                             setSearchTerm(e.target.value);
-                                            setSelectedProductId('');
+                                            setSelectedItem(null);
                                             setSearchOpen(true);
                                         }}
                                         onFocus={() => setSearchOpen(true)}
@@ -254,7 +292,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                             className={styles.clearSearchBtn}
                                             onClick={() => {
                                                 setSearchTerm('');
-                                                setSelectedProductId('');
+                                                setSelectedItem(null);
                                                 setSearchOpen(false);
                                             }}
                                             title="Limpiar"
@@ -266,17 +304,17 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
 
                                 {searchOpen && searchTerm && (
                                     <div className={styles.searchDropdown}>
-                                        {filteredProducts.length === 0 ? (
+                                        {filteredItems.length === 0 ? (
                                             <p className={styles.searchDropdownEmpty}>No se encontraron productos</p>
                                         ) : (
-                                            filteredProducts.slice(0, 8).map(p => (
+                                            filteredItems.slice(0, 8).map(item => (
                                                 <div
-                                                    key={p.id}
-                                                    className={`${styles.searchDropdownItem} ${selectedProductId === p.id ? styles.searchDropdownItemActive : ''}`}
-                                                    onClick={() => selectProduct(p)}
+                                                    key={item.id}
+                                                    className={`${styles.searchDropdownItem} ${selectedItem?.id === item.id ? styles.searchDropdownItemActive : ''}`}
+                                                    onClick={() => selectProduct(item)}
                                                 >
-                                                    <span className={styles.searchDropdownName}>{p.name}</span>
-                                                    <span className={styles.productBadgePrice}>${formatPrice(p.price)}</span>
+                                                    <span className={styles.searchDropdownName}>{item.name}</span>
+                                                    <span className={styles.productBadgePrice}>${formatPrice(item.price)}</span>
                                                 </div>
                                             ))
                                         )}
@@ -284,7 +322,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 )}
                             </div>
 
-                            <button className="btn-primary" onClick={addItem} disabled={!selectedProductId} title="Agregar producto">
+                            <button className="btn-primary" onClick={addItem} disabled={!selectedItem} title="Agregar producto">
                                 <Plus size={18} />
                             </button>
                         </div>
