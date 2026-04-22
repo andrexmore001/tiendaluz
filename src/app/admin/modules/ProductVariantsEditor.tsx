@@ -297,7 +297,7 @@ export default function ProductVariantsEditor({ formData, setFormData, attribute
                                         </div>
                                     </td>
                                     <td style={{ padding: '0.5rem' }}>
-                                        {v.attributes?.map((a: any) => a.value).join(' / ') || 'Default'}
+                                        {v.attributes?.map((a: any) => a.value || a.attributeValue?.value).filter(Boolean).join(' / ') || 'Default'}
                                     </td>
                                     <td style={{ padding: '0.5rem' }}>
                                         <input type="text" value={v.sku} onChange={e => handleVariantChange(idx, 'sku', e.target.value)} style={{ width: '100px', padding: '0.2rem' }} />
