@@ -1122,9 +1122,9 @@
     font-size: 0.9rem;
     font-weight: 500;
     color: #1e293b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.4;
 }
 
 .productBadgePrice {
