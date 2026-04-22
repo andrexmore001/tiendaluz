@@ -128,8 +128,10 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             if (p.variants && p.variants.length > 0) {
                 // Si tiene variantes, agregamos cada variante
                 p.variants.forEach(v => {
-                    const variantAttributesStr = v.attributes.map((a: any) => a.attributeValue.value).join(' - ');
-                    const variantName = `${p.name} - ${variantAttributesStr}`;
+                    const variantAttributesStr = v.attributes && v.attributes.length > 0 
+                        ? v.attributes.map((a: any) => a.attributeValue?.value).filter(Boolean).join(' - ') 
+                        : '';
+                    const variantName = variantAttributesStr ? `${p.name} - ${variantAttributesStr}` : p.name;
                     items.push({
                         id: v.id,
                         productId: p.id,
