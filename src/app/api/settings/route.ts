@@ -61,6 +61,7 @@ export async function POST(request: Request) {
                 tickerColor: rest?.tickerColor,
                 reviews: rest?.reviews || [],
                 homepageLayout: rest?.homepageLayout || ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
+                wompiEnabled: rest?.wompiEnabled ?? false,
             },
             create: {
                 id: 'site-settings',
@@ -87,6 +88,7 @@ export async function POST(request: Request) {
                 tickerColor: rest?.tickerColor,
                 reviews: rest?.reviews || [],
                 homepageLayout: rest?.homepageLayout || ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
+                wompiEnabled: rest?.wompiEnabled ?? false,
             },
         });
 

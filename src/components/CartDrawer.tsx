@@ -5,12 +5,14 @@ import { useSettings } from '@/context/SettingsContext';
 import { getOptimizedUrl } from '@/lib/cloudinary';
 import { getWhatsAppLink } from '@/lib/whatsapp';
 import { formatPrice } from '@/lib/format';
-import { X, Trash2, ShoppingBag, MessageCircle } from 'lucide-react';
+import { X, Trash2, ShoppingBag, MessageCircle, CreditCard } from 'lucide-react';
 import styles from './CartDrawer.module.css';
+import Script from 'next/script';
 
 export default function CartDrawer() {
   const { cartItems, isCartOpen, closeCart, updateQuantity, removeFromCart, cartTotal, getEffectivePrice } = useCart();
   const { settings } = useSettings();
+  const [isWompiLoading, setIsWompiLoading] = React.useState(false);
 
   const handleWhatsAppCheckout = () => {
     if (cartItems.length === 0) return;
@@ -26,6 +28,51 @@ export default function CartDrawer() {
 
     const message = `Hola, me gustaría realizar el siguiente pedido:\n\n${itemsText}\n\n*Total estimado:* $${formatPrice(cartTotal)}COP`;
     window.open(getWhatsAppLink(settings.contact.phone, message), "_blank");
+  };
+
+  const handleWompiCheckout = async () => {
+    if (cartItems.length === 0) return;
+    setIsWompiLoading(true);
+
+    try {
+      const reference = `Luz-${Date.now()}`;
+      
+      // 1. Obtener la firma de integridad desde el backend
+      const response = await fetch('/api/payments/wompi/integrity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: cartTotal,
+          reference
+        })
+      });
+
+      const { signature, amountInCents, publicKey } = await response.json();
+
+      // 2. Abrir el Widget de Wompi
+      // @ts-ignore
+      const checkout = new window.WidgetCheckout({
+        currency: 'COP',
+        amountInCents,
+        reference,
+        publicKey,
+        signature,
+        // redirectUrl: `${window.location.origin}/checkout/result` // Opcional
+      });
+
+      checkout.open((result: any) => {
+        const transaction = result.transaction;
+        if (transaction.status === 'APPROVED') {
+          // Aquí podríamos limpiar el carrito o redirigir
+          console.log('Pago aprobado!', transaction);
+        }
+      });
+    } catch (error) {
+      console.error('Error al iniciar pago con Wompi:', error);
+      alert('Hubo un error al conectar con la pasarela de pagos.');
+    } finally {
+      setIsWompiLoading(false);
+    }
   };
 
   return (
@@ -119,15 +166,31 @@ export default function CartDrawer() {
             <p className={styles.summaryTitle}>Total</p>
             <p className={styles.summaryValue}>${formatPrice(cartTotal)}</p>
           </div>
-          <button 
-            className={styles.checkoutBtn}
-            onClick={handleWhatsAppCheckout}
-            disabled={cartItems.length === 0}
-          >
-            <MessageCircle size={20} />
-            Finalizar por WhatsApp
-          </button>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {settings.wompiEnabled && (
+              <button 
+                className={styles.wompiBtn}
+                onClick={handleWompiCheckout}
+                disabled={cartItems.length === 0 || isWompiLoading}
+              >
+                <CreditCard size={20} />
+                {isWompiLoading ? 'Cargando...' : 'Pagar con Wompi'}
+              </button>
+            )}
+
+            <button 
+              className={styles.checkoutBtn}
+              onClick={handleWhatsAppCheckout}
+              disabled={cartItems.length === 0}
+            >
+              <MessageCircle size={20} />
+              Finalizar por WhatsApp
+            </button>
+          </div>
         </div>
+        <Script src="https://checkout.wompi.co/widget.js" strategy="lazyOnload" />
+      </div>
       </div>
     </>
   );

@@ -34,6 +34,7 @@ model Setting {
   tickerColor     String   @default("#E8A2A2")
   reviews         Json?
   homepageLayout  Json?
+  wompiEnabled    Boolean  @default(false)
   updatedAt       DateTime @updatedAt
 }
 

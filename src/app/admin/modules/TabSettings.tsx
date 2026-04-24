@@ -308,6 +308,28 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                                 </div>
                             </div>
                         </div>
+
+                        <div className={styles.inputGroup} style={{ marginTop: '1.5rem', padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div>
+                                    <label style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', marginBottom: '0.25rem', display: 'block' }}>Pasarela de Pagos Wompi</label>
+                                    <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Habilita pagos automáticos con Nequi, PSE y Tarjetas.</p>
+                                </div>
+                                <div className={styles.toggleWrapper}>
+                                    <label className={styles.switch}>
+                                        <input
+                                            type="checkbox"
+                                            checked={localSettings.wompiEnabled || false}
+                                            onChange={(e) => onChange('wompiEnabled', e.target.checked)}
+                                        />
+                                        <span className={styles.slider}></span>
+                                    </label>
+                                    <span style={{ fontSize: '0.85rem', fontWeight: 600, color: localSettings.wompiEnabled ? 'var(--primary)' : '#64748b', minWidth: '30px' }}>
+                                        {localSettings.wompiEnabled ? 'ON' : 'OFF'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

@@ -118,6 +118,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
                             tickerColor: resSettings.tickerColor || '#E8A2A2',
                             reviews: Array.isArray(resSettings.reviews) ? resSettings.reviews : [],
                             homepageLayout: Array.isArray(resSettings.homepageLayout) ? resSettings.homepageLayout : ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
+                            wompiEnabled: resSettings.wompiEnabled !== undefined ? resSettings.wompiEnabled : false,
                             updatedAt: resSettings.updatedAt
                         });
                     }

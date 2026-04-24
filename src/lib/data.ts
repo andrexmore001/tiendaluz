@@ -30,6 +30,7 @@ export interface SiteSettings {
     tickerColor?: string;
     reviews?: string[];
     homepageLayout?: string[];
+    wompiEnabled?: boolean;
     updatedAt?: string;
 }
 
@@ -59,7 +60,8 @@ export let siteSettings: SiteSettings = {
     tickerSpeed: 30,
     tickerColor: '#E8A2A2',
     reviews: [],
-    homepageLayout: ['categories', 'hero', 'split-hero', 'features', 'products']
+    homepageLayout: ['categories', 'hero', 'split-hero', 'features', 'products'],
+    wompiEnabled: false,
 };
 
 export const collections: Collection[] = [];
