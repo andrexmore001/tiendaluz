@@ -191,7 +191,6 @@ export default function CartDrawer() {
         </div>
         <Script src="https://checkout.wompi.co/widget.js" strategy="lazyOnload" />
       </div>
-      </div>
     </>
   );
 }
