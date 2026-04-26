@@ -31,17 +31,20 @@ export async function POST(request: Request) {
 
         // It is an update
         if (id && !id.startsWith('attr_')) {
-            // Eliminar valores antiguos (esto requeriría un borrado de cascada o manual)
-            await prisma.attributeValue.deleteMany({
+            // Obtener valores actuales para no duplicar ni borrar los que ya existen
+            const existingValues = await prisma.attributeValue.findMany({
                 where: { attributeId: id }
             });
+            
+            const existingValueStrings = existingValues.map(v => v.value);
+            const valuesToCreate = connectValues.filter((v: any) => !existingValueStrings.includes(v.value));
 
             attribute = await prisma.attribute.update({
                 where: { id },
                 data: {
                     name,
                     values: {
-                        create: connectValues
+                        create: valuesToCreate
                     }
                 },
                 include: { values: true }

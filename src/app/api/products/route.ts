@@ -151,11 +151,18 @@ export async function POST(request: Request) {
                         }
 
                         if (targetAttrId && targetValue) {
+                            const trimmedValue = String(targetValue).trim();
                             const attrVal = await prisma.attributeValue.findFirst({
-                                where: { attributeId: targetAttrId, value: String(targetValue) }
+                                where: { 
+                                    attributeId: targetAttrId, 
+                                    value: { equals: trimmedValue, mode: 'insensitive' }
+                                }
                             });
+                            
                             if (attrVal) {
                                 variantAttributes.push({ attributeValueId: attrVal.id });
+                            } else {
+                                console.warn(`[ProductSave] No se encontró el valor "${trimmedValue}" para el atributo ${targetAttrId}`);
                             }
                         }
                     }
