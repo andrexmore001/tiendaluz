@@ -110,6 +110,8 @@ export default function AdminPage() {
         priceTiers: [] as any[],
         variants: [] as any[],
         combineVariantsForTiers: false,
+        isVisible: true,
+        isRotationEnabled: true,
         hasRibbon: false,
         ribbonText: '',
         ribbonColor: '#D4AF37'
