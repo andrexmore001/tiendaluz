@@ -105,7 +105,7 @@ export default function AdminPage() {
     const [formData, setFormData] = useState({
         name: '', price: 0, costPrice: 0, supplierId: '', collectionId: collections[0]?.id || 'Todas', description: '',
         image: '',
-        images: [] as any[], width: 4, height: 2, depth: 4,
+        images: [] as any[], width: 0, height: 0, depth: 0,
         materialId: '', baseColor: '#F9F1E7',
         priceTiers: [] as any[],
         variants: [] as any[],
@@ -193,7 +193,7 @@ export default function AdminPage() {
             name: p.name, price: p.price, costPrice: p.costPrice || 0, supplierId: p.supplierId || '', collectionId: categoryIdToEdit, description: p.description,
             image: p.image || '',
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
-            width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
+            width: p.dimensions?.width || 0, height: p.dimensions?.height || 0, depth: p.dimensions?.depth || 0,
             materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
             priceTiers: p.priceTiers || [],
             variants: p.variants || [],

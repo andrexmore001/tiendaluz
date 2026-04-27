@@ -46,9 +46,9 @@ model Product {
   collection   Collection? @relation(fields: [collectionId], references: [id])
   description String
   image       String?
-  width       Float       @default(4)
-  height      Float       @default(2)
-  depth       Float       @default(4)
+  width       Float       @default(0)
+  height      Float       @default(0)
+  depth       Float       @default(0)
   materialId  String
   baseColor   String      @default("#F9F1E7")
   images      Json?

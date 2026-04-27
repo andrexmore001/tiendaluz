@@ -70,9 +70,9 @@ export async function POST(request: Request) {
             collectionId: rest.collectionId,
             description: rest.description || '',
             image: rest.image || '',
-            width: Number(dimensions?.width || rest.width || 4),
-            height: Number(dimensions?.height || rest.height || 2),
-            depth: Number(dimensions?.depth || rest.depth || 4),
+            width: Number(dimensions?.width || rest.width || 0),
+            height: Number(dimensions?.height || rest.height || 0),
+            depth: Number(dimensions?.depth || rest.depth || 0),
             materialId: materialId,
             baseColor: rest.baseColor || '#F9F1E7',
             images: images || [], // Now a JSON field
