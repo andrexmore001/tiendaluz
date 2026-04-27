@@ -117,14 +117,19 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                     />
                                     <span>Visible en la tienda</span>
                                 </label>
-                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none', color: formData.variants?.some((v: any) => v.image && v.image !== formData.image) ? 'inherit' : '#94a3b8' }}>
                                     <input
                                         type="checkbox"
                                         checked={formData.isRotationEnabled !== false}
                                         onChange={(e) => setFormData((prev: any) => ({ ...prev, isRotationEnabled: e.target.checked }))}
                                         style={{ marginRight: '0.75rem', width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
                                     />
-                                    <span>Rotación automática de imágenes</span>
+                                    <span>
+                                        Rotación automática de imágenes 
+                                        {!formData.variants?.some((v: any) => v.image && v.image !== formData.image) && (
+                                            <span style={{ fontSize: '0.75rem', marginLeft: '0.5rem', fontWeight: 'normal', color: '#94a3b8' }}>(Requiere variantes con foto)</span>
+                                        )}
+                                    </span>
                                 </label>
                             </div>
 
