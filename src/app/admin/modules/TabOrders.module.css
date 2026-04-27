@@ -154,7 +154,7 @@
     padding: 0 1rem 1.5rem 1rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.5rem;
     overflow-y: auto;
     flex: 1;
 }
@@ -177,6 +177,11 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-shrink: 0;
 }
 
 .card::before {
@@ -231,10 +236,13 @@
     font-size: 1.5rem;
     font-weight: 800;
     color: #1a2a3a;
-    margin: 1.25rem 0 2rem 0;
+    margin: 0.5rem 0;
     line-height: 1.1;
     font-family: var(--font-display, 'Playfair Display', serif);
     letter-spacing: -0.02em;
+    flex: 1;
+    display: flex;
+    align-items: center;
 }
 
 .cardFooter {
@@ -391,6 +399,29 @@
 .statusBtnActive::before {
     background: white;
     opacity: 1;
+}
+
+.priceDisplay {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #f1f5f9;
+}
+
+.priceLabel {
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.priceAmount {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #8B4B62;
+    font-family: var(--font-display, 'Playfair Display', serif);
 }
 
 .infoGrid {
@@ -616,14 +647,20 @@
     gap: 1.5rem;
 }
 
-.inputGroup label {
+.formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.formGroup label {
     font-size: 0.85rem;
     font-weight: 700;
     color: #475569;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
-.inputGroup input, .inputGroup select {
+.formGroup input, .formGroup select {
     padding: 0.9rem 1.2rem;
     border: 2px solid #f1f5f9;
     border-radius: 16px;
@@ -633,7 +670,7 @@
     background: #f8fafc;
 }
 
-.inputGroup input:focus, .inputGroup select:focus {
+.formGroup input:focus, .formGroup select:focus {
     border-color: #8B4B62;
     background: white;
     box-shadow: 0 4px 12px rgba(139, 75, 98, 0.05);

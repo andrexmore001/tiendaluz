@@ -217,7 +217,7 @@ export default function TabOrders() {
                                         <span className={styles.orderNumber}>{order.orderNumber}</span>
                                         <span className={styles.timeAgo}>{getTimeAgo(order.updatedAt)}</span>
                                     </div>
-                                    <h4 className={styles.customerName}>{order.customerName}</h4>
+                                    <h4 className={styles.customerName}>{order.customerName || 'Cliente sin nombre'}</h4>
                                     <div className={styles.cardFooter}>
                                         <span className={styles.amount}>{formatPrice(order.total)}</span>
                                         {order.notes.length > 0 && (
@@ -262,6 +262,14 @@ export default function TabOrders() {
                                             {s.name}
                                         </button>
                                     ))}
+                                </div>
+                            </div>
+
+                            <div className={styles.section}>
+                                <h3>Valor del Pedido</h3>
+                                <div className={styles.priceDisplay}>
+                                    <span className={styles.priceLabel}>Total Estimado</span>
+                                    <span className={styles.priceAmount}>{formatPrice(selectedOrder.total)}</span>
                                 </div>
                             </div>
 
@@ -343,25 +351,27 @@ export default function TabOrders() {
                             <button onClick={() => setShowNewOrderModal(false)}><X size={20} /></button>
                         </div>
                         <form onSubmit={handleCreateOrder} className={styles.modalForm}>
-                            <div className={styles.inputGroup}>
+                            <div className={styles.formGroup}>
                                 <label>Nombre del Cliente</label>
                                 <input 
                                     type="text" 
                                     required 
+                                    placeholder="Nombre completo"
                                     value={newOrderData.customerName}
                                     onChange={(e) => setNewOrderData({...newOrderData, customerName: e.target.value})}
                                 />
                             </div>
                             <div className={styles.formRow}>
-                                <div className={styles.inputGroup}>
+                                <div className={styles.formGroup}>
                                     <label>Teléfono</label>
                                     <input 
                                         type="text" 
+                                        placeholder="Ej: 300 123 4567"
                                         value={newOrderData.customerPhone}
                                         onChange={(e) => setNewOrderData({...newOrderData, customerPhone: e.target.value})}
                                     />
                                 </div>
-                                <div className={styles.inputGroup}>
+                                <div className={styles.formGroup}>
                                     <label>Total Estimado</label>
                                     <input 
                                         type="number" 
@@ -370,15 +380,16 @@ export default function TabOrders() {
                                     />
                                 </div>
                             </div>
-                            <div className={styles.inputGroup}>
+                            <div className={styles.formGroup}>
                                 <label>Email</label>
                                 <input 
                                     type="email" 
+                                    placeholder="correo@ejemplo.com"
                                     value={newOrderData.customerEmail}
                                     onChange={(e) => setNewOrderData({...newOrderData, customerEmail: e.target.value})}
                                 />
                             </div>
-                            <div className={styles.inputGroup}>
+                            <div className={styles.formGroup}>
                                 <label>Estado Inicial</label>
                                 <select 
                                     value={newOrderData.status}
