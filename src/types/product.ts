@@ -37,7 +37,6 @@ export interface Product {
     supplierId?: string | null;
     costPrice?: number;
     image: string;      // Base image for cards
-    displayMode?: 'photos' | '3d' | 'both';
     images?: {
         url: string;
         isCustomizable?: boolean;
@@ -55,7 +54,6 @@ export interface Product {
     };
     materialId?: string;
     baseColor?: string;
-    modelUrl?: string;
     priceTiers?: PriceTier[];
     variants?: ProductVariant[];
     updatedAt?: string;

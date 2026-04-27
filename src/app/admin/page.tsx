@@ -104,9 +104,9 @@ export default function AdminPage() {
 
     const [formData, setFormData] = useState({
         name: '', price: 0, costPrice: 0, supplierId: '', collectionId: collections[0]?.id || 'Todas', description: '',
-        image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
+        image: '',
         images: [] as any[], width: 4, height: 2, depth: 4,
-        materialId: '', baseColor: '#F9F1E7', modelUrl: '',
+        materialId: '', baseColor: '#F9F1E7',
         priceTiers: [] as any[],
         variants: [] as any[],
         combineVariantsForTiers: false,
@@ -119,7 +119,7 @@ export default function AdminPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [currentStep, setCurrentStep] = useState(1);
     const unreadCount = messages.filter(m => !m.read).length;
-    const totalSteps = formData.displayMode === 'photos' ? 2 : 3;
+    const totalSteps = 2;
 
     // Fix currentStep if it exceeds totalSteps
     useEffect(() => { if (currentStep > totalSteps) setCurrentStep(totalSteps); }, [totalSteps, currentStep]);
@@ -173,7 +173,7 @@ export default function AdminPage() {
         setFormData({
             ...formData,
             name: '', price: 0, costPrice: 0, supplierId: '', collectionId: collections[0]?.id || 'Todas', description: '',
-            image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
+            image: '', images: [], priceTiers: [],
             materialId: materials[0]?.id || '',
             variants: [],
             combineVariantsForTiers: false,
@@ -191,11 +191,10 @@ export default function AdminPage() {
 
         setFormData({
             name: p.name, price: p.price, costPrice: p.costPrice || 0, supplierId: p.supplierId || '', collectionId: categoryIdToEdit, description: p.description,
-            image: p.image || '', displayMode: p.displayMode || '3d',
+            image: p.image || '',
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
             width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
             materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
-            modelUrl: p.modelUrl || '',
             priceTiers: p.priceTiers || [],
             variants: p.variants || [],
             combineVariantsForTiers: p.combineVariantsForTiers || false,

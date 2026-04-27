@@ -2,13 +2,12 @@
 import { useState, use, useEffect, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ProductModel from "@/components/Three/ProductModel";
 import { useSettings } from "@/context/SettingsContext";
 import { useCart } from "@/context/CartContext";
 import { getOptimizedUrl } from "@/lib/cloudinary";
 import { formatPrice } from "@/lib/format";
 import { getWhatsAppLink } from "@/lib/whatsapp";
-import { Type, Image as ImageIcon, MessageCircle, ShoppingBag } from "lucide-react";
+import { Type, Image as ImageIcon, MessageCircle, ShoppingBag, Ruler } from "lucide-react";
 import styles from "./customizer.module.css";
 import { Product } from "@/types/product";
 
@@ -104,14 +103,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
     (materials.find((m) => m.id === product.materialId) ||
     materials.find((m) => m.id === "carton-kraft")) : undefined;
 
-  const [currentView, setCurrentView] = useState<'3d' | 'photos'>(product?.displayMode === 'photos' ? 'photos' : '3d');
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
-
-  useEffect(() => {
-    if (product) {
-      setCurrentView(product.displayMode === 'photos' ? 'photos' : '3d');
-    }
-  }, [product?.displayMode]);
 
   const combinedGallery = useMemo(() => {
     if (!product) return [];
@@ -232,11 +224,6 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
       <Navbar />
       <div className={`${styles.container} container`}>
         <div className={styles.visualizer}>
-          {currentView === '3d' ? (
-            <div style={{ width: '100%', height: '400px' }}>
-              <ProductModel modelUrl={product.modelUrl} />
-            </div>
-          ) : (
             <div className={styles.photoGallery}>
               <div className={styles.mainPhotoWrapper}>
                 <div className={styles.imageRelativeWrapper} style={{ position: 'relative' }}>
@@ -276,18 +263,6 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 ))}
               </div>
             </div>
-          )}
-          <div className={styles.visualizerControls} style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'center' }}>
-            {product.displayMode === 'both' && (
-              <button
-                className={styles.pBtn}
-                style={{ padding: '0.6rem 1.2rem', borderRadius: '10px', background: '#333', color: 'white', border: 'none', cursor: 'pointer' }}
-                onClick={() => setCurrentView(currentView === '3d' ? 'photos' : '3d')}
-              >
-                {currentView === '3d' ? "Ver Fotos" : "Ver 3D"}
-              </button>
-            )}
-          </div>
         </div>
         <aside className={styles.controls}>
           <div className={styles.productHeader}>
@@ -306,6 +281,14 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
                 <span style={{ fontSize: '0.8rem', background: '#e0ffe0', color: '#008000', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 600 }}>¡Precio por Volumen!</span>
               )}
             </p>
+
+            {product.dimensions && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', color: '#64748b', fontSize: '0.9rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <Ruler size={16} />
+                <span style={{ fontWeight: 600 }}>Dimensiones:</span>
+                <span>{product.dimensions.width} x {product.dimensions.height} x {product.dimensions.depth} cm</span>
+              </div>
+            )}
           </div>
 
           {availableAttributes.length > 0 && (
@@ -387,9 +370,8 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
             </div>
           )}
           {(() => {
-            const is3D = (product.displayMode === '3d' || product.displayMode === 'both' || !product.displayMode) && !!product.modelUrl;
             const hasCustomGallery = product.images && product.images.some((img: any) => img && typeof img === 'object' && img.isCustomizable);
-            if (is3D || hasCustomGallery) {
+            if (hasCustomGallery) {
               return (
                 <div className={styles.customSection}>
                   <h3><Type size={18} /> Texto Personalizado</h3>

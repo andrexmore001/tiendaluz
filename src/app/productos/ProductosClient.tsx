@@ -197,8 +197,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
 
                                 const hasConfigurableVariants = product.variants && product.variants.some((v: any) => v.attributes && v.attributes.length > 0);
                                 const hasCustomGallery = product.images && product.images.some((img: any) => img && typeof img === 'object' && img.isCustomizable);
-                                const is3D = (product.displayMode === '3d' || product.displayMode === 'both' || !product.displayMode) && !!product.modelUrl;
-                                const requiresCustomization = hasConfigurableVariants || hasCustomGallery || is3D;
+                                const requiresCustomization = hasConfigurableVariants || hasCustomGallery;
 
                                 return (
                                     <div key={product.id} className={styles.card} style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>

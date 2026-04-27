@@ -70,13 +70,11 @@ export async function POST(request: Request) {
             collectionId: rest.collectionId,
             description: rest.description || '',
             image: rest.image || '',
-            displayMode: rest.displayMode || '3d',
             width: Number(dimensions?.width || rest.width || 4),
             height: Number(dimensions?.height || rest.height || 2),
             depth: Number(dimensions?.depth || rest.depth || 4),
             materialId: materialId,
             baseColor: rest.baseColor || '#F9F1E7',
-            modelUrl: rest.modelUrl || '',
             images: images || [], // Now a JSON field
             isVisible: rest.isVisible !== undefined ? (typeof rest.isVisible === 'boolean' ? rest.isVisible : rest.isVisible === 'true') : true,
             slug: rest.slug || slugify(rest.name),

@@ -11,10 +11,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-const ProductModel = dynamic(() => import('@/components/Three/ProductModel'), {
-    ssr: false,
-    loading: () => <div className={styles.emptyState} style={{ height: '350px' }}>Cargando Modelo 3D...</div>
-});
+
 import ProductVariantsEditor from './ProductVariantsEditor';
 import styles from '../admin.module.css';
 
@@ -89,18 +86,16 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                 )}
 
                 <div className={styles.modalBody}>
-                    {/* Left/Top Side: 3D Preview (Only for 3D steps) */}
-                    <div className={`${styles.previewSection} ${((formData.displayMode === '3d' || formData.displayMode === 'both') && (isMobileView && currentStep === 2) || !isMobileView) ? '' : styles.hideOnMobile}`}>
-                        {(formData.displayMode === '3d' || formData.displayMode === 'both') ? (
-                            <>
-                                <div className={styles.adminBoxPreview}>
-                                    <ProductModel modelUrl={formData.modelUrl} />
-                                </div>
-                            </>
+                    {/* Left/Top Side: Main Photo Preview */}
+                    <div className={`${styles.previewSection} ${((isMobileView && currentStep === 2) || !isMobileView) ? '' : styles.hideOnMobile}`}>
+                        {formData.image ? (
+                            <div className={styles.adminBoxPreview}>
+                                <img src={formData.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                            </div>
                         ) : (
                             <div className={styles.emptyState} style={{ height: '350px' }}>
                                 <Smartphone size={48} style={{ opacity: 0.1, marginBottom: '1rem' }} />
-                                <p style={{ color: '#94a3b8' }}>Preview 3D no disponible en modo Fotos</p>
+                                <p style={{ color: '#94a3b8' }}>Sube una foto para ver la previa</p>
                             </div>
                         )}
                     </div>
@@ -110,26 +105,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                         <div className={`${styles.formGroup} ${styles.slideContent} ${(isMobileView && currentStep !== 1) ? styles.hideOnMobile : ''}`}>
                             <h3 className={styles.formGroupTitle}>Información Básica</h3>
 
-                            <div className={styles.inputGroup} style={{ marginBottom: '2rem' }}>
-                                <label>Modo de Visualización</label>
-                                <div className={styles.typeToggle}>
-                                    <button
-                                        type="button"
-                                        className={formData.displayMode === 'photos' ? styles.typeBtnActive : styles.typeBtn}
-                                        onClick={() => setFormData((prev: any) => ({ ...prev, displayMode: 'photos' }))}
-                                    >Solo Fotos</button>
-                                    <button
-                                        type="button"
-                                        className={formData.displayMode === '3d' ? styles.typeBtnActive : styles.typeBtn}
-                                        onClick={() => setFormData((prev: any) => ({ ...prev, displayMode: '3d' }))}
-                                    >Solo 3D</button>
-                                    <button
-                                        type="button"
-                                        className={formData.displayMode === 'both' ? styles.typeBtnActive : styles.typeBtn}
-                                        onClick={() => setFormData((prev: any) => ({ ...prev, displayMode: 'both' }))}
-                                    >Ambos</button>
-                                </div>
-                            </div>
+
 
                             <div className={styles.inputGroup} style={{ marginBottom: '2rem' }}>
                                 <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}>
@@ -248,73 +224,37 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                     placeholder="Describe las características del producto..."
                                 />
                             </div>
-                        </div>
 
-                        {/* STEP 2: 3D MECHANICS */}
-                        {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
-                            <div className={`${styles.formGroup} ${styles.slideContent} ${(isMobileView && currentStep !== 2) ? styles.hideOnMobile : ''}`}>
-                                <h3 className={styles.formGroupTitle}>Dimensiones y Mecánica</h3>
-
-
-                                <div className={styles.dimensionsRow}>
-                                    <div className={styles.inputGroup}>
-                                        <label>Ancho (cm)</label>
-                                        <input
-                                            type="number"
-                                            value={formData.width}
-                                            onChange={(e) => setFormData((prev: any) => ({ ...prev, width: parseInt(e.target.value) || 0 }))}
-                                        />
-                                    </div>
-                                    <div className={styles.inputGroup}>
-                                        <label>Alto (cm)</label>
-                                        <input
-                                            type="number"
-                                            value={formData.height}
-                                            onChange={(e) => setFormData((prev: any) => ({ ...prev, height: parseInt(e.target.value) || 0 }))}
-                                        />
-                                    </div>
-                                    <div className={styles.inputGroup}>
-                                        <label>Largo (cm)</label>
-                                        <input
-                                            type="number"
-                                            value={formData.depth}
-                                            onChange={(e) => setFormData((prev: any) => ({ ...prev, depth: parseInt(e.target.value) || 0 }))}
-                                        />
-                                    </div>
+                            <h4 style={{ margin: '1.5rem 0 1rem', fontSize: '0.9rem', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Dimensiones del Producto</h4>
+                            <div className={styles.dimensionsRow}>
+                                <div className={styles.inputGroup}>
+                                    <label>Ancho (cm)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.width}
+                                        onChange={(e) => setFormData((prev: any) => ({ ...prev, width: parseInt(e.target.value) || 0 }))}
+                                    />
                                 </div>
-
-                                <div className={styles.inputGroup} style={{ marginTop: '1.5rem' }}>
-                                    <label>Archivo de Modelo 3D (.glb, .gltf)</label>
-                                    <div className={styles.uploadBox}>
-                                        {formData.modelUrl ? (
-                                            <>
-                                                <div className={styles.fileInfo}>
-                                                    <Layers size={20} />
-                                                    <span>Modelo Cargado</span>
-                                                </div>
-                                                <button
-                                                    type="button"
-                                                    className={styles.deleteFileBtn}
-                                                    onClick={() => setFormData((prev: any) => ({ ...prev, modelUrl: '' }))}
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            </>
-                                        ) : (
-                                            <div className={styles.emptyUpload}>
-                                                <Plus size={20} />
-                                                <span>Subir Modelo 3D</span>
-                                            </div>
-                                        )}
-                                        <input
-                                            type="file"
-                                            accept=".glb,.gltf"
-                                            onChange={(e) => handleFileUpload(e, 'modelUrl')}
-                                        />
-                                    </div>
+                                <div className={styles.inputGroup}>
+                                    <label>Alto (cm)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.height}
+                                        onChange={(e) => setFormData((prev: any) => ({ ...prev, height: parseInt(e.target.value) || 0 }))}
+                                    />
+                                </div>
+                                <div className={styles.inputGroup}>
+                                    <label>Largo (cm)</label>
+                                    <input
+                                        type="number"
+                                        value={formData.depth}
+                                        onChange={(e) => setFormData((prev: any) => ({ ...prev, depth: parseInt(e.target.value) || 0 }))}
+                                    />
                                 </div>
                             </div>
-                        )}
+                        </div>
+
+
 
                         {/* STEP 3 (or 2): IMAGES & GALLERY */}
                         <div className={`${styles.formGroup} ${styles.slideContent} ${(isMobileView && currentStep !== totalSteps) ? styles.hideOnMobile : ''}`}>
@@ -352,39 +292,8 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                         />
                                     </div>
                                 </div>
-
-                                {(formData.displayMode === '3d' || formData.displayMode === 'both') && (
-                                    <div className={styles.inputGroup}>
-                                        <label>Diseño 3D (Arte)</label>
-                                        <div className={styles.uploadBox}>
-                                            {formData.boxTexture ? (
-                                                <>
-                                                    <img src={formData.boxTexture} alt="Preview" className={styles.previewImg} />
-                                                    <button
-                                                        type="button"
-                                                        className={styles.deleteFileBtn}
-                                                        onClick={() => setFormData((prev: any) => ({ ...prev, boxTexture: '' }))}
-                                                    >
-                                                        <Trash2 size={14} />
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <div className={styles.emptyUpload}>
-                                                    <Layers size={20} />
-                                                    <span>Subir Arte</span>
-                                                </div>
-                                            )}
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={(e) => handleFileUpload(e, 'boxTexture')}
-                                            />
-                                        </div>
-                                    </div>
-                                )}
                             </div>
 
-                            {(formData.displayMode === 'photos' || formData.displayMode === 'both') && (
                                 <div className={styles.gallerySection} style={{ marginTop: '2rem' }}>
                                     <label>Galería de Imágenes</label>
                                     <div className={styles.galleryGrid} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
@@ -474,7 +383,6 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                            )}
                         </div>
 
                         <div className={`${styles.sectionDivider} ${styles.slideContent} ${(isMobileView && currentStep !== totalSteps) ? styles.hideOnMobile : ''}`} style={{ margin: '2rem 0', borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>

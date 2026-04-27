@@ -46,13 +46,11 @@ model Product {
   collection   Collection? @relation(fields: [collectionId], references: [id])
   description String
   image       String?
-  displayMode String      @default("3d")
   width       Float       @default(4)
   height      Float       @default(2)
   depth       Float       @default(4)
   materialId  String
   baseColor   String      @default("#F9F1E7")
-  modelUrl    String?
   images      Json?
   slug        String?     @unique
   isVisible   Boolean     @default(true)

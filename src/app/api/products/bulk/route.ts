@@ -64,10 +64,10 @@ export async function POST(req: Request) {
                 else if (header === 'ancho' || header === 'width') product.width = parseFloat(value) || 0;
                 else if (header === 'alto' || header === 'height') product.height = parseFloat(value) || 0;
                 else if (header === 'profundidad' || header === 'depth') product.depth = parseFloat(value) || 0;
-                else if (header === 'modelo' || header === 'modelurl') product.modelUrl = value;
+
                 else if (header === 'material' || header === 'materialid') product.materialId = value;
                 else if (header === 'color' || header === 'basecolor') product.baseColor = value;
-                else if (header === 'modo' || header === 'displaymode') product.displayMode = value;
+
                 else if (header === 'visible' || header === 'isvisible') {
                     const normalized = value.toLowerCase().trim();
                     product.isVisible = normalized === 'true' || normalized === 'si' || normalized === 'sí' || normalized === '1';
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
             if (product.price === undefined) product.price = 0;
             if (!product.categoryText) product.categoryText = 'General';
             if (!product.description) product.description = '';
-            if (!product.displayMode) product.displayMode = '3d';
+
             if (!product.materialId) product.materialId = '';
             if (!product.baseColor) product.baseColor = '#F9F1E7';
 
