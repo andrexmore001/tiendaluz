@@ -48,7 +48,6 @@ export async function POST(req: Request) {
             total
         } = body;
 
-        // Helper to parse DD/MM/YYYY to Date object
         const parseDate = (dateStr: string) => {
             if (!dateStr) return null;
             if (dateStr.includes('/')) {
@@ -61,7 +60,6 @@ export async function POST(req: Request) {
         const parsedDate = parseDate(date) || new Date();
         const parsedExpiryDate = parseDate(expiryDate);
 
-        // Upsert by quoteNumber to prevent duplicates or allow updates
         const quote = await prisma.quote.upsert({
             where: { quoteNumber },
             update: {
@@ -108,6 +106,28 @@ export async function POST(req: Request) {
             }
         });
 
+        // Ensure Order exists for this Quote
+        const orderData = {
+            orderNumber: `ORD-${quote.quoteNumber}`,
+            customerName: quote.clientName,
+            total: quote.total,
+            items: items.map((i: any) => ({ name: i.description, qty: i.qty, price: i.unitPrice })),
+            status: 'QUOTE'
+        };
+
+        await prisma.order.upsert({
+            where: { quoteId: quote.id },
+            update: {
+                total: orderData.total,
+                customerName: orderData.customerName,
+                items: orderData.items
+            },
+            create: {
+                ...orderData,
+                quoteId: quote.id
+            }
+        });
+
         return NextResponse.json(quote);
     } catch (error) {
         console.error('Error saving quote:', error);
@@ -124,9 +144,6 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'Quote number is required' }, { status: 400 });
         }
 
-        // QuoteItem delete cascade is typically handled by Prisma if configured,
-        // but to be safe, we can delete items first or rely on onDelete: Cascade.
-        // Let's delete items first explicitly to avoid relation errors just in case.
         await prisma.quoteItem.deleteMany({
             where: { quote: { quoteNumber } }
         });

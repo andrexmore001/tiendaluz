@@ -7,6 +7,41 @@ export async function GET() {
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     try {
+        // Sync logic: Find quotes without orders and create them as orders in QUOTE stage
+        const quotesWithoutOrders = await prisma.quote.findMany({
+            where: {
+                order: null
+            },
+            include: {
+                items: true
+            }
+        });
+
+        for (const quote of quotesWithoutOrders) {
+            try {
+                const order = await prisma.order.create({
+                    data: {
+                        orderNumber: `ORD-${quote.quoteNumber}`,
+                        status: 'QUOTE',
+                        customerName: quote.clientName,
+                        total: quote.total,
+                        quoteId: quote.id,
+                        items: quote.items.map(i => ({ name: i.description, qty: i.qty, price: i.unitPrice }))
+                    }
+                });
+                
+                await prisma.orderNote.create({
+                    data: {
+                        orderId: order.id,
+                        content: `Pedido sincronizado automáticamente desde la cotización ${quote.quoteNumber}`
+                    }
+                });
+            } catch (syncErr) {
+                console.error(`Error syncing quote ${quote.quoteNumber}:`, syncErr);
+                // Continue with others
+            }
+        }
+
         const orders = await prisma.order.findMany({
             include: {
                 notes: {
