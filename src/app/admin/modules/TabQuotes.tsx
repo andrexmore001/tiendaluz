@@ -214,8 +214,10 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const addItem = () => {
         if (!selectedItem) return;
 
-        const dimensionsStr = selectedItem.dimensions 
-            ? ` (${selectedItem.dimensions.width}x${selectedItem.dimensions.height}x${selectedItem.dimensions.depth})`
+        const dimensions = selectedItem.dimensions;
+        const hasDimensions = dimensions && (dimensions.width > 0 || dimensions.height > 0 || dimensions.depth > 0);
+        const dimensionsStr = hasDimensions 
+            ? ` (${dimensions.width}x${dimensions.height}x${dimensions.depth})`
             : '';
 
         setQuoteData(prev => ({
@@ -421,6 +423,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 <span>Total</span>
                                 <span>${formatPrice(subtotal)}</span>
                             </div>
+
                         </div>
 
                         <div style={{ marginTop: '3rem' }}>

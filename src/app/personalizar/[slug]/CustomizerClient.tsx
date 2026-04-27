@@ -282,7 +282,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
               )}
             </p>
 
-            {product.dimensions && (
+            {product.dimensions && (product.dimensions.width > 0 || product.dimensions.height > 0 || product.dimensions.depth > 0) && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '1rem', color: '#64748b', fontSize: '0.9rem', background: '#f8fafc', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                 <Ruler size={16} />
                 <span style={{ fontWeight: 600 }}>Dimensiones:</span>
