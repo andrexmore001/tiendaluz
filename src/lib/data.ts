@@ -31,6 +31,7 @@ export interface SiteSettings {
     reviews?: string[];
     homepageLayout?: string[];
     wompiEnabled?: boolean;
+    rotationInterval?: number;
     updatedAt?: string;
 }
 
@@ -62,6 +63,7 @@ export let siteSettings: SiteSettings = {
     reviews: [],
     homepageLayout: ['categories', 'hero', 'split-hero', 'features', 'products'],
     wompiEnabled: false,
+    rotationInterval: 3,
 };
 
 export const collections: Collection[] = [];

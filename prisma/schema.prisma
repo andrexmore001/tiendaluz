@@ -22,6 +22,7 @@ model Setting {
   address         String   @default("Calle Falsa 123, Bogotá")
   instagram       String   @default("https://instagram.com/artesana")
   facebook        String   @default("https://facebook.com/artesana")
+  rotationInterval Int      @default(3)
   heroTitle       String?
   heroSubtitle    String?
   heroImages      Json?

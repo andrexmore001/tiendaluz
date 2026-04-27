@@ -10,13 +10,14 @@ import { formatPrice } from '@/lib/format';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight, Filter, X } from 'lucide-react';
 import styles from './productos.module.css';
+import { getRotatedImage } from '@/lib/imageRotation';
 
 interface ProductosClientProps {
     categorySlug?: string;
 }
 
 export default function ProductosClient({ categorySlug }: ProductosClientProps = {}) {
-    const { products, collections, materials } = useSettings();
+    const { products, collections, materials, settings } = useSettings();
     const { addToCart, getProductQuantity, updateQuantity, cartItems, openCart, getEffectivePrice } = useCart();
     
     const searchParams = useSearchParams();
@@ -199,6 +200,9 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                 const hasCustomGallery = product.images && product.images.some((img: any) => img && typeof img === 'object' && img.isCustomizable);
                                 const requiresCustomization = hasConfigurableVariants || hasCustomGallery;
 
+                                // Calculate rotated image
+                                const activeImage = getRotatedImage(product, settings?.rotationInterval || 3);
+
                                 return (
                                     <div key={product.id} className={styles.card} style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
                                         {(product as any).hasRibbon && (
@@ -208,7 +212,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                         )}
                                         <Link href={`/personalizar/${product.slug || product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
                                             <div className={styles.imageBox}>
-                                                <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />
+                                                <img src={getOptimizedUrl(activeImage, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />
                                             </div>
                                             <div className={styles.info}>
                                                 {product.collectionId && (

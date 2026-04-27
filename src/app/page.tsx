@@ -13,6 +13,7 @@ import { getOptimizedUrl } from '@/lib/cloudinary';
 import { formatPrice } from '@/lib/format';
 import Link from 'next/link';
 import styles from './page.module.css';
+import { getRotatedImage } from '@/lib/imageRotation';
 
 export default function Home() {
   const { products, collections, settings } = useSettings();
@@ -76,6 +77,9 @@ export default function Home() {
                 const hasCustomGallery = product.images && product.images.some((img: any) => img && typeof img === 'object' && img.isCustomizable);
                 const requiresCustomization = hasConfigurableVariants || hasCustomGallery;
 
+                // Calculate rotated image
+                const activeImage = getRotatedImage(product, settings?.rotationInterval || 3);
+
                 return (
                   <div key={product.id} className={styles.productCard} style={{ display: 'flex', flexDirection: 'column' }}>
                     {(product as any).hasRibbon && (
@@ -85,7 +89,7 @@ export default function Home() {
                     )}
                     <Link href={`/personalizar/${product.slug || product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
                       <div className={styles.productImage}>
-                        <img src={getOptimizedUrl(product.image, 500) || '/placeholder.png'} alt={product.name} loading="lazy" />
+                        <img src={getOptimizedUrl(activeImage, 500) || '/placeholder.png'} alt={product.name} loading="lazy" />
                       </div>
                       <div className={styles.productInfo}>
                         {product.collectionId && (

@@ -62,6 +62,7 @@ export async function POST(request: Request) {
                 reviews: rest?.reviews || [],
                 homepageLayout: rest?.homepageLayout || ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
                 wompiEnabled: rest?.wompiEnabled ?? false,
+                rotationInterval: rest?.rotationInterval ?? 3,
             },
             create: {
                 id: 'site-settings',
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
                 reviews: rest?.reviews || [],
                 homepageLayout: rest?.homepageLayout || ['categories', 'hero', 'split-hero', 'features', 'products', 'reviews'],
                 wompiEnabled: rest?.wompiEnabled ?? false,
+                rotationInterval: rest?.rotationInterval ?? 3,
             },
         });
 
