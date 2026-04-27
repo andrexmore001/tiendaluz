@@ -132,6 +132,7 @@ model Quote {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   items           QuoteItem[]
+  order           Order?
 }
 
 model QuoteItem {
@@ -185,4 +186,28 @@ model VariantAttributeValue {
   attributeValue   AttributeValue  @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
 
   @@id([variantId, attributeValueId])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  status          String      @default("LEAD") // LEAD, QUOTE, PROCESS, READY, DELIVERED, CANCELLED
+  customerName    String
+  customerEmail   String?
+  customerPhone   String?
+  total           Float       @default(0)
+  items           Json?       // Lista de productos o descripción libre
+  notes           OrderNote[]
+  quoteId         String?     @unique
+  quote           Quote?      @relation(fields: [quoteId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
