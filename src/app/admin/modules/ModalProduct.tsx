@@ -107,7 +107,7 @@ const ModalProduct: React.FC<ModalProductProps> = ({
 
 
 
-                            <div className={styles.inputGroup} style={{ marginBottom: '2rem' }}>
+                            <div className={styles.inputGroup} style={{ marginBottom: '1rem', display: 'flex', gap: '2rem' }}>
                                 <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}>
                                     <input
                                         type="checkbox"
@@ -115,7 +115,16 @@ const ModalProduct: React.FC<ModalProductProps> = ({
                                         onChange={(e) => setFormData((prev: any) => ({ ...prev, isVisible: e.target.checked }))}
                                         style={{ marginRight: '0.75rem', width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
                                     />
-                                    <span>Visible en la tienda (mostrar al cliente)</span>
+                                    <span>Visible en la tienda</span>
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', userSelect: 'none' }}>
+                                    <input
+                                        type="checkbox"
+                                        checked={formData.isRotationEnabled !== false}
+                                        onChange={(e) => setFormData((prev: any) => ({ ...prev, isRotationEnabled: e.target.checked }))}
+                                        style={{ marginRight: '0.75rem', width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+                                    />
+                                    <span>Rotación automática de imágenes</span>
                                 </label>
                             </div>
 

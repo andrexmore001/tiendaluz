@@ -77,6 +77,7 @@ export async function POST(request: Request) {
             baseColor: rest.baseColor || '#F9F1E7',
             images: images || [], // Now a JSON field
             isVisible: rest.isVisible !== undefined ? (typeof rest.isVisible === 'boolean' ? rest.isVisible : rest.isVisible === 'true') : true,
+            isRotationEnabled: rest.isRotationEnabled !== undefined ? (typeof rest.isRotationEnabled === 'boolean' ? rest.isRotationEnabled : rest.isRotationEnabled === 'true') : true,
             slug: rest.slug || slugify(rest.name),
             combineVariantsForTiers: Boolean(rest.combineVariantsForTiers || false),
             costPrice: costPrice !== undefined ? Number(costPrice) : null,

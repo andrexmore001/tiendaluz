@@ -55,6 +55,7 @@ model Product {
   images      Json?
   slug        String?     @unique
   isVisible   Boolean     @default(true)
+  isRotationEnabled Boolean @default(true)
   combineVariantsForTiers Boolean @default(false)
   costPrice   Float?
   hasRibbon   Boolean     @default(false)

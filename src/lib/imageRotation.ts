@@ -9,6 +9,11 @@ import { Product } from '@/types/product';
 export function getRotatedImage(product: any, intervalHours: number = 3): string {
     if (!product) return '';
     
+    // Check if rotation is disabled for this specific product
+    if (product.isRotationEnabled === false) {
+        return product.image || '';
+    }
+    
     // 1. Collect all unique images
     const images: string[] = [];
     if (product.image) images.push(product.image);

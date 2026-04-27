@@ -72,6 +72,10 @@ export async function POST(req: Request) {
                     const normalized = value.toLowerCase().trim();
                     product.isVisible = normalized === 'true' || normalized === 'si' || normalized === 'sí' || normalized === '1';
                 }
+                else if (header === 'rotacion' || header === 'rotación' || header === 'isrotationenabled') {
+                    const normalized = value.toLowerCase().trim();
+                    product.isRotationEnabled = normalized === 'true' || normalized === 'si' || normalized === 'sí' || normalized === '1';
+                }
                 else if (header === 'galeria' || header === 'gallery') {
                     const urls = value.split(';').map(u => u.trim()).filter(u => u !== '');
                     product.images = urls.map(url => ({ url, isCustomizable: false }));
