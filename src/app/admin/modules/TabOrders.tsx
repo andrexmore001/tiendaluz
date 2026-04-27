@@ -211,6 +211,7 @@ export default function TabOrders() {
                                     key={order.id} 
                                     className={`${styles.card} ${selectedOrder?.id === order.id ? styles.cardActive : ''}`}
                                     onClick={() => setSelectedOrder(order)}
+                                    style={{ '--stage-color': stage.color } as any}
                                 >
                                     <div className={styles.cardHeader}>
                                         <span className={styles.orderNumber}>{order.orderNumber}</span>
