@@ -177,6 +177,8 @@ export default function AdminPage() {
             materialId: materials[0]?.id || '',
             variants: [],
             combineVariantsForTiers: false,
+            isVisible: true,
+            isRotationEnabled: true,
             hasRibbon: false,
             ribbonText: '',
             ribbonColor: '#D4AF37'
@@ -198,6 +200,8 @@ export default function AdminPage() {
             priceTiers: p.priceTiers || [],
             variants: p.variants || [],
             combineVariantsForTiers: p.combineVariantsForTiers || false,
+            isVisible: p.isVisible !== false,
+            isRotationEnabled: (p as any).isRotationEnabled !== false,
             hasRibbon: (p as any).hasRibbon || false,
             ribbonText: (p as any).ribbonText || '',
             ribbonColor: (p as any).ribbonColor || '#D4AF37'
