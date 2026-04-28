@@ -61,13 +61,15 @@ export default function TabOrders() {
   const [editingTotal, setEditingTotal] = useState(false);
   const [editedTotal, setEditedTotal] = useState(0);
   const [showItems, setShowItems] = useState(false);
-  const [newOrder, setNewOrder] = useState({ customerName: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
+  const [newOrder, setNewOrder] = useState({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
   const [customerHistory, setCustomerHistory] = useState<{quotes: any[], orders: any[]}|null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
   const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
   const [showLostPrompt, setShowLostPrompt] = useState(false);
   const [lostReason, setLostReason] = useState('');
+  const [dateFilter, setDateFilter] = useState('all');
+  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
 
   const fetchCustomerSuggestions = async (q: string) => {
     if (q.length < 2) { setCustomerSuggestions([]); return; }
@@ -81,6 +83,7 @@ export default function TabOrders() {
       setNewOrder(prev => ({
           ...prev,
           customerName: c.name,
+          customerCompany: c.companyName || prev.customerCompany,
           customerEmail: c.email || prev.customerEmail,
           customerPhone: c.phone || prev.customerPhone,
       }));
@@ -187,7 +190,32 @@ export default function TabOrders() {
     const matchSearch = o.customerName.toLowerCase().includes(search.toLowerCase()) || o.orderNumber.toLowerCase().includes(search.toLowerCase());
     const matchInactive = !filterInactive || getDaysInactive(o.updatedAt) >= INACTIVITY_WARN;
     const isNotLost = o.status !== 'LOST';
-    return matchSearch && matchInactive && isNotLost;
+    
+    let matchDate = true;
+    if (dateFilter !== 'all') {
+        const orderDate = new Date(o.createdAt);
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        
+        if (dateFilter === 'today') {
+            matchDate = orderDate >= today;
+        } else if (dateFilter === 'week') {
+            const firstDay = new Date(today.setDate(today.getDate() - today.getDay() + (today.getDay() === 0 ? -6 : 1))); // Lunes
+            matchDate = orderDate >= firstDay;
+        } else if (dateFilter === 'month') {
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            matchDate = orderDate >= firstDay;
+        } else if (dateFilter === 'custom') {
+            if (customDateRange.start) {
+                matchDate = matchDate && orderDate >= new Date(customDateRange.start + 'T00:00:00');
+            }
+            if (customDateRange.end) {
+                matchDate = matchDate && orderDate <= new Date(customDateRange.end + 'T23:59:59');
+            }
+        }
+    }
+
+    return matchSearch && matchInactive && isNotLost && matchDate;
   });
 
   const byStage = (stageId: string) => filtered.filter(o => o.status === stageId);
@@ -211,6 +239,24 @@ export default function TabOrders() {
             <Search size={16} />
             <input placeholder="Buscar cliente o # pedido..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
+          <select 
+              value={dateFilter} 
+              onChange={e => setDateFilter(e.target.value)}
+              style={{ padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', background: 'white' }}
+          >
+              <option value="all">📅 Todo el tiempo</option>
+              <option value="today">📅 Hoy</option>
+              <option value="week">📅 Esta semana</option>
+              <option value="month">📅 Este mes</option>
+              <option value="custom">📅 Rango personalizado</option>
+          </select>
+          {dateFilter === 'custom' && (
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input type="date" value={customDateRange.start} onChange={e => setCustomDateRange(prev => ({...prev, start: e.target.value}))} style={{ padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' }} />
+                  <span style={{color: '#64748b'}}>-</span>
+                  <input type="date" value={customDateRange.end} onChange={e => setCustomDateRange(prev => ({...prev, end: e.target.value}))} style={{ padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' }} />
+              </div>
+          )}
           <button className={filterInactive ? styles.filterBtnActive : styles.filterBtn} onClick={() => setFilterInactive(p => !p)}>
             <AlertCircle size={15} />Inactivos
           </button>
@@ -587,6 +633,7 @@ export default function TabOrders() {
                     </div>
                 )}
               </div>
+              <div className={styles.field}><label>Empresa</label><input placeholder="Ej: Mandomedio SAS" value={newOrder.customerCompany} onChange={e => setNewOrder({ ...newOrder, customerCompany: e.target.value })} /></div>
               <div className={styles.fieldRow}>
                 <div className={styles.field}><label>Teléfono</label><input placeholder="300 123 4567" value={newOrder.customerPhone} onChange={e => setNewOrder({ ...newOrder, customerPhone: e.target.value })} /></div>
                 <div className={styles.field}><label>Total estimado</label><input type="number" value={newOrder.total} onChange={e => setNewOrder({ ...newOrder, total: parseFloat(e.target.value) || 0 })} /></div>

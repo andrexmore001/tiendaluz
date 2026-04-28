@@ -33,6 +33,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
         vendor: 'Administrador Artesana',
         clientName: '',
+        customerCompany: '',
         clientNit: '',
         billingAddress: '',
         shippingAddress: '',
@@ -66,6 +67,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         setQuoteData(prev => ({
             ...prev,
             clientName: c.name,
+            customerCompany: c.companyName || prev.customerCompany,
             clientNit: c.nit || prev.clientNit,
             billingAddress: c.billingAddress || prev.billingAddress,
             shippingAddress: c.shippingAddress || prev.shippingAddress,
@@ -303,7 +305,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                     <div className={styles.formGroup}>
                         <h3 className={styles.formGroupTitle}>Datos del Cliente</h3>
                         <div className={styles.inputGroup} style={{ position: 'relative' }}>
-                            <label><User size={14} /> Nombre del Cliente / Empresa</label>
+                            <label><User size={14} /> Nombre del Contacto *</label>
                             <input
                                 type="text"
                                 value={quoteData.clientName}
@@ -329,11 +331,20 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                         >
                                             <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{c.name}</div>
-                                            {(c.nit || c.email) && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{c.nit} {c.email ? `- ${c.email}` : ''}</div>}
+                                            {(c.companyName || c.nit || c.email) && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{c.companyName ? c.companyName + ' - ' : ''} NIT {c.nit} {c.email ? `- ${c.email}` : ''}</div>}
                                         </div>
                                     ))}
                                 </div>
                             )}
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label><User size={14} /> Nombre de la Empresa</label>
+                            <input
+                                type="text"
+                                value={quoteData.customerCompany}
+                                onChange={e => setQuoteData({ ...quoteData, customerCompany: e.target.value })}
+                                placeholder="Ej: Artesana SAS"
+                            />
                         </div>
                         <div className={styles.inputGroup}>
                             <label><Hash size={14} /> NIT / Identificación</label>

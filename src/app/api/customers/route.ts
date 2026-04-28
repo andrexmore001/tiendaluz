@@ -11,7 +11,12 @@ export async function GET(req: Request) {
 
     try {
         const customers = await prisma.customer.findMany({
-            where: q ? { name: { contains: q, mode: 'insensitive' } } : undefined,
+            where: q ? { 
+                OR: [
+                    { name: { contains: q, mode: 'insensitive' } },
+                    { companyName: { contains: q, mode: 'insensitive' } }
+                ]
+            } : undefined,
             include: {
                 _count: { select: { quotes: true, orders: true } },
                 quotes: { select: { total: true }, orderBy: { createdAt: 'desc' } },

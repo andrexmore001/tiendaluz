@@ -38,6 +38,7 @@ export async function POST(req: Request) {
             expiryDate,
             vendor,
             clientName,
+            customerCompany,
             clientNit,
             billingAddress,
             shippingAddress,
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
             customer = await prisma.customer.create({
                 data: {
                     name: clientName.trim(),
+                    companyName: customerCompany || null,
                     nit: clientNit || null,
                     billingAddress: billingAddress || null,
                     shippingAddress: shippingAddress || null,
@@ -79,6 +81,7 @@ export async function POST(req: Request) {
             await prisma.customer.update({
                 where: { id: customer.id },
                 data: {
+                    companyName: customerCompany || customer.companyName,
                     nit: clientNit || customer.nit,
                     billingAddress: billingAddress || customer.billingAddress,
                     shippingAddress: shippingAddress || customer.shippingAddress,
@@ -93,6 +96,7 @@ export async function POST(req: Request) {
                 expiryDate: parsedExpiryDate,
                 vendor,
                 clientName,
+                customerCompany: customerCompany || null,
                 clientNit,
                 billingAddress,
                 shippingAddress,
@@ -116,6 +120,7 @@ export async function POST(req: Request) {
                 expiryDate: parsedExpiryDate,
                 vendor,
                 clientName,
+                customerCompany: customerCompany || null,
                 clientNit,
                 billingAddress,
                 shippingAddress,
@@ -148,11 +153,13 @@ export async function POST(req: Request) {
             update: {
                 total: orderData.total,
                 customerName: orderData.customerName,
+                customerCompany: customerCompany || null,
                 customerId: customer.id,
                 items: orderData.items
             },
             create: {
                 ...orderData,
+                customerCompany: customerCompany || null,
                 quoteId: quote.id,
                 customerId: customer.id
             }

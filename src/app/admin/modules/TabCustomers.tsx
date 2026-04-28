@@ -11,6 +11,7 @@ import styles from './TabCustomers.module.css';
 interface Customer {
     id: string;
     name: string;
+    companyName?: string;
     nit?: string;
     phone?: string;
     email?: string;
@@ -35,7 +36,7 @@ const STAGE_LABELS: Record<string, string> = {
 };
 
 const EMPTY: Customer = {
-    id: '', name: '', nit: '', phone: '', email: '',
+    id: '', name: '', companyName: '', nit: '', phone: '', email: '',
     billingAddress: '', shippingAddress: '', notes: '',
     createdAt: '', quotesCount: 0, ordersCount: 0, totalValue: 0,
 };
@@ -132,6 +133,7 @@ export default function TabCustomers() {
 
     const filtered = customers.filter(c =>
         c.name.toLowerCase().includes(search.toLowerCase()) ||
+        (c.companyName || '').toLowerCase().includes(search.toLowerCase()) ||
         (c.nit || '').includes(search) ||
         (c.email || '').toLowerCase().includes(search.toLowerCase()) ||
         (c.phone || '').includes(search)
@@ -204,6 +206,7 @@ export default function TabCustomers() {
                                 <div className={styles.avatar}>{c.name.charAt(0).toUpperCase()}</div>
                                 <div className={styles.cardInfo}>
                                     <span className={styles.cardName}>{c.name}</span>
+                                    {c.companyName && <span style={{fontSize: '0.75rem', color: '#64748b', fontWeight: 'bold'}}>{c.companyName}</span>}
                                     {c.nit && <span className={styles.cardNit}>NIT {c.nit}</span>}
                                     <div className={styles.cardMeta}>
                                         {c.phone && <span><Phone size={11} />{c.phone}</span>}
@@ -233,6 +236,7 @@ export default function TabCustomers() {
                             <div className={styles.panelAvatar}>{selected.name.charAt(0).toUpperCase()}</div>
                             <div className={styles.panelTitle}>
                                 <h2>{selected.name}</h2>
+                                {selected.companyName && <span style={{fontSize: '0.85rem', color: '#64748b', fontWeight: 'bold', display: 'block'}}>{selected.companyName}</span>}
                                 {selected.nit && <span>NIT {selected.nit}</span>}
                             </div>
                             <div className={styles.panelActions}>
@@ -345,13 +349,17 @@ export default function TabCustomers() {
                         <form onSubmit={handleSave} className={styles.modalForm}>
                             <div className={styles.formRow}>
                                 <div className={styles.field}>
-                                    <label>Nombre / Empresa *</label>
-                                    <input required placeholder="Ej: Empresa SAS" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                                    <label>Nombre del Contacto *</label>
+                                    <input required placeholder="Ej: Juan Pérez" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
                                 </div>
                                 <div className={styles.field}>
-                                    <label>NIT / Identificación</label>
-                                    <input placeholder="900.000.000-1" value={form.nit || ''} onChange={e => setForm({ ...form, nit: e.target.value })} />
+                                    <label>Nombre de la Empresa</label>
+                                    <input placeholder="Ej: Empresa SAS" value={form.companyName || ''} onChange={e => setForm({ ...form, companyName: e.target.value })} />
                                 </div>
+                            </div>
+                            <div className={styles.field}>
+                                <label>NIT / Identificación</label>
+                                <input placeholder="900.000.000-1" value={form.nit || ''} onChange={e => setForm({ ...form, nit: e.target.value })} />
                             </div>
                             <div className={styles.formRow}>
                                 <div className={styles.field}>

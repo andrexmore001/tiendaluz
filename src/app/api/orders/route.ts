@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     try {
         const data = await request.json();
-        const { customerName, customerEmail, customerPhone, total, status, items, quoteId } = data;
+        const { customerName, customerCompany, customerEmail, customerPhone, total, status, items, quoteId } = data;
 
         // Generate unique order number (e.g. ART-2024-001)
         const date = new Date();
@@ -84,18 +84,20 @@ export async function POST(request: Request) {
             customer = await prisma.customer.create({
                 data: {
                     name: customerName.trim(),
+                    companyName: customerCompany || null,
                     email: customerEmail || null,
                     phone: customerPhone || null,
                 }
             });
         } else {
-            // Update email/phone if provided and missing
-            if ((customerEmail && !customer.email) || (customerPhone && !customer.phone)) {
+            // Update email/phone/company if provided and missing
+            if ((customerEmail && !customer.email) || (customerPhone && !customer.phone) || (customerCompany && !customer.companyName)) {
                 await prisma.customer.update({
                     where: { id: customer.id },
                     data: {
                         email: customerEmail || customer.email,
-                        phone: customerPhone || customer.phone
+                        phone: customerPhone || customer.phone,
+                        companyName: customerCompany || customer.companyName
                     }
                 });
             }
@@ -105,6 +107,7 @@ export async function POST(request: Request) {
             data: {
                 orderNumber,
                 customerName,
+                customerCompany: customerCompany || null,
                 customerEmail,
                 customerPhone,
                 total: Number(total || 0),

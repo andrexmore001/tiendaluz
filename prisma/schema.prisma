@@ -118,6 +118,7 @@ model User {
 model Customer {
   id              String   @id @default(cuid())
   name            String
+  companyName     String?
   nit             String?
   phone           String?
   email           String?
@@ -137,7 +138,8 @@ model Quote {
   expiryDate      DateTime?
   vendor          String
   clientName      String
-  clientNit       String
+  customerCompany String?
+  clientNit       String?
   billingAddress  String
   shippingAddress String
   notes           String?
@@ -210,6 +212,7 @@ model Order {
   orderNumber     String      @unique
   status          String      @default("LEAD") // LEAD, QUOTE, PROCESS, READY, DELIVERED, CANCELLED
   customerName    String
+  customerCompany String?
   customerEmail   String?
   customerPhone   String?
   total           Float       @default(0)
