@@ -16,7 +16,8 @@ import {
     ChevronLeft,
     ChevronRight,
     Search,
-    ArrowRightLeft
+    ArrowRightLeft,
+    Users
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import { useSession, signOut } from 'next-auth/react';

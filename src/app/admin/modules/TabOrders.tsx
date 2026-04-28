@@ -31,6 +31,8 @@ const STAGES = [
   { id: 'DELIVERED', name: 'Entregado', color: '#3b82f6', emoji: '✅' },
 ];
 
+const STAGE_COLORS: Record<string, string> = STAGES.reduce((acc, s) => ({ ...acc, [s.id]: s.color }), {});
+
 const INACTIVITY_WARN = 3;
 const INACTIVITY_DANGER = 7;
 
@@ -78,8 +80,6 @@ export default function TabOrders() {
     } catch { /* ignore */ }
     setLoadingHistory(false);
   };
-  const [customerHistory, setCustomerHistory] = useState<{quotes: any[], orders: any[]}|null>(null);
-  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
