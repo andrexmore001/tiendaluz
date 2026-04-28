@@ -69,11 +69,23 @@ export async function POST(request: Request) {
         const data = await request.json();
         const { customerName, customerCompany, customerEmail, customerPhone, total, status, items, quoteId, source } = data;
 
-        // Generate unique order number (e.g. ART-2024-001)
+        // Generate unique order number (e.g. ART-2024-0001)
         const date = new Date();
         const year = date.getFullYear();
-        const count = await prisma.order.count();
-        const orderNumber = `ART-${year}-${(count + 1).toString().padStart(4, '0')}`;
+        
+        const lastOrder = await prisma.order.findFirst({
+            where: { orderNumber: { startsWith: `ART-${year}-` } },
+            orderBy: { orderNumber: 'desc' },
+            select: { orderNumber: true }
+        });
+
+        let nextNumber = 1;
+        if (lastOrder) {
+            const lastNum = parseInt(lastOrder.orderNumber.split('-').pop() || '0');
+            nextNumber = lastNum + 1;
+        }
+        
+        const orderNumber = `ART-${year}-${nextNumber.toString().padStart(4, '0')}`;
 
         // Find or create customer
         let customer = await prisma.customer.findFirst({
