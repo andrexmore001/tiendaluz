@@ -61,7 +61,7 @@ export default function TabOrders() {
   const [editingTotal, setEditingTotal] = useState(false);
   const [editedTotal, setEditedTotal] = useState(0);
   const [showItems, setShowItems] = useState(false);
-  const [newOrder, setNewOrder] = useState({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
+  const [newOrder, setNewOrder] = useState({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD', source: 'whatsapp' });
   const [customerHistory, setCustomerHistory] = useState<{quotes: any[], orders: any[]}|null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
@@ -143,6 +143,19 @@ export default function TabOrders() {
     }
   };
 
+  const updateSource = async (id: string, source: string) => {
+    const res = await fetch(`/api/orders/${id}`, { 
+      method: 'PATCH', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ source }) 
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setOrders(p => p.map(o => o.id === id ? updated : o));
+      if (selectedOrder?.id === id) setSelectedOrder(updated);
+    }
+  };
+
   const addNote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOrder || !newNote.trim()) return;
@@ -165,7 +178,7 @@ export default function TabOrders() {
       const o = await res.json();
       setOrders(p => [o, ...p]);
       setShowNewModal(false);
-      setNewOrder({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
+      setNewOrder({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD', source: 'whatsapp' });
     }
   };
 
@@ -448,6 +461,41 @@ export default function TabOrders() {
                   )}
                 </div>
               </section>
+              {/* Source */}
+              <section>
+                <label className={styles.sectionLabel}>ORIGEN DEL LEAD</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <select 
+                        value={['whatsapp', 'facebook', 'instagram', 'referido', 'web'].includes(selectedOrder.source || '') ? (selectedOrder.source || 'whatsapp') : 'otro'} 
+                        onChange={e => {
+                            if (e.target.value !== 'otro') updateSource(selectedOrder.id, e.target.value);
+                        }}
+                        style={{ padding: '0.6rem', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem', outline: 'none' }}
+                    >
+                        <option value="whatsapp">WhatsApp 🟢</option>
+                        <option value="facebook">Facebook 🔵</option>
+                        <option value="instagram">Instagram 🟣</option>
+                        <option value="referido">Referido 🤝</option>
+                        <option value="web">Web / Orgánico 🌐</option>
+                        <option value="otro">Otro / Personalizado ✏️</option>
+                    </select>
+                    {(!['whatsapp', 'facebook', 'instagram', 'referido', 'web'].includes(selectedOrder.source || '') || (selectedOrder.source === 'otro')) && (
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input 
+                                type="text"
+                                placeholder="Especificar origen..."
+                                defaultValue={['whatsapp', 'facebook', 'instagram', 'referido', 'web'].includes(selectedOrder.source || '') ? '' : selectedOrder.source}
+                                onBlur={e => {
+                                    if (e.target.value.trim() && e.target.value !== selectedOrder.source) {
+                                        updateSource(selectedOrder.id, e.target.value.trim());
+                                    }
+                                }}
+                                style={{ flex: 1, padding: '0.6rem', borderRadius: '10px', border: '1.5px solid #8B4B62', background: 'white', fontSize: '0.88rem', outline: 'none' }}
+                            />
+                        </div>
+                    )}
+                </div>
+              </section>
               {/* Customer info */}
               <section>
                 <label className={styles.sectionLabel}>CLIENTE</label>
@@ -639,6 +687,32 @@ export default function TabOrders() {
                 <div className={styles.field}><label>Total estimado</label><input type="number" value={newOrder.total} onChange={e => setNewOrder({ ...newOrder, total: parseFloat(e.target.value) || 0 })} /></div>
               </div>
               <div className={styles.field}><label>Email</label><input type="email" placeholder="correo@ejemplo.com" value={newOrder.customerEmail} onChange={e => setNewOrder({ ...newOrder, customerEmail: e.target.value })} /></div>
+              <div className={styles.fieldRow}>
+                  <div className={styles.field}>
+                      <label>Origen del Lead</label>
+                      <select 
+                        value={['whatsapp', 'facebook', 'instagram', 'referido', 'web'].includes(newOrder.source) ? newOrder.source : 'otro'} 
+                        onChange={e => setNewOrder({ ...newOrder, source: e.target.value === 'otro' ? '' : e.target.value })}
+                      >
+                          <option value="whatsapp">WhatsApp 🟢</option>
+                          <option value="facebook">Facebook 🔵</option>
+                          <option value="instagram">Instagram 🟣</option>
+                          <option value="referido">Referido 🤝</option>
+                          <option value="web">Web / Orgánico 🌐</option>
+                          <option value="otro">Otro ✏️</option>
+                      </select>
+                  </div>
+                  {(!['whatsapp', 'facebook', 'instagram', 'referido', 'web'].includes(newOrder.source) || (newOrder.source === 'otro')) && (
+                      <div className={styles.field}>
+                          <label>Especificar Origen</label>
+                          <input 
+                            placeholder="Ej: TikTok, Expo..." 
+                            value={['whatsapp', 'facebook', 'instagram', 'referido', 'web'].includes(newOrder.source) ? '' : newOrder.source} 
+                            onChange={e => setNewOrder({ ...newOrder, source: e.target.value })}
+                          />
+                      </div>
+                  )}
+              </div>
               <div className={styles.field}><label>Etapa inicial</label>
                 <select value={newOrder.status} onChange={e => setNewOrder({ ...newOrder, status: e.target.value })}>
                   {STAGES.map(s => <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>)}
