@@ -165,7 +165,7 @@ export default function TabOrders() {
       const o = await res.json();
       setOrders(p => [o, ...p]);
       setShowNewModal(false);
-      setNewOrder({ customerName: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
+      setNewOrder({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
     }
   };
 
