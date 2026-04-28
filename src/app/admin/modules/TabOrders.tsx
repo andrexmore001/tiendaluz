@@ -1,411 +1,451 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import styles from './TabOrders.module.css';
-import { 
-    Search, 
-    Plus, 
-    MoreVertical, 
-    MessageSquare, 
-    Clock, 
-    User, 
-    Phone, 
-    Mail, 
-    ChevronRight,
-    ArrowRightLeft,
-    Trash2,
-    X
-} from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, FunnelChart, Funnel, Cell } from 'recharts';
+import { Search, Plus, MessageSquare, Clock, User, Phone, Mail, X, Trash2, TrendingUp, BarChart2, AlertCircle, Package, ChevronDown, ChevronUp, Edit2, Check } from 'lucide-react';
 import { formatPrice } from '@/lib/format';
+import styles from './TabOrders.module.css';
 
-interface OrderNote {
-    id: string;
-    content: string;
-    createdAt: string;
-}
-
+interface OrderNote { id: string; content: string; createdAt: string; }
+interface OrderItem { name: string; qty: number; price: number; }
 interface Order {
-    id: string;
-    orderNumber: string;
-    status: string;
-    customerName: string;
-    customerEmail?: string;
-    customerPhone?: string;
-    total: number;
-    items?: any;
-    notes: OrderNote[];
-    createdAt: string;
-    updatedAt: string;
+  id: string; orderNumber: string; status: string;
+  customerName: string; customerEmail?: string; customerPhone?: string;
+  total: number; items?: OrderItem[]; notes: OrderNote[];
+  createdAt: string; updatedAt: string;
+}
+interface Analytics {
+  totalPipeline: number; avgTicket: number; conversionRate: number;
+  totalActive: number; totalDelivered: number;
+  byStage: { stage: string; label: string; count: number; total: number }[];
+  revenueMonthly: { month: string; label: string; total: number }[];
+  topCustomers: { name: string; total: number }[];
+  avgDaysInPipeline: number;
 }
 
 const STAGES = [
-    { id: 'LEAD', name: 'Lead / Interesado', color: '#64748b' },
-    { id: 'QUOTE', name: 'Cotización', color: '#8B4B62' },
-    { id: 'PROCESS', name: 'En Proceso', color: '#D4AF37' },
-    { id: 'READY', name: 'Listo / Envío', color: '#10b981' },
-    { id: 'DELIVERED', name: 'Entregado', color: '#3b82f6' }
+  { id: 'LEAD', name: 'Lead', color: '#64748b', emoji: '🎯' },
+  { id: 'QUOTE', name: 'Cotización', color: '#8B4B62', emoji: '📋' },
+  { id: 'PROCESS', name: 'En Proceso', color: '#D4AF37', emoji: '⚙️' },
+  { id: 'READY', name: 'Listo', color: '#10b981', emoji: '📦' },
+  { id: 'DELIVERED', name: 'Entregado', color: '#3b82f6', emoji: '✅' },
 ];
 
+const INACTIVITY_WARN = 3;
+const INACTIVITY_DANGER = 7;
+
+function getDaysInactive(dateStr: string) {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
+
+function getTimeAgo(dateStr: string) {
+  const mins = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
+  if (mins < 60) return `${mins}m`;
+  if (mins < 1440) return `${Math.floor(mins / 60)}h`;
+  return `${Math.floor(mins / 1440)}d`;
+}
+
 export default function TabOrders() {
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-    const [newNote, setNewNote] = useState('');
-    const [isSavingNote, setIsSavingNote] = useState(false);
-    const [showNewOrderModal, setShowNewOrderModal] = useState(false);
-    const [newOrderData, setNewOrderData] = useState({
-        customerName: '',
-        customerPhone: '',
-        customerEmail: '',
-        total: 0,
-        status: 'LEAD'
-    });
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'kanban' | 'analytics'>('kanban');
+  const [search, setSearch] = useState('');
+  const [filterInactive, setFilterInactive] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [newNote, setNewNote] = useState('');
+  const [savingNote, setSavingNote] = useState(false);
+  const [showNewModal, setShowNewModal] = useState(false);
+  const [editingTotal, setEditingTotal] = useState(false);
+  const [editedTotal, setEditedTotal] = useState(0);
+  const [showItems, setShowItems] = useState(false);
+  const [newOrder, setNewOrder] = useState({ customerName: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
 
-    useEffect(() => {
-        fetchOrders();
-    }, []);
+  const fetchOrders = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch('/api/orders');
+    const data = await res.json();
+    if (Array.isArray(data)) setOrders(data);
+    setLoading(false);
+  }, []);
 
-    const fetchOrders = async () => {
-        setLoading(true);
-        try {
-            const res = await fetch('/api/orders');
-            const data = await res.json();
-            if (Array.isArray(data)) setOrders(data);
-        } catch (error) {
-            console.error('Error fetching orders:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchAnalytics = useCallback(async () => {
+    const res = await fetch('/api/orders/analytics');
+    const data = await res.json();
+    setAnalytics(data);
+  }, []);
 
-    const handleUpdateStatus = async (orderId: string, newStatus: string) => {
-        try {
-            const res = await fetch(`/api/orders/${orderId}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus })
-            });
-            if (res.ok) {
-                const updated = await res.json();
-                setOrders(prev => prev.map(o => o.id === orderId ? updated : o));
-                if (selectedOrder?.id === orderId) setSelectedOrder(updated);
-            }
-        } catch (error) {
-            console.error('Error updating status:', error);
-        }
-    };
+  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+  useEffect(() => { if (view === 'analytics') fetchAnalytics(); }, [view, fetchAnalytics]);
 
-    const handleAddNote = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedOrder || !newNote.trim()) return;
+  const updateStatus = async (id: string, status: string) => {
+    const res = await fetch(`/api/orders/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+    if (res.ok) {
+      const updated = await res.json();
+      setOrders(p => p.map(o => o.id === id ? updated : o));
+      if (selectedOrder?.id === id) setSelectedOrder(updated);
+    }
+  };
 
-        setIsSavingNote(true);
-        try {
-            const res = await fetch(`/api/orders/${selectedOrder.id}/notes`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: newNote })
-            });
-            if (res.ok) {
-                const note = await res.json();
-                const updatedOrder = {
-                    ...selectedOrder,
-                    notes: [note, ...selectedOrder.notes],
-                    updatedAt: new Date().toISOString()
-                };
-                setOrders(prev => prev.map(o => o.id === selectedOrder.id ? updatedOrder : o));
-                setSelectedOrder(updatedOrder);
-                setNewNote('');
-            }
-        } catch (error) {
-            console.error('Error adding note:', error);
-        } finally {
-            setIsSavingNote(false);
-        }
-    };
+  const updateTotal = async (id: string, total: number) => {
+    const res = await fetch(`/api/orders/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ total }) });
+    if (res.ok) {
+      const updated = await res.json();
+      setOrders(p => p.map(o => o.id === id ? updated : o));
+      setSelectedOrder(updated);
+      setEditingTotal(false);
+    }
+  };
 
-    const handleCreateOrder = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await fetch('/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(newOrderData)
-            });
-            if (res.ok) {
-                const order = await res.json();
-                setOrders(prev => [order, ...prev]);
-                setShowNewOrderModal(false);
-                setNewOrderData({ customerName: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
-            }
-        } catch (error) {
-            console.error('Error creating order:', error);
-        }
-    };
+  const addNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOrder || !newNote.trim()) return;
+    setSavingNote(true);
+    const res = await fetch(`/api/orders/${selectedOrder.id}/notes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: newNote }) });
+    if (res.ok) {
+      const note = await res.json();
+      const updated = { ...selectedOrder, notes: [note, ...selectedOrder.notes] };
+      setOrders(p => p.map(o => o.id === selectedOrder.id ? updated : o));
+      setSelectedOrder(updated);
+      setNewNote('');
+    }
+    setSavingNote(false);
+  };
 
-    const handleDeleteOrder = async (id: string) => {
-        if (!confirm('¿Estás seguro de eliminar este pedido?')) return;
-        try {
-            const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
-            if (res.ok) {
-                setOrders(prev => prev.filter(o => o.id !== id));
-                if (selectedOrder?.id === id) setSelectedOrder(null);
-            }
-        } catch (error) {
-            console.error('Error deleting order:', error);
-        }
-    };
+  const createOrder = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const res = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newOrder) });
+    if (res.ok) {
+      const o = await res.json();
+      setOrders(p => [o, ...p]);
+      setShowNewModal(false);
+      setNewOrder({ customerName: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
+    }
+  };
 
-    const filteredOrders = orders.filter(o => 
-        o.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        o.orderNumber.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+  const deleteOrder = async (id: string) => {
+    if (!confirm('¿Eliminar este pedido?')) return;
+    const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      setOrders(p => p.filter(o => o.id !== id));
+      if (selectedOrder?.id === id) setSelectedOrder(null);
+    }
+  };
 
-    const getOrdersByStage = (stageId: string) => filteredOrders.filter(o => o.status === stageId);
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    const { draggableId, destination } = result;
+    const newStatus = destination.droppableId;
+    const order = orders.find(o => o.id === draggableId);
+    if (order && order.status !== newStatus) updateStatus(draggableId, newStatus);
+  };
 
-    const getTimeAgo = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const minutes = Math.floor(diff / 60000);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
+  const filtered = orders.filter(o => {
+    const matchSearch = o.customerName.toLowerCase().includes(search.toLowerCase()) || o.orderNumber.toLowerCase().includes(search.toLowerCase());
+    const matchInactive = !filterInactive || getDaysInactive(o.updatedAt) >= INACTIVITY_WARN;
+    return matchSearch && matchInactive;
+  });
 
-        if (days > 0) return `Hace ${days} d`;
-        if (hours > 0) return `Hace ${hours} h`;
-        return `Hace ${minutes} m`;
-    };
+  const byStage = (stageId: string) => filtered.filter(o => o.status === stageId);
+  const stageTotal = (stageId: string) => byStage(stageId).reduce((s, o) => s + o.total, 0);
+  const totalPipeline = orders.filter(o => o.status !== 'DELIVERED').reduce((s, o) => s + o.total, 0);
+  const totalActive = orders.filter(o => o.status !== 'DELIVERED').length;
+  const delivered = orders.filter(o => o.status === 'DELIVERED').length;
+  const convRate = orders.length > 0 ? Math.round((delivered / orders.length) * 100) : 0;
+  const avgTicket = totalActive > 0 ? totalPipeline / totalActive : 0;
 
-    return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <div className={styles.searchBar}>
-                    <Search size={18} />
-                    <input 
-                        type="text" 
-                        placeholder="Buscar por cliente o # pedido..." 
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
-                <button className={styles.addButton} onClick={() => setShowNewOrderModal(true)}>
-                    <Plus size={18} />
-                    <span>Nuevo Pedido</span>
-                </button>
-            </div>
-
-            <div className={styles.kanbanBoard}>
-                {STAGES.map(stage => (
-                    <div key={stage.id} className={styles.column}>
-                        <div className={styles.columnHeader}>
-                            <div className={styles.columnTitle}>
-                                <span className={styles.stageDot} style={{ backgroundColor: stage.color }}></span>
-                                <h3>{stage.name}</h3>
-                                <span className={styles.count}>{getOrdersByStage(stage.id).length}</span>
-                            </div>
-                        </div>
-
-                        <div className={styles.cardList}>
-                            {getOrdersByStage(stage.id).map(order => (
-                                <div 
-                                    key={order.id} 
-                                    className={`${styles.card} ${selectedOrder?.id === order.id ? styles.cardActive : ''}`}
-                                    onClick={() => setSelectedOrder(order)}
-                                    style={{ '--stage-color': stage.color } as any}
-                                >
-                                    <div className={styles.cardHeader}>
-                                        <span className={styles.orderNumber}>{order.orderNumber}</span>
-                                        <span className={styles.timeAgo}>{getTimeAgo(order.updatedAt)}</span>
-                                    </div>
-                                    <h4 className={styles.customerName}>{order.customerName || 'Cliente sin nombre'}</h4>
-                                    <div className={styles.cardFooter}>
-                                        <span className={styles.amount}>{formatPrice(order.total)}</span>
-                                        {order.notes.length > 0 && (
-                                            <div className={styles.noteIndicator}>
-                                                <MessageSquare size={12} />
-                                                <span>{order.notes.length}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* SIDE PANEL FOR ORDER DETAILS */}
-            {selectedOrder && (
-                <div className={styles.sidePanelOverlay} onClick={() => setSelectedOrder(null)}>
-                    <div className={styles.sidePanel} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.panelHeader}>
-                            <div>
-                                <h2>{selectedOrder.orderNumber}</h2>
-                                <p className={styles.panelSubtitle}>{selectedOrder.customerName}</p>
-                            </div>
-                            <button className={styles.closePanel} onClick={() => setSelectedOrder(null)}>
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        <div className={styles.panelContent}>
-                            <div className={styles.section}>
-                                <h3>Estado del Pedido</h3>
-                                <div className={styles.statusGrid}>
-                                    {STAGES.map(s => (
-                                        <button 
-                                            key={s.id}
-                                            className={`${styles.statusBtn} ${selectedOrder.status === s.id ? styles.statusBtnActive : ''}`}
-                                            onClick={() => handleUpdateStatus(selectedOrder.id, s.id)}
-                                            style={{ '--active-color': s.color } as any}
-                                        >
-                                            {s.name}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className={styles.section}>
-                                <h3>Valor del Pedido</h3>
-                                <div className={styles.priceDisplay}>
-                                    <span className={styles.priceLabel}>Total Estimado</span>
-                                    <span className={styles.priceAmount}>{formatPrice(selectedOrder.total)}</span>
-                                </div>
-                            </div>
-
-                            <div className={styles.section}>
-                                <h3>Información del Cliente</h3>
-                                <div className={styles.infoGrid}>
-                                    <div className={styles.infoItem}>
-                                        <User size={16} />
-                                        <span>{selectedOrder.customerName}</span>
-                                    </div>
-                                    {selectedOrder.customerPhone && (
-                                        <div className={styles.infoItem}>
-                                            <Phone size={16} />
-                                            <a href={`https://wa.me/57${selectedOrder.customerPhone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">
-                                                {selectedOrder.customerPhone}
-                                            </a>
-                                        </div>
-                                    )}
-                                    {selectedOrder.customerEmail && (
-                                        <div className={styles.infoItem}>
-                                            <Mail size={16} />
-                                            <span>{selectedOrder.customerEmail}</span>
-                                        </div>
-                                    )}
-                                    <div className={styles.infoItem}>
-                                        <Clock size={16} />
-                                        <span>Creado: {new Date(selectedOrder.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className={styles.section}>
-                                <div className={styles.sectionHeader}>
-                                    <h3>Bitácora de Observaciones</h3>
-                                    <span className={styles.noteCount}>{selectedOrder.notes.length}</span>
-                                </div>
-                                
-                                <form onSubmit={handleAddNote} className={styles.noteForm}>
-                                    <textarea 
-                                        placeholder="Escribe una observación..." 
-                                        value={newNote}
-                                        onChange={(e) => setNewNote(e.target.value)}
-                                        rows={3}
-                                    />
-                                    <button type="submit" disabled={isSavingNote || !newNote.trim()}>
-                                        {isSavingNote ? 'Guardando...' : 'Añadir Nota'}
-                                    </button>
-                                </form>
-
-                                <div className={styles.notesTimeline}>
-                                    {selectedOrder.notes.map(note => (
-                                        <div key={note.id} className={styles.noteItem}>
-                                            <div className={styles.noteHeader}>
-                                                <span className={styles.noteDate}>{new Date(note.createdAt).toLocaleString()}</span>
-                                            </div>
-                                            <p className={styles.noteContent}>{note.content}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className={styles.panelFooter}>
-                                <button className={styles.deleteBtn} onClick={() => handleDeleteOrder(selectedOrder.id)}>
-                                    <Trash2 size={16} />
-                                    <span>Eliminar Pedido</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* NEW ORDER MODAL */}
-            {showNewOrderModal && (
-                <div className={styles.modalOverlay} onClick={() => setShowNewOrderModal(false)}>
-                    <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-                        <div className={styles.modalHeader}>
-                            <h2>Crear Nuevo Pedido</h2>
-                            <button onClick={() => setShowNewOrderModal(false)}><X size={20} /></button>
-                        </div>
-                        <form onSubmit={handleCreateOrder} className={styles.modalForm}>
-                            <div className={styles.formGroup}>
-                                <label>Nombre del Cliente</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    placeholder="Nombre completo"
-                                    value={newOrderData.customerName}
-                                    onChange={(e) => setNewOrderData({...newOrderData, customerName: e.target.value})}
-                                />
-                            </div>
-                            <div className={styles.formRow}>
-                                <div className={styles.formGroup}>
-                                    <label>Teléfono</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Ej: 300 123 4567"
-                                        value={newOrderData.customerPhone}
-                                        onChange={(e) => setNewOrderData({...newOrderData, customerPhone: e.target.value})}
-                                    />
-                                </div>
-                                <div className={styles.formGroup}>
-                                    <label>Total Estimado</label>
-                                    <input 
-                                        type="number" 
-                                        value={newOrderData.total}
-                                        onChange={(e) => setNewOrderData({...newOrderData, total: parseFloat(e.target.value) || 0})}
-                                    />
-                                </div>
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label>Email</label>
-                                <input 
-                                    type="email" 
-                                    placeholder="correo@ejemplo.com"
-                                    value={newOrderData.customerEmail}
-                                    onChange={(e) => setNewOrderData({...newOrderData, customerEmail: e.target.value})}
-                                />
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label>Estado Inicial</label>
-                                <select 
-                                    value={newOrderData.status}
-                                    onChange={(e) => setNewOrderData({...newOrderData, status: e.target.value})}
-                                >
-                                    {STAGES.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                            </div>
-                            <div className={styles.modalActions}>
-                                <button type="button" onClick={() => setShowNewOrderModal(false)}>Cancelar</button>
-                                <button type="submit" className={styles.confirmBtn}>Crear Pedido</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+  return (
+    <div className={styles.root}>
+      {/* TOP BAR */}
+      <div className={styles.topBar}>
+        <div className={styles.topLeft}>
+          <div className={styles.viewToggle}>
+            <button className={view === 'kanban' ? styles.viewBtnActive : styles.viewBtn} onClick={() => setView('kanban')}><BarChart2 size={16} />Kanban</button>
+            <button className={view === 'analytics' ? styles.viewBtnActive : styles.viewBtn} onClick={() => setView('analytics')}><TrendingUp size={16} />Analítica</button>
+          </div>
+          <div className={styles.searchBar}>
+            <Search size={16} />
+            <input placeholder="Buscar cliente o # pedido..." value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <button className={filterInactive ? styles.filterBtnActive : styles.filterBtn} onClick={() => setFilterInactive(p => !p)}>
+            <AlertCircle size={15} />Inactivos
+          </button>
         </div>
-    );
+        <button className={styles.addBtn} onClick={() => setShowNewModal(true)}><Plus size={18} />Nuevo Pedido</button>
+      </div>
+
+      {/* METRICS ROW */}
+      <div className={styles.metricsRow}>
+        <div className={styles.metric}><span className={styles.metricLabel}>Pipeline Total</span><span className={styles.metricValue}>{formatPrice(totalPipeline)}</span></div>
+        <div className={styles.metric}><span className={styles.metricLabel}>Ticket Promedio</span><span className={styles.metricValue}>{formatPrice(avgTicket)}</span></div>
+        <div className={styles.metric}><span className={styles.metricLabel}>Pedidos Activos</span><span className={styles.metricValue}>{totalActive}</span></div>
+        <div className={styles.metric}><span className={styles.metricLabel}>Tasa de Cierre</span><span className={`${styles.metricValue} ${styles.metricGreen}`}>{convRate}%</span></div>
+        <div className={styles.metric}><span className={styles.metricLabel}>Entregados</span><span className={`${styles.metricValue} ${styles.metricBlue}`}>{delivered}</span></div>
+      </div>
+
+      {/* KANBAN VIEW */}
+      {view === 'kanban' && (
+        <DragDropContext onDragEnd={onDragEnd}>
+          <div className={styles.board}>
+            {STAGES.map(stage => (
+              <div key={stage.id} className={styles.col}>
+                <div className={styles.colHeader} style={{ borderTopColor: stage.color }}>
+                  <div className={styles.colTitle}>
+                    <span>{stage.emoji}</span>
+                    <h3>{stage.name}</h3>
+                    <span className={styles.colCount}>{byStage(stage.id).length}</span>
+                  </div>
+                  <div className={styles.colTotal}>{formatPrice(stageTotal(stage.id))}</div>
+                </div>
+                <Droppable droppableId={stage.id}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className={`${styles.cardList} ${snapshot.isDraggingOver ? styles.draggingOver : ''}`}
+                    >
+                      {byStage(stage.id).map((order, idx) => {
+                        const days = getDaysInactive(order.updatedAt);
+                        const isWarn = days >= INACTIVITY_WARN && days < INACTIVITY_DANGER;
+                        const isDanger = days >= INACTIVITY_DANGER;
+                        return (
+                          <Draggable key={order.id} draggableId={order.id} index={idx}>
+                            {(prov, snap) => (
+                              <div
+                                ref={prov.innerRef}
+                                {...prov.draggableProps}
+                                {...prov.dragHandleProps}
+                                className={`${styles.card} ${selectedOrder?.id === order.id ? styles.cardActive : ''} ${snap.isDragging ? styles.cardDragging : ''}`}
+                                style={{ ...prov.draggableProps.style, '--stage-color': stage.color } as any}
+                                onClick={() => { setSelectedOrder(order); setShowItems(false); setEditingTotal(false); }}
+                              >
+                                <div className={styles.cardTop}>
+                                  <span className={styles.orderNum}>{order.orderNumber}</span>
+                                  <span className={styles.timeAgo}>{getTimeAgo(order.updatedAt)}</span>
+                                </div>
+                                <div className={styles.customerName}>{order.customerName}</div>
+                                {(isWarn || isDanger) && (
+                                  <div className={isDanger ? styles.badgeDanger : styles.badgeWarn}>
+                                    <AlertCircle size={11} />{days}d sin mover
+                                  </div>
+                                )}
+                                <div className={styles.cardBottom}>
+                                  <span className={styles.cardAmt}>{formatPrice(order.total)}</span>
+                                  <div className={styles.cardIcons}>
+                                    {order.notes.length > 0 && <span className={styles.noteChip}><MessageSquare size={11} />{order.notes.length}</span>}
+                                    {Array.isArray(order.items) && order.items.length > 0 && <span className={styles.itemChip}><Package size={11} />{order.items.length}</span>}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+            ))}
+          </div>
+        </DragDropContext>
+      )}
+
+      {/* ANALYTICS VIEW */}
+      {view === 'analytics' && analytics && (
+        <div className={styles.analytics}>
+          <div className={styles.analyticsGrid}>
+            <div className={styles.analyticsCard}>
+              <h4>Revenue Mensual (Entregados)</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={analytics.revenueMonthly}>
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `$${(v / 1000000).toFixed(1)}M`} />
+                  <Tooltip formatter={(v: any) => formatPrice(v)} />
+                  <Bar dataKey="total" fill="#8B4B62" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className={styles.analyticsCard}>
+              <h4>Embudo por Etapa</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={analytics.byStage} layout="vertical">
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="label" type="category" tick={{ fontSize: 11 }} width={80} />
+                  <Tooltip formatter={(v: any) => [`${v} pedidos`]} />
+                  <Bar dataKey="count" radius={[0, 6, 6, 0]}>
+                    {analytics.byStage.map((_, i) => (
+                      <Cell key={i} fill={STAGES[i]?.color || '#8B4B62'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className={styles.analyticsCard}>
+              <h4>Valor por Etapa</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={analytics.byStage} layout="vertical">
+                  <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={v => `$${(v / 1000000).toFixed(1)}M`} />
+                  <YAxis dataKey="label" type="category" tick={{ fontSize: 11 }} width={80} />
+                  <Tooltip formatter={(v: any) => formatPrice(v)} />
+                  <Bar dataKey="total" radius={[0, 6, 6, 0]}>
+                    {analytics.byStage.map((_, i) => (
+                      <Cell key={i} fill={STAGES[i]?.color || '#8B4B62'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className={styles.analyticsCard}>
+              <h4>Top 5 Clientes</h4>
+              <div className={styles.topCustomers}>
+                {analytics.topCustomers.map((c, i) => (
+                  <div key={i} className={styles.topCustomerRow}>
+                    <span className={styles.topCustomerRank}>#{i + 1}</span>
+                    <span className={styles.topCustomerName}>{c.name}</span>
+                    <span className={styles.topCustomerVal}>{formatPrice(c.total)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className={styles.analyticsStats}>
+                <div><span>Tasa de cierre</span><strong>{Math.round(analytics.conversionRate * 100)}%</strong></div>
+                <div><span>Días promedio</span><strong>{analytics.avgDaysInPipeline}d</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SIDE PANEL */}
+      {selectedOrder && (
+        <div className={styles.overlay} onClick={() => setSelectedOrder(null)}>
+          <div className={styles.panel} onClick={e => e.stopPropagation()}>
+            <div className={styles.panelHeader}>
+              <div>
+                <h2>{selectedOrder.orderNumber}</h2>
+                <p>{selectedOrder.customerName}</p>
+              </div>
+              <button className={styles.closeBtn} onClick={() => setSelectedOrder(null)}><X size={20} /></button>
+            </div>
+            <div className={styles.panelBody}>
+              {/* Stage selector */}
+              <section>
+                <label className={styles.sectionLabel}>ESTADO</label>
+                <div className={styles.stageGrid}>
+                  {STAGES.map(s => (
+                    <button key={s.id}
+                      className={`${styles.stageBtn} ${selectedOrder.status === s.id ? styles.stageBtnActive : ''}`}
+                      style={{ '--c': s.color } as any}
+                      onClick={() => updateStatus(selectedOrder.id, s.id)}
+                    >{s.emoji} {s.name}</button>
+                  ))}
+                </div>
+              </section>
+              {/* Total */}
+              <section>
+                <label className={styles.sectionLabel}>VALOR</label>
+                <div className={styles.totalRow}>
+                  {editingTotal ? (
+                    <>
+                      <input type="number" className={styles.totalInput} value={editedTotal} onChange={e => setEditedTotal(parseFloat(e.target.value) || 0)} autoFocus />
+                      <button className={styles.saveBtn} onClick={() => updateTotal(selectedOrder.id, editedTotal)}><Check size={16} />Guardar</button>
+                    </>
+                  ) : (
+                    <>
+                      <span className={styles.totalAmt}>{formatPrice(selectedOrder.total)}</span>
+                      <button className={styles.editBtn} onClick={() => { setEditedTotal(selectedOrder.total); setEditingTotal(true); }}><Edit2 size={14} /></button>
+                    </>
+                  )}
+                </div>
+              </section>
+              {/* Customer info */}
+              <section>
+                <label className={styles.sectionLabel}>CLIENTE</label>
+                <div className={styles.infoList}>
+                  <div className={styles.infoRow}><User size={14} /><span>{selectedOrder.customerName}</span></div>
+                  {selectedOrder.customerPhone && (
+                    <div className={styles.infoRow}><Phone size={14} />
+                      <a href={`https://wa.me/57${selectedOrder.customerPhone.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">{selectedOrder.customerPhone}</a>
+                    </div>
+                  )}
+                  {selectedOrder.customerEmail && <div className={styles.infoRow}><Mail size={14} /><span>{selectedOrder.customerEmail}</span></div>}
+                  <div className={styles.infoRow}><Clock size={14} /><span>Creado: {new Date(selectedOrder.createdAt).toLocaleDateString('es-CO')}</span></div>
+                </div>
+              </section>
+              {/* Items */}
+              {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 && (
+                <section>
+                  <div className={styles.sectionToggle} onClick={() => setShowItems(p => !p)}>
+                    <label className={styles.sectionLabel}><Package size={13} /> PRODUCTOS ({selectedOrder.items.length})</label>
+                    {showItems ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </div>
+                  {showItems && (
+                    <div className={styles.itemsList}>
+                      {selectedOrder.items.map((item, i) => (
+                        <div key={i} className={styles.itemRow}>
+                          <span className={styles.itemName}>{item.name}</span>
+                          <span className={styles.itemQty}>x{item.qty}</span>
+                          <span className={styles.itemPrice}>{formatPrice(item.price * item.qty)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+              )}
+              {/* Notes */}
+              <section>
+                <div className={styles.sectionHeader}>
+                  <label className={styles.sectionLabel}>OBSERVACIONES</label>
+                  <span className={styles.noteCount}>{selectedOrder.notes.length}</span>
+                </div>
+                <form onSubmit={addNote} className={styles.noteForm}>
+                  <textarea placeholder="Escribe una observación..." value={newNote} onChange={e => setNewNote(e.target.value)} rows={3} />
+                  <button type="submit" disabled={savingNote || !newNote.trim()}>{savingNote ? 'Guardando...' : 'Añadir nota'}</button>
+                </form>
+                <div className={styles.timeline}>
+                  {selectedOrder.notes.map(note => (
+                    <div key={note.id} className={styles.timelineItem}>
+                      <span className={styles.noteDate}>{new Date(note.createdAt).toLocaleString('es-CO')}</span>
+                      <p>{note.content}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+            <div className={styles.panelFooter}>
+              <button className={styles.deleteBtn} onClick={() => deleteOrder(selectedOrder.id)}><Trash2 size={15} />Eliminar pedido</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NEW ORDER MODAL */}
+      {showNewModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowNewModal(false)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}><h2>Nuevo Pedido</h2><button onClick={() => setShowNewModal(false)}><X size={20} /></button></div>
+            <form onSubmit={createOrder} className={styles.modalForm}>
+              <div className={styles.field}><label>Nombre *</label><input required placeholder="Nombre del cliente" value={newOrder.customerName} onChange={e => setNewOrder({ ...newOrder, customerName: e.target.value })} /></div>
+              <div className={styles.fieldRow}>
+                <div className={styles.field}><label>Teléfono</label><input placeholder="300 123 4567" value={newOrder.customerPhone} onChange={e => setNewOrder({ ...newOrder, customerPhone: e.target.value })} /></div>
+                <div className={styles.field}><label>Total estimado</label><input type="number" value={newOrder.total} onChange={e => setNewOrder({ ...newOrder, total: parseFloat(e.target.value) || 0 })} /></div>
+              </div>
+              <div className={styles.field}><label>Email</label><input type="email" placeholder="correo@ejemplo.com" value={newOrder.customerEmail} onChange={e => setNewOrder({ ...newOrder, customerEmail: e.target.value })} /></div>
+              <div className={styles.field}><label>Etapa inicial</label>
+                <select value={newOrder.status} onChange={e => setNewOrder({ ...newOrder, status: e.target.value })}>
+                  {STAGES.map(s => <option key={s.id} value={s.id}>{s.emoji} {s.name}</option>)}
+                </select>
+              </div>
+              <div className={styles.modalActions}>
+                <button type="button" onClick={() => setShowNewModal(false)}>Cancelar</button>
+                <button type="submit" className={styles.confirmBtn}>Crear Pedido</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {loading && <div className={styles.loadingOverlay}><div className={styles.spinner} /></div>}
+    </div>
+  );
 }
