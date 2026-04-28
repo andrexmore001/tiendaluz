@@ -5,6 +5,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, FunnelChart,
 import { Search, Plus, MessageSquare, Clock, User, Phone, Mail, X, Trash2, TrendingUp, BarChart2, AlertCircle, Package, ChevronDown, ChevronUp, Edit2, Check, FileText } from 'lucide-react';
 import { formatPrice } from '@/lib/format';
 import styles from './TabOrders.module.css';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import QuotePDF from '@/components/Quotes/QuotePDF';
 
 interface OrderNote { id: string; content: string; createdAt: string; }
 interface OrderItem { name: string; qty: number; price: number; }
@@ -50,7 +52,7 @@ function getTimeAgo(dateStr: string) {
   return `${Math.floor(mins / 1440)}d`;
 }
 
-export default function TabOrders({ products = [] }: { products?: any[] }) {
+export default function TabOrders({ products = [], settings }: { products?: any[], settings: any }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -641,15 +643,40 @@ export default function TabOrders({ products = [] }: { products?: any[] }) {
                                     Actualizar
                                 </button>
                             </div>
-                            <button 
-                                onClick={() => {
-                                    // Mock PDF download or redirect to Quote PDF view
-                                    alert('Generando PDF...');
-                                }}
-                                style={{ width: '100%', padding: '0.7rem', background: '#166534', color: 'white', border: 'none', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                            <PDFDownloadLink
+                                document={<QuotePDF 
+                                    data={{
+                                        quoteNumber: selectedOrder.quote.quoteNumber,
+                                        date: new Date(selectedOrder.quote.date).toLocaleDateString('es-ES'),
+                                        expiryDate: selectedOrder.quote.expiryDate ? new Date(selectedOrder.quote.expiryDate).toLocaleDateString('es-ES') : '',
+                                        vendor: selectedOrder.quote.vendor,
+                                        clientName: selectedOrder.quote.clientName,
+                                        clientNit: selectedOrder.quote.clientNit || '',
+                                        billingAddress: selectedOrder.quote.billingAddress,
+                                        shippingAddress: selectedOrder.quote.shippingAddress,
+                                        items: selectedOrder.quote.items.map((i: any) => ({
+                                            description: i.description,
+                                            qty: i.qty,
+                                            unitPrice: i.unitPrice
+                                        })),
+                                        notes: selectedOrder.quote.notes || '',
+                                        paymentTerms: selectedOrder.quote.paymentTerms || 'pago inmediato'
+                                    }}
+                                    logoUrl={settings.logo}
+                                    nequiQrUrl={settings.nequiQr}
+                                />}
+                                fileName={`Cotizacion_${selectedOrder.quote.quoteNumber}.pdf`}
+                                style={{ textDecoration: 'none' }}
                             >
-                                <FileText size={16} /> Descargar PDF
-                            </button>
+                                {({ loading: pdfLoading }: any) => (
+                                    <button 
+                                        disabled={pdfLoading}
+                                        style={{ width: '100%', padding: '0.7rem', background: '#166534', color: 'white', border: 'none', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                    >
+                                        <FileText size={16} /> {pdfLoading ? 'Preparando...' : 'Descargar PDF'}
+                                    </button>
+                                )}
+                            </PDFDownloadLink>
                         </div>
                     ) : (
                         <button 

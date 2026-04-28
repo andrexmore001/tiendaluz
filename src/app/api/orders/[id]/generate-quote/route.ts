@@ -61,15 +61,28 @@ export async function POST(
             }
         });
 
-        // Link back to order
+        // Link back to order and update status
         const updatedOrder = await prisma.order.update({
             where: { id },
-            data: { quoteId: quote.id },
+            data: { 
+                quoteId: quote.id,
+                status: 'QUOTE' 
+            },
             include: {
                 notes: { orderBy: { createdAt: 'desc' } },
                 quote: { include: { items: true } }
             }
         });
+
+        // Add note if status changed
+        if (order.status !== 'QUOTE') {
+            await prisma.orderNote.create({
+                data: {
+                    orderId: id,
+                    content: `Estado cambiado automáticamente a Cotización (QUOTE) al generar documento formal.`
+                }
+            });
+        }
 
         return NextResponse.json(updatedOrder);
     } catch (error) {
