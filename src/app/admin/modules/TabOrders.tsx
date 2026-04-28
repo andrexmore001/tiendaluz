@@ -13,6 +13,7 @@ interface Order {
   customerName: string; customerEmail?: string; customerPhone?: string;
   total: number; items?: OrderItem[]; notes: OrderNote[];
   createdAt: string; updatedAt: string; customerId?: string;
+  source?: string;
 }
 interface Analytics {
   totalPipeline: number; avgTicket: number; conversionRate: number;
