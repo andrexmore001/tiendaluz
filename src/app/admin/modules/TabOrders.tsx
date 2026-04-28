@@ -73,7 +73,7 @@ export default function TabOrders() {
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
 
   const fetchCustomerSuggestions = async (q: string) => {
-    if (q.length < 2) { setCustomerSuggestions([]); return; }
+    if (q.length < 1) { setCustomerSuggestions([]); return; }
     try {
         const res = await fetch(`/api/customers?q=${encodeURIComponent(q)}`);
         if (res.ok) setCustomerSuggestions(await res.json());

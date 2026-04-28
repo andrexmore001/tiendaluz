@@ -56,7 +56,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const customerRef = useRef<HTMLDivElement>(null);
 
     const fetchCustomerSuggestions = async (q: string) => {
-        if (q.length < 2) { setCustomerSuggestions([]); return; }
+        if (q.length < 1) { setCustomerSuggestions([]); return; }
         try {
             const res = await fetch(`/api/customers?q=${encodeURIComponent(q)}`);
             if (res.ok) setCustomerSuggestions(await res.json());
@@ -81,6 +81,9 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         const handleClickOutside = (e: MouseEvent) => {
             if (comboboxRef.current && !comboboxRef.current.contains(e.target as Node)) {
                 setSearchOpen(false);
+            }
+            if (customerRef.current && !customerRef.current.contains(e.target as Node)) {
+                setShowCustomerSuggestions(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -306,7 +309,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 <div className={styles.quoteForm}>
                     <div className={styles.formGroup}>
                         <h3 className={styles.formGroupTitle}>Datos del Cliente</h3>
-                        <div className={styles.inputGroup} style={{ position: 'relative' }}>
+                        <div className={styles.inputGroup} ref={customerRef} style={{ position: 'relative' }}>
                             <label><User size={14} /> Nombre del Contacto *</label>
                             <input
                                 type="text"
