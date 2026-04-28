@@ -88,7 +88,7 @@ export default function TabCustomers() {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
-        const { id, quotesCount, ordersCount, totalValue, quotes, orders, ...data } = form;
+        const { id, quotesCount, ordersCount, totalValue, quotes, orders, createdAt, ...data } = form;
         const res = editing
             ? await fetch(`/api/customers/${editing.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
             : await fetch('/api/customers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
