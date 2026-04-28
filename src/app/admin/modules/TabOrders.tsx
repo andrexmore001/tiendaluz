@@ -12,7 +12,7 @@ interface Order {
   id: string; orderNumber: string; status: string;
   customerName: string; customerEmail?: string; customerPhone?: string;
   total: number; items?: OrderItem[]; notes: OrderNote[];
-  createdAt: string; updatedAt: string;
+  createdAt: string; updatedAt: string; customerId?: string;
 }
 interface Analytics {
   totalPipeline: number; avgTicket: number; conversionRate: number;
@@ -60,6 +60,26 @@ export default function TabOrders() {
   const [editedTotal, setEditedTotal] = useState(0);
   const [showItems, setShowItems] = useState(false);
   const [newOrder, setNewOrder] = useState({ customerName: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
+  const [customerHistory, setCustomerHistory] = useState<{quotes: any[], orders: any[]}|null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const fetchCustomerHistory = async (customerId?: string) => {
+    if (!customerId) {
+        setCustomerHistory(null);
+        return;
+    }
+    setLoadingHistory(true);
+    try {
+        const res = await fetch(`/api/customers/${customerId}`);
+        if (res.ok) {
+            const data = await res.json();
+            setCustomerHistory({ quotes: data.quotes || [], orders: data.orders || [] });
+        }
+    } catch { /* ignore */ }
+    setLoadingHistory(false);
+  };
+  const [customerHistory, setCustomerHistory] = useState<{quotes: any[], orders: any[]}|null>(null);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -217,7 +237,7 @@ export default function TabOrders() {
                                 {...prov.dragHandleProps}
                                 className={`${styles.card} ${selectedOrder?.id === order.id ? styles.cardActive : ''} ${snap.isDragging ? styles.cardDragging : ''}`}
                                 style={{ ...prov.draggableProps.style, '--stage-color': stage.color } as any}
-                                onClick={() => { setSelectedOrder(order); setShowItems(false); setEditingTotal(false); }}
+                                onClick={() => { setSelectedOrder(order); setShowItems(false); setEditingTotal(false); fetchCustomerHistory(order.customerId); }}
                               >
                                 <div className={styles.cardTop}>
                                   <span className={styles.orderNum}>{order.orderNumber}</span>
@@ -389,6 +409,43 @@ export default function TabOrders() {
                         </div>
                       ))}
                     </div>
+                  )}
+                </section>
+              )}
+              {/* Customer History */}
+              {selectedOrder.customerId && (
+                <section>
+                  <label className={styles.sectionLabel}>HISTORIAL DEL CLIENTE</label>
+                  {loadingHistory ? (
+                      <p style={{fontSize: '0.8rem', color: '#94a3b8'}}>Cargando historial...</p>
+                  ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          {customerHistory?.quotes && customerHistory.quotes.length > 0 && (
+                              <div style={{ background: 'white', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#64748b', marginBottom: '0.5rem' }}>COTIZACIONES ({customerHistory.quotes.length})</div>
+                                  {customerHistory.quotes.map((q: any) => (
+                                      <div key={q.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.2rem', color: '#475569' }}>
+                                          <span style={{ fontWeight: '600' }}>{q.quoteNumber}</span>
+                                          <span style={{ color: '#8B4B62', fontWeight: 'bold' }}>{formatPrice(q.total)}</span>
+                                      </div>
+                                  ))}
+                              </div>
+                          )}
+                          {customerHistory?.orders && customerHistory.orders.length > 1 && (
+                              <div style={{ background: 'white', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#64748b', marginBottom: '0.5rem' }}>OTROS PEDIDOS ({customerHistory.orders.length - 1})</div>
+                                  {customerHistory.orders.filter((o:any) => o.id !== selectedOrder.id).map((o: any) => (
+                                      <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.2rem', color: '#475569' }}>
+                                          <span style={{ fontWeight: '600' }}>{o.orderNumber}</span>
+                                          <span style={{ background: STAGE_COLORS[o.status] ? `${STAGE_COLORS[o.status]}15` : '#f1f5f9', color: STAGE_COLORS[o.status] || '#64748b', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>{STAGES.find(s=>s.id===o.status)?.name || o.status}</span>
+                                      </div>
+                                  ))}
+                              </div>
+                          )}
+                          {customerHistory && customerHistory.quotes.length === 0 && customerHistory.orders.length <= 1 && (
+                              <p style={{fontSize: '0.8rem', color: '#94a3b8'}}>No hay otro historial para este cliente.</p>
+                          )}
+                      </div>
                   )}
                 </section>
               )}

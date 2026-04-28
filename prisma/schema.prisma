@@ -115,6 +115,21 @@ model User {
   password String
 }
 
+model Customer {
+  id              String   @id @default(cuid())
+  name            String
+  nit             String?
+  phone           String?
+  email           String?
+  billingAddress  String?
+  shippingAddress String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  quotes          Quote[]
+  orders          Order[]
+}
+
 model Quote {
   id              String      @id @default(cuid())
   quoteNumber     String      @unique
@@ -129,6 +144,8 @@ model Quote {
   paymentTerms    String?
   subtotal        Float
   total           Float
+  customerId      String?
+  customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   items           QuoteItem[]
@@ -200,6 +217,8 @@ model Order {
   notes           OrderNote[]
   quoteId         String?     @unique
   quote           Quote?      @relation(fields: [quoteId], references: [id])
+  customerId      String?
+  customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }

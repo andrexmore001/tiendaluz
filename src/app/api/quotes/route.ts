@@ -60,6 +60,32 @@ export async function POST(req: Request) {
         const parsedDate = parseDate(date) || new Date();
         const parsedExpiryDate = parseDate(expiryDate);
 
+        // Find or create customer
+        let customer = await prisma.customer.findFirst({
+            where: { name: { equals: clientName.trim(), mode: 'insensitive' } }
+        });
+
+        if (!customer) {
+            customer = await prisma.customer.create({
+                data: {
+                    name: clientName.trim(),
+                    nit: clientNit || null,
+                    billingAddress: billingAddress || null,
+                    shippingAddress: shippingAddress || null,
+                }
+            });
+        } else {
+            // Update customer details if they are provided and customer is missing them
+            await prisma.customer.update({
+                where: { id: customer.id },
+                data: {
+                    nit: clientNit || customer.nit,
+                    billingAddress: billingAddress || customer.billingAddress,
+                    shippingAddress: shippingAddress || customer.shippingAddress,
+                }
+            });
+        }
+
         const quote = await prisma.quote.upsert({
             where: { quoteNumber },
             update: {
@@ -74,6 +100,7 @@ export async function POST(req: Request) {
                 paymentTerms,
                 subtotal,
                 total,
+                customerId: customer.id,
                 items: {
                     deleteMany: {},
                     create: items.map((item: any) => ({
@@ -96,6 +123,7 @@ export async function POST(req: Request) {
                 paymentTerms,
                 subtotal,
                 total,
+                customerId: customer.id,
                 items: {
                     create: items.map((item: any) => ({
                         description: item.description,
@@ -120,11 +148,13 @@ export async function POST(req: Request) {
             update: {
                 total: orderData.total,
                 customerName: orderData.customerName,
+                customerId: customer.id,
                 items: orderData.items
             },
             create: {
                 ...orderData,
-                quoteId: quote.id
+                quoteId: quote.id,
+                customerId: customer.id
             }
         });
 

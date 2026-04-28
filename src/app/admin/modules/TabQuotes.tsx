@@ -49,6 +49,30 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [searchOpen, setSearchOpen] = useState(false);
     const comboboxRef = useRef<HTMLDivElement>(null);
+    // Customer autocomplete
+    const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
+    const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
+    const customerRef = useRef<HTMLDivElement>(null);
+
+    const fetchCustomerSuggestions = async (q: string) => {
+        if (q.length < 2) { setCustomerSuggestions([]); return; }
+        try {
+            const res = await fetch(`/api/customers?q=${encodeURIComponent(q)}`);
+            if (res.ok) setCustomerSuggestions(await res.json());
+        } catch { /* ignore */ }
+    };
+
+    const applyCustomer = (c: any) => {
+        setQuoteData(prev => ({
+            ...prev,
+            clientName: c.name,
+            clientNit: c.nit || prev.clientNit,
+            billingAddress: c.billingAddress || prev.billingAddress,
+            shippingAddress: c.shippingAddress || prev.shippingAddress,
+        }));
+        setCustomerSuggestions([]);
+        setShowCustomerSuggestions(false);
+    };
 
     // Cerrar el dropdown al hacer clic fuera del combobox
     useEffect(() => {
@@ -278,14 +302,38 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 <div className={styles.quoteForm}>
                     <div className={styles.formGroup}>
                         <h3 className={styles.formGroupTitle}>Datos del Cliente</h3>
-                        <div className={styles.inputGroup}>
+                        <div className={styles.inputGroup} style={{ position: 'relative' }}>
                             <label><User size={14} /> Nombre del Cliente / Empresa</label>
                             <input
                                 type="text"
                                 value={quoteData.clientName}
-                                onChange={e => setQuoteData({ ...quoteData, clientName: e.target.value })}
+                                onChange={e => {
+                                    setQuoteData({ ...quoteData, clientName: e.target.value });
+                                    fetchCustomerSuggestions(e.target.value);
+                                    setShowCustomerSuggestions(true);
+                                }}
+                                onFocus={() => setShowCustomerSuggestions(true)}
                                 placeholder="Ej: Mandomedio SAS"
                             />
+                            {showCustomerSuggestions && customerSuggestions.length > 0 && (
+                                <div style={{
+                                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
+                                    background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)', marginTop: '4px', maxHeight: '200px', overflowY: 'auto'
+                                }}>
+                                    {customerSuggestions.map(c => (
+                                        <div key={c.id}
+                                            onClick={() => applyCustomer(c)}
+                                            style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
+                                            onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                        >
+                                            <div style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{c.name}</div>
+                                            {(c.nit || c.email) && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{c.nit} {c.email ? `- ${c.email}` : ''}</div>}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className={styles.inputGroup}>
                             <label><Hash size={14} /> NIT / Identificación</label>

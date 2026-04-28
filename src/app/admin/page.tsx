@@ -42,6 +42,7 @@ const ModalTextConfig = dynamic(() => import('./modules/ModalTextConfig'));
 const TabSuppliers = dynamic(() => import('./modules/TabSuppliers'));
 const ModalSupplier = dynamic(() => import('./modules/ModalSupplier'));
 const TabOrders = dynamic(() => import('./modules/TabOrders'));
+const TabCustomers = dynamic(() => import('./modules/TabCustomers'));
 
 export default function AdminPage() {
     const router = useRouter();
@@ -400,6 +401,7 @@ export default function AdminPage() {
                     <button className={activeTab === 'materials' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}><Palette size={20} /><span>Materiales</span></button>
                     <button className={activeTab === 'suppliers' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('suppliers'); setMobileMenuOpen(false); }}><Truck size={20} /><span>Proveedores</span></button>
                     <button className={activeTab === 'attributes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('attributes'); setMobileMenuOpen(false); }}><Layers size={20} /><span>Atributos</span></button>
+                    <button className={activeTab === 'customers' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('customers'); setMobileMenuOpen(false); }}><Users size={20} /><span>Clientes</span></button>
                     <button className={activeTab === 'orders' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('orders'); setMobileMenuOpen(false); }}><ArrowRightLeft size={20} /><span>Pedidos (Kanban)</span></button>
                     <button className={activeTab === 'quotes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('quotes'); setMobileMenuOpen(false); }}><FileText size={20} /><span>Cotizaciones</span></button>
                     <button className={activeTab === 'messages' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('messages'); setMobileMenuOpen(false); }}>
@@ -433,6 +435,7 @@ export default function AdminPage() {
                 {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'suppliers' && <TabSuppliers suppliers={suppliers} onAdd={() => { setEditingSupplier(null); setSupplierFormData({ name: '', contact: '' }); setShowSupplierForm(true); }} onEdit={s => { setEditingSupplier(s); setSupplierFormData({ name: s.name, contact: s.contact || '' }); setShowSupplierForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteSupplier(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'attributes' && <TabAttributes attributes={attributes} onAdd={() => { setEditingAttribute(null); setAttributeFormData({ name: '', values: [] }); setShowAttributeForm(true); }} onEdit={attr => { setEditingAttribute(attr); setAttributeFormData({ name: attr.name, values: attr.values.map((v:any) => v.value) }); setShowAttributeForm(true); }} onDelete={id => { if(confirm('¿Seguro que deseas eliminar este atributo? (Esto no afectará los productos ya migrados, pero evitará que el atributo se ponga en nuevos productos)')) deleteAttribute(id) }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'customers' && <TabCustomers />}
                 {activeTab === 'orders' && <TabOrders />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
