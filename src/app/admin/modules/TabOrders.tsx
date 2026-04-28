@@ -64,6 +64,29 @@ export default function TabOrders() {
   const [newOrder, setNewOrder] = useState({ customerName: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD' });
   const [customerHistory, setCustomerHistory] = useState<{quotes: any[], orders: any[]}|null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
+  const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
+  const [showLostPrompt, setShowLostPrompt] = useState(false);
+  const [lostReason, setLostReason] = useState('');
+
+  const fetchCustomerSuggestions = async (q: string) => {
+    if (q.length < 2) { setCustomerSuggestions([]); return; }
+    try {
+        const res = await fetch(`/api/customers?q=${encodeURIComponent(q)}`);
+        if (res.ok) setCustomerSuggestions(await res.json());
+    } catch { /* ignore */ }
+  };
+
+  const applyCustomer = (c: any) => {
+      setNewOrder(prev => ({
+          ...prev,
+          customerName: c.name,
+          customerEmail: c.email || prev.customerEmail,
+          customerPhone: c.phone || prev.customerPhone,
+      }));
+      setCustomerSuggestions([]);
+      setShowCustomerSuggestions(false);
+  };
 
   const fetchCustomerHistory = async (customerId?: string) => {
     if (!customerId) {
@@ -163,7 +186,8 @@ export default function TabOrders() {
   const filtered = orders.filter(o => {
     const matchSearch = o.customerName.toLowerCase().includes(search.toLowerCase()) || o.orderNumber.toLowerCase().includes(search.toLowerCase());
     const matchInactive = !filterInactive || getDaysInactive(o.updatedAt) >= INACTIVITY_WARN;
-    return matchSearch && matchInactive;
+    const isNotLost = o.status !== 'LOST';
+    return matchSearch && matchInactive && isNotLost;
   });
 
   const byStage = (stageId: string) => filtered.filter(o => o.status === stageId);
@@ -469,11 +493,59 @@ export default function TabOrders() {
                 </div>
               </section>
             </div>
-            <div className={styles.panelFooter}>
-              <button className={styles.deleteBtn} onClick={() => deleteOrder(selectedOrder.id)}><Trash2 size={15} />Eliminar pedido</button>
+            <div className={styles.panelFooter} style={{display: 'flex', gap: '0.5rem'}}>
+              {selectedOrder.status !== 'LOST' && (
+                  <button className={styles.deleteBtn} style={{flex: 1, background: '#fff1f2', color: '#e11d48', border: '1px solid #fecdd3'}} onClick={() => setShowLostPrompt(true)}>
+                    <AlertCircle size={15} /> Marcar Perdido
+                  </button>
+              )}
+              <button className={styles.deleteBtn} style={{flex: selectedOrder.status === 'LOST' ? 1 : undefined}} onClick={() => deleteOrder(selectedOrder.id)}>
+                <Trash2 size={15} /> Eliminar
+              </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* LOST PROMPT MODAL */}
+      {showLostPrompt && selectedOrder && (
+          <div className={styles.modalOverlay} onClick={() => setShowLostPrompt(false)}>
+              <div className={styles.modal} onClick={e => e.stopPropagation()} style={{maxWidth: '400px'}}>
+                  <div className={styles.modalHeader}>
+                      <h2 style={{color: '#e11d48', display: 'flex', alignItems: 'center', gap: '0.5rem'}}><AlertCircle size={20} /> Marcar como Perdido</h2>
+                      <button onClick={() => setShowLostPrompt(false)}><X size={20} /></button>
+                  </div>
+                  <div style={{marginBottom: '1rem', color: '#475569', fontSize: '0.9rem'}}>
+                      Por favor, indica el motivo por el cual se perdió este pedido. Ya no aparecerá en el Kanban principal.
+                  </div>
+                  <textarea 
+                      autoFocus
+                      rows={3} 
+                      placeholder="Ej: Precio muy alto, compró a la competencia..." 
+                      value={lostReason} 
+                      onChange={e => setLostReason(e.target.value)}
+                      style={{width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none', marginBottom: '1rem', fontFamily: 'inherit'}}
+                  />
+                  <div className={styles.modalActions}>
+                      <button type="button" onClick={() => setShowLostPrompt(false)}>Cancelar</button>
+                      <button 
+                          type="button" 
+                          disabled={!lostReason.trim()}
+                          style={{background: '#e11d48', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', opacity: lostReason.trim() ? 1 : 0.5}}
+                          onClick={async () => {
+                              const res = await fetch(`/api/orders/${selectedOrder.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'LOST', lostReason }) });
+                              if (res.ok) {
+                                  const updated = await res.json();
+                                  setOrders(p => p.map(o => o.id === selectedOrder.id ? updated : o));
+                                  setSelectedOrder(null);
+                                  setShowLostPrompt(false);
+                                  setLostReason('');
+                              }
+                          }}
+                      >Confirmar Pérdida</button>
+                  </div>
+              </div>
+          </div>
       )}
 
       {/* NEW ORDER MODAL */}
@@ -482,7 +554,39 @@ export default function TabOrders() {
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}><h2>Nuevo Pedido</h2><button onClick={() => setShowNewModal(false)}><X size={20} /></button></div>
             <form onSubmit={createOrder} className={styles.modalForm}>
-              <div className={styles.field}><label>Nombre *</label><input required placeholder="Nombre del cliente" value={newOrder.customerName} onChange={e => setNewOrder({ ...newOrder, customerName: e.target.value })} /></div>
+              <div className={styles.field} style={{ position: 'relative' }}>
+                <label>Nombre *</label>
+                <input 
+                  required 
+                  placeholder="Nombre del cliente" 
+                  value={newOrder.customerName} 
+                  onChange={e => {
+                      setNewOrder({ ...newOrder, customerName: e.target.value });
+                      fetchCustomerSuggestions(e.target.value);
+                      setShowCustomerSuggestions(true);
+                  }}
+                  onFocus={() => setShowCustomerSuggestions(true)}
+                />
+                {showCustomerSuggestions && customerSuggestions.length > 0 && (
+                    <div style={{
+                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
+                        background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', marginTop: '4px', maxHeight: '180px', overflowY: 'auto'
+                    }}>
+                        {customerSuggestions.map(c => (
+                            <div key={c.id}
+                                onClick={() => applyCustomer(c)}
+                                style={{ padding: '0.5rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9' }}
+                                onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            >
+                                <div style={{ fontWeight: 'bold', fontSize: '0.9rem', color: '#1e293b' }}>{c.name}</div>
+                                {(c.nit || c.email || c.phone) && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{c.phone} {c.email ? `- ${c.email}` : ''}</div>}
+                            </div>
+                        ))}
+                    </div>
+                )}
+              </div>
               <div className={styles.fieldRow}>
                 <div className={styles.field}><label>Teléfono</label><input placeholder="300 123 4567" value={newOrder.customerPhone} onChange={e => setNewOrder({ ...newOrder, customerPhone: e.target.value })} /></div>
                 <div className={styles.field}><label>Total estimado</label><input type="number" value={newOrder.total} onChange={e => setNewOrder({ ...newOrder, total: parseFloat(e.target.value) || 0 })} /></div>

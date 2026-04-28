@@ -75,6 +75,32 @@ export async function POST(request: Request) {
         const count = await prisma.order.count();
         const orderNumber = `ART-${year}-${(count + 1).toString().padStart(4, '0')}`;
 
+        // Find or create customer
+        let customer = await prisma.customer.findFirst({
+            where: { name: { equals: customerName.trim(), mode: 'insensitive' } }
+        });
+
+        if (!customer) {
+            customer = await prisma.customer.create({
+                data: {
+                    name: customerName.trim(),
+                    email: customerEmail || null,
+                    phone: customerPhone || null,
+                }
+            });
+        } else {
+            // Update email/phone if provided and missing
+            if ((customerEmail && !customer.email) || (customerPhone && !customer.phone)) {
+                await prisma.customer.update({
+                    where: { id: customer.id },
+                    data: {
+                        email: customerEmail || customer.email,
+                        phone: customerPhone || customer.phone
+                    }
+                });
+            }
+        }
+
         const order = await prisma.order.create({
             data: {
                 orderNumber,
@@ -84,7 +110,8 @@ export async function POST(request: Request) {
                 total: Number(total || 0),
                 status: status || 'LEAD',
                 items: items || [],
-                quoteId: quoteId || null
+                quoteId: quoteId || null,
+                customerId: customer.id
             },
             include: {
                 notes: true

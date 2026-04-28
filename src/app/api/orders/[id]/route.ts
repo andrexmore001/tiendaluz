@@ -13,7 +13,7 @@ export async function PATCH(
 
     try {
         const data = await request.json();
-        const { status, customerName, customerEmail, customerPhone, total } = data;
+        const { status, customerName, customerEmail, customerPhone, total, lostReason } = data;
 
         const currentOrder = await prisma.order.findUnique({
             where: { id }
@@ -30,7 +30,8 @@ export async function PATCH(
                 customerName: customerName ?? undefined,
                 customerEmail: customerEmail ?? undefined,
                 customerPhone: customerPhone ?? undefined,
-                total: total !== undefined ? Number(total) : undefined
+                total: total !== undefined ? Number(total) : undefined,
+                lostReason: lostReason ?? undefined
             },
             include: {
                 notes: {
@@ -43,10 +44,14 @@ export async function PATCH(
 
         // If status changed, add a system note
         if (status && status !== currentOrder.status) {
+            let noteContent = `Estado cambiado de ${currentOrder.status} a ${status}`;
+            if (status === 'LOST' && lostReason) {
+                noteContent += `. Motivo: ${lostReason}`;
+            }
             await prisma.orderNote.create({
                 data: {
                     orderId: id,
-                    content: `Estado cambiado de ${currentOrder.status} a ${status}`
+                    content: noteContent
                 }
             });
         }

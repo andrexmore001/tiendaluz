@@ -219,6 +219,7 @@ model Order {
   quote           Quote?      @relation(fields: [quoteId], references: [id])
   customerId      String?
   customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  lostReason      String?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 }
