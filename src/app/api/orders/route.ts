@@ -48,6 +48,11 @@ export async function GET() {
                     orderBy: {
                         createdAt: 'desc'
                     }
+                },
+                quote: {
+                    include: {
+                        items: true
+                    }
                 }
             },
             orderBy: {

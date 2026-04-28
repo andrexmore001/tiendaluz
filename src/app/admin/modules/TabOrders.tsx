@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, FunnelChart, Funnel, Cell } from 'recharts';
-import { Search, Plus, MessageSquare, Clock, User, Phone, Mail, X, Trash2, TrendingUp, BarChart2, AlertCircle, Package, ChevronDown, ChevronUp, Edit2, Check } from 'lucide-react';
+import { Search, Plus, MessageSquare, Clock, User, Phone, Mail, X, Trash2, TrendingUp, BarChart2, AlertCircle, Package, ChevronDown, ChevronUp, Edit2, Check, FileText } from 'lucide-react';
 import { formatPrice } from '@/lib/format';
 import styles from './TabOrders.module.css';
 
@@ -14,6 +14,8 @@ interface Order {
   total: number; items?: OrderItem[]; notes: OrderNote[];
   createdAt: string; updatedAt: string; customerId?: string;
   source?: string;
+  quote?: any;
+  quoteId?: string;
 }
 interface Analytics {
   totalPipeline: number; avgTicket: number; conversionRate: number;
@@ -48,7 +50,7 @@ function getTimeAgo(dateStr: string) {
   return `${Math.floor(mins / 1440)}d`;
 }
 
-export default function TabOrders() {
+export default function TabOrders({ products = [] }: { products?: any[] }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +73,9 @@ export default function TabOrders() {
   const [lostReason, setLostReason] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
+  const [productSearch, setProductSearch] = useState('');
+  const [showProductResults, setShowProductResults] = useState(false);
+  const [generatingQuote, setGeneratingQuote] = useState(false);
 
   const fetchCustomerSuggestions = async (q: string) => {
     if (q.length < 1) { setCustomerSuggestions([]); return; }
@@ -155,6 +160,34 @@ export default function TabOrders() {
       setOrders(p => p.map(o => o.id === id ? updated : o));
       if (selectedOrder?.id === id) setSelectedOrder(updated);
     }
+  };
+
+  const updateItems = async (orderId: string, items: any[]) => {
+    const total = items.reduce((acc, i) => acc + (i.price * i.qty), 0);
+    const res = await fetch(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items, total })
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setOrders(p => p.map(o => o.id === orderId ? updated : o));
+      if (selectedOrder?.id === orderId) setSelectedOrder(updated);
+    }
+  };
+
+  const generateQuote = async (orderId: string) => {
+    setGeneratingQuote(true);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/generate-quote`, { method: 'POST' });
+      if (res.ok) {
+        const updated = await res.json();
+        setOrders(p => p.map(o => o.id === orderId ? updated : o));
+        if (selectedOrder?.id === orderId) setSelectedOrder(updated);
+        alert('Cotización generada con éxito');
+      }
+    } catch { alert('Error al generar cotización'); }
+    finally { setGeneratingQuote(false); }
   };
 
   const addNote = async (e: React.FormEvent) => {
@@ -511,26 +544,130 @@ export default function TabOrders() {
                   <div className={styles.infoRow}><Clock size={14} /><span>Creado: {new Date(selectedOrder.createdAt).toLocaleDateString('es-CO')}</span></div>
                 </div>
               </section>
-              {/* Items */}
-              {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 && (
-                <section>
-                  <div className={styles.sectionToggle} onClick={() => setShowItems(p => !p)}>
-                    <label className={styles.sectionLabel}><Package size={13} /> PRODUCTOS ({selectedOrder.items.length})</label>
-                    {showItems ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                  </div>
-                  {showItems && (
-                    <div className={styles.itemsList}>
-                      {selectedOrder.items.map((item, i) => (
-                        <div key={i} className={styles.itemRow}>
-                          <span className={styles.itemName}>{item.name}</span>
-                          <span className={styles.itemQty}>x{item.qty}</span>
-                          <span className={styles.itemPrice}>{formatPrice(item.price * item.qty)}</span>
+               {/* Items Management */}
+               <section>
+                 <label className={styles.sectionLabel}><Package size={13} /> PRODUCTOS / ITEMS</label>
+                 
+                 {/* Search to add */}
+                 <div style={{ position: 'relative', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                            <Search size={14} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                            <input 
+                                type="text"
+                                placeholder="Buscar producto para añadir..."
+                                value={productSearch}
+                                onChange={e => { setProductSearch(e.target.value); setShowProductResults(true); }}
+                                style={{ width: '100%', padding: '0.6rem 0.6rem 0.6rem 2rem', borderRadius: '10px', border: '1.5px solid #e2e8f0', fontSize: '0.88rem', outline: 'none' }}
+                            />
                         </div>
-                      ))}
                     </div>
-                  )}
-                </section>
-              )}
+                    {showProductResults && productSearch && (
+                        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', marginTop: '5px', maxHeight: '200px', overflowY: 'auto' }}>
+                            {products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase())).map(p => (
+                                <div key={p.id} onClick={() => {
+                                    const currentItems = Array.isArray(selectedOrder.items) ? [...selectedOrder.items] : [];
+                                    const exists = currentItems.find(i => i.name === p.name);
+                                    if (exists) {
+                                        exists.qty += 1;
+                                    } else {
+                                        currentItems.push({ name: p.name, qty: 1, price: p.price });
+                                    }
+                                    updateItems(selectedOrder.id, currentItems);
+                                    setProductSearch('');
+                                    setShowProductResults(false);
+                                }} style={{ padding: '0.8rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontSize: '0.88rem' }}>{p.name}</span>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 'bold', color: '#8B4B62' }}>{formatPrice(p.price)}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                 </div>
+
+                 {/* Current Items List */}
+                 <div className={styles.itemsList}>
+                    {Array.isArray(selectedOrder.items) && selectedOrder.items.length > 0 ? (
+                        selectedOrder.items.map((item, i) => (
+                            <div key={i} className={styles.itemRow} style={{ background: '#f8fafc', padding: '0.8rem', borderRadius: '10px', marginBottom: '0.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
+                                    <span style={{ fontWeight: '600', fontSize: '0.88rem' }}>{item.name}</span>
+                                    <button onClick={() => {
+                                        const newItems = selectedOrder.items!.filter((_, idx) => idx !== i);
+                                        updateItems(selectedOrder.id, newItems);
+                                    }} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}><Trash2 size={14} /></button>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <button onClick={() => {
+                                            const newItems = [...selectedOrder.items!];
+                                            if (newItems[i].qty > 1) {
+                                                newItems[i].qty -= 1;
+                                                updateItems(selectedOrder.id, newItems);
+                                            }
+                                        }} style={{ width: '24px', height: '24px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white' }}>-</button>
+                                        <span style={{ fontSize: '0.88rem', width: '20px', textAlign: 'center' }}>{item.qty}</span>
+                                        <button onClick={() => {
+                                            const newItems = [...selectedOrder.items!];
+                                            newItems[i].qty += 1;
+                                            updateItems(selectedOrder.id, newItems);
+                                        }} style={{ width: '24px', height: '24px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white' }}>+</button>
+                                    </div>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 'bold' }}>{formatPrice(item.price * item.qty)}</span>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p style={{ textAlign: 'center', color: '#94a3b8', fontSize: '0.8rem', padding: '1rem' }}>No hay productos añadidos</p>
+                    )}
+                 </div>
+               </section>
+
+               {/* Quote Actions */}
+               <section style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1.5rem', marginTop: '1rem' }}>
+                    <label className={styles.sectionLabel}>COTIZACIÓN FORMAL</label>
+                    {selectedOrder.quote ? (
+                        <div style={{ background: '#f0fdf4', padding: '1rem', borderRadius: '12px', border: '1px solid #bbf7d0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+                                <div>
+                                    <span style={{ display: 'block', fontSize: '0.75rem', color: '#166534', fontWeight: 'bold' }}>VINCULADA</span>
+                                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>{selectedOrder.quote.quoteNumber}</span>
+                                </div>
+                                <button 
+                                    onClick={() => generateQuote(selectedOrder.id)}
+                                    disabled={generatingQuote}
+                                    style={{ fontSize: '0.75rem', background: 'white', border: '1px solid #166534', color: '#166534', padding: '0.4rem 0.8rem', borderRadius: '8px', cursor: 'pointer' }}
+                                >
+                                    Actualizar
+                                </button>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    // Mock PDF download or redirect to Quote PDF view
+                                    alert('Generando PDF...');
+                                }}
+                                style={{ width: '100%', padding: '0.7rem', background: '#166534', color: 'white', border: 'none', borderRadius: '10px', fontSize: '0.88rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                            >
+                                <FileText size={16} /> Descargar PDF
+                            </button>
+                        </div>
+                    ) : (
+                        <button 
+                            onClick={() => generateQuote(selectedOrder.id)}
+                            disabled={generatingQuote || !selectedOrder.items || selectedOrder.items.length === 0}
+                            style={{ 
+                                width: '100%', padding: '1rem', background: '#8B4B62', color: 'white', border: 'none', borderRadius: '12px', 
+                                fontSize: '0.88rem', fontWeight: 'bold', cursor: 'pointer', opacity: (generatingQuote || !selectedOrder.items || selectedOrder.items.length === 0) ? 0.6 : 1,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s'
+                            }}
+                        >
+                            <Plus size={18} /> {generatingQuote ? 'Generando...' : 'Generar Cotización Formal'}
+                        </button>
+                    )}
+                    {(!selectedOrder.items || selectedOrder.items.length === 0) && !selectedOrder.quote && (
+                        <p style={{ fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center', marginTop: '0.5rem' }}>Añade productos primero para generar la cotización</p>
+                    )}
+               </section>
               {/* Customer History */}
               {selectedOrder.customerId && (
                 <section>

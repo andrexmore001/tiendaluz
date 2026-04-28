@@ -437,7 +437,7 @@ export default function AdminPage() {
                 {activeTab === 'suppliers' && <TabSuppliers suppliers={suppliers} onAdd={() => { setEditingSupplier(null); setSupplierFormData({ name: '', contact: '' }); setShowSupplierForm(true); }} onEdit={s => { setEditingSupplier(s); setSupplierFormData({ name: s.name, contact: s.contact || '' }); setShowSupplierForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteSupplier(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'attributes' && <TabAttributes attributes={attributes} onAdd={() => { setEditingAttribute(null); setAttributeFormData({ name: '', values: [] }); setShowAttributeForm(true); }} onEdit={attr => { setEditingAttribute(attr); setAttributeFormData({ name: attr.name, values: attr.values.map((v:any) => v.value) }); setShowAttributeForm(true); }} onDelete={id => { if(confirm('¿Seguro que deseas eliminar este atributo? (Esto no afectará los productos ya migrados, pero evitará que el atributo se ponga en nuevos productos)')) deleteAttribute(id) }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'customers' && <TabCustomers />}
-                {activeTab === 'orders' && <TabOrders />}
+                {activeTab === 'orders' && <TabOrders products={products} />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
                 {activeTab === 'messages' && <TabMessages onMenuClick={() => setMobileMenuOpen(true)} />}
