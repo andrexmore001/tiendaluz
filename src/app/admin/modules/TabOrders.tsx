@@ -178,6 +178,24 @@ export default function TabOrders({ products = [], settings }: { products?: any[
     }
   };
 
+  const updateItemDiscount = (orderId: string, itemIdx: number, field: 'discountValue' | 'discountType', value: any) => {
+    if (!selectedOrder?.items) return;
+    const newItems = [...selectedOrder.items];
+    const item = { ...newItems[itemIdx], [field]: value };
+    
+    // Recalculate price based on discount
+    if (item.originalPrice !== undefined) {
+        if (item.discountType === 'percentage') {
+            item.price = item.originalPrice * (1 - (item.discountValue / 100));
+        } else {
+            item.price = Math.max(0, item.originalPrice - item.discountValue);
+        }
+    }
+    
+    newItems[itemIdx] = item;
+    updateItems(orderId, newItems);
+  };
+
   const generateQuote = async (orderId: string) => {
     setGeneratingQuote(true);
     try {
@@ -599,7 +617,7 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                         updateItems(selectedOrder.id, newItems);
                                     }} style={{ color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' }}><Trash2 size={14} /></button>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <button onClick={() => {
                                             const newItems = [...selectedOrder.items!];
@@ -615,7 +633,33 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                             updateItems(selectedOrder.id, newItems);
                                         }} style={{ width: '24px', height: '24px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white' }}>+</button>
                                     </div>
-                                    <div style={{ textAlign: 'right' }}>
+
+                                    {/* Discount Editing */}
+                                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                        <input
+                                            type="number"
+                                            value={item.discountValue || 0}
+                                            onChange={e => {
+                                                const val = parseFloat(e.target.value) || 0;
+                                                const items = [...selectedOrder.items!];
+                                                if (items[i].originalPrice === undefined) items[i].originalPrice = items[i].price;
+                                                updateItemDiscount(selectedOrder.id, i, 'discountValue', val);
+                                            }}
+                                            style={{ width: '55px', padding: '2px 18px 2px 6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.75rem', outline: 'none' }}
+                                        />
+                                        <button 
+                                            onClick={() => {
+                                                const items = [...selectedOrder.items!];
+                                                if (items[i].originalPrice === undefined) items[i].originalPrice = items[i].price;
+                                                updateItemDiscount(selectedOrder.id, i, 'discountType', item.discountType === 'percentage' ? 'amount' : 'percentage');
+                                            }}
+                                            style={{ position: 'absolute', right: '2px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b', padding: '2px' }}
+                                        >
+                                            {item.discountType === 'percentage' ? <span style={{fontSize: '10px'}}>%</span> : <span style={{fontSize: '10px'}}>$</span>}
+                                        </button>
+                                    </div>
+
+                                    <div style={{ textAlign: 'right', flex: 1 }}>
                                         {item.discountValue ? (
                                             <span style={{ display: 'block', fontSize: '0.7rem', color: '#ef4444', textDecoration: 'line-through' }}>
                                                 {formatPrice((item.originalPrice || item.price) * item.qty)}
