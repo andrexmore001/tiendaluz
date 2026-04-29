@@ -44,6 +44,7 @@ export async function POST(req: Request) {
             shippingAddress,
             items,
             notes,
+            discountReason,
             paymentTerms,
             subtotal,
             total
@@ -101,6 +102,7 @@ export async function POST(req: Request) {
                 billingAddress,
                 shippingAddress,
                 notes,
+                discountReason,
                 paymentTerms,
                 subtotal,
                 total,
@@ -110,7 +112,10 @@ export async function POST(req: Request) {
                     create: items.map((item: any) => ({
                         description: item.description,
                         qty: item.qty,
-                        unitPrice: item.unitPrice
+                        unitPrice: item.unitPrice,
+                        originalPrice: item.originalPrice,
+                        discountValue: item.discountValue,
+                        discountType: item.discountType
                     }))
                 }
             },
@@ -125,6 +130,7 @@ export async function POST(req: Request) {
                 billingAddress,
                 shippingAddress,
                 notes,
+                discountReason,
                 paymentTerms,
                 subtotal,
                 total,
@@ -133,7 +139,10 @@ export async function POST(req: Request) {
                     create: items.map((item: any) => ({
                         description: item.description,
                         qty: item.qty,
-                        unitPrice: item.unitPrice
+                        unitPrice: item.unitPrice,
+                        originalPrice: item.originalPrice,
+                        discountValue: item.discountValue,
+                        discountType: item.discountType
                     }))
                 }
             }

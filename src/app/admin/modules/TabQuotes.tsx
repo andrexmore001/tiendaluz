@@ -12,7 +12,9 @@ import {
     Hash,
     History,
     RefreshCw,
-    RotateCcw
+    RotateCcw,
+    Percent,
+    DollarSign
 } from 'lucide-react';
 import { Product } from '@/types/product';
 import styles from '../admin.module.css';
@@ -39,6 +41,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         shippingAddress: '',
         items: [] as any[],
         notes: '',
+        discountReason: '',
         paymentTerms: 'pago inmediato'
     });
 
@@ -206,6 +209,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 };
             }),
             notes: quote.notes || '',
+            discountReason: quote.discountReason || '',
             paymentTerms: quote.paymentTerms || 'pago inmediato'
         });
     };
@@ -224,6 +228,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             shippingAddress: '',
             items: [] as any[],
             notes: '',
+            discountReason: '',
             paymentTerms: 'pago inmediato'
         });
         setSearchTerm('');
@@ -258,6 +263,9 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 description: selectedItem.name + dimensionsStr,
                 qty: 1,
                 unitPrice: selectedItem.price,
+                originalPrice: selectedItem.price,
+                discountValue: 0,
+                discountType: 'percentage', // percentage or amount
                 originalProduct: selectedItem.originalProduct,
                 variantId: selectedItem.variantId
             }]
@@ -290,6 +298,23 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         }
 
         items[idx] = { ...item, qty, unitPrice };
+        setQuoteData({ ...quoteData, items });
+    };
+
+    const updateItemDiscount = (idx: number, field: 'discountValue' | 'discountType', value: any) => {
+        const items = [...quoteData.items];
+        const item = items[idx];
+        const newItem = { ...item, [field]: value };
+
+        // Recalculate unitPrice based on discount
+        let discountedPrice = item.originalPrice;
+        if (newItem.discountType === 'percentage') {
+            discountedPrice = item.originalPrice * (1 - (newItem.discountValue / 100));
+        } else {
+            discountedPrice = Math.max(0, item.originalPrice - newItem.discountValue);
+        }
+
+        items[idx] = { ...newItem, unitPrice: discountedPrice };
         setQuoteData({ ...quoteData, items });
     };
 
@@ -445,13 +470,41 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                         <p style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{item.description}</p>
                                         <p style={{ fontSize: '0.8rem', color: '#64748b' }}>Unit: ${formatPrice(item.unitPrice)}</p>
                                     </div>
-                                    <input
-                                        type="number"
-                                        value={item.qty}
-                                        onChange={e => updateItemQty(idx, parseInt(e.target.value) || 1)}
-                                        min="1"
-                                    />
-                                    <p style={{ fontWeight: 'bold', textAlign: 'right' }}>${formatPrice(item.qty * item.unitPrice)}</p>
+                                    <div className={styles.itemQuantitySection}>
+                                        <input
+                                            type="number"
+                                            value={item.qty}
+                                            onChange={e => updateItemQty(idx, parseInt(e.target.value) || 1)}
+                                            min="1"
+                                            className={styles.qtyInput}
+                                        />
+                                    </div>
+                                    <div className={styles.itemDiscountSection} style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                                            <input
+                                                type="number"
+                                                value={item.discountValue}
+                                                onChange={e => updateItemDiscount(idx, 'discountValue', parseFloat(e.target.value) || 0)}
+                                                style={{ width: '60px', padding: '4px 20px 4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
+                                                placeholder="0"
+                                            />
+                                            <button 
+                                                onClick={() => updateItemDiscount(idx, 'discountType', item.discountType === 'percentage' ? 'amount' : 'percentage')}
+                                                style={{ position: 'absolute', right: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b' }}
+                                                title={item.discountType === 'percentage' ? 'Cambiar a valor fijo' : 'Cambiar a porcentaje'}
+                                            >
+                                                {item.discountType === 'percentage' ? <Percent size={12} /> : <DollarSign size={12} />}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'right', minWidth: '100px' }}>
+                                        {item.discountValue > 0 && (
+                                            <p style={{ fontSize: '0.7rem', color: '#ef4444', textDecoration: 'line-through', marginBottom: 0 }}>
+                                                ${formatPrice(item.qty * item.originalPrice)}
+                                            </p>
+                                        )}
+                                        <p style={{ fontWeight: 'bold', margin: 0 }}>${formatPrice(item.qty * item.unitPrice)}</p>
+                                    </div>
                                     <button className={styles.iconBtnDelete} onClick={() => removeItem(idx)}>
                                         <Trash2 size={16} />
                                     </button>
@@ -540,9 +593,16 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                             value={quoteData.paymentTerms}
                             onChange={e => setQuoteData({ ...quoteData, paymentTerms: e.target.value })}
                         />
+                        <label style={{ marginTop: '1rem', display: 'block' }}>Motivo del Descuento</label>
+                        <textarea
+                            rows={2}
+                            value={quoteData.discountReason}
+                            onChange={e => setQuoteData({ ...quoteData, discountReason: e.target.value })}
+                            placeholder="Ej: Descuento por pronto pago / Cliente recurrente..."
+                        />
                         <label style={{ marginTop: '1rem', display: 'block' }}>Notas Adicionales</label>
                         <textarea
-                            rows={3}
+                            rows={2}
                             value={quoteData.notes}
                             onChange={e => setQuoteData({ ...quoteData, notes: e.target.value })}
                             placeholder="Ej: Incluye envío a nivel nacional..."

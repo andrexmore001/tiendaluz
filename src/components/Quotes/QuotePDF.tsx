@@ -158,6 +158,9 @@ interface QuoteItem {
     description: string;
     qty: number;
     unitPrice: number;
+    originalPrice?: number;
+    discountValue?: number;
+    discountType?: string;
     tax?: number;
 }
 
@@ -173,6 +176,7 @@ interface QuotePDFProps {
         shippingAddress: string;
         items: QuoteItem[];
         notes?: string;
+        discountReason?: string;
         paymentTerms?: string;
     };
     logoUrl?: string;
@@ -237,9 +241,23 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
 
                     {data.items.map((item, idx) => (
                         <View key={idx} style={styles.tableRow}>
-                            <Text style={styles.colDesc}>{item.description}</Text>
+                            <View style={styles.colDesc}>
+                                <Text>{item.description}</Text>
+                                {item.discountValue && item.discountValue > 0 ? (
+                                    <Text style={{ fontSize: 7, color: '#ef4444', marginTop: 2 }}>
+                                        Descuento: {item.discountType === 'percentage' ? `${item.discountValue}%` : `$${formatPrice(item.discountValue || 0)}`} aplicado
+                                    </Text>
+                                ) : null}
+                            </View>
                             <Text style={styles.colQty}>{item.qty.toLocaleString('es-CO')} Unidades</Text>
-                            <Text style={styles.colPrice}>{formatPrice(item.unitPrice)}</Text>
+                            <View style={styles.colPrice}>
+                                {item.originalPrice && item.originalPrice !== item.unitPrice && (
+                                    <Text style={{ fontSize: 8, color: '#94a3b8', textDecoration: 'line-through' }}>
+                                        {formatPrice(item.originalPrice)}
+                                    </Text>
+                                )}
+                                <Text>{formatPrice(item.unitPrice)}</Text>
+                            </View>
                             <Text style={styles.colTax}>{item.tax ? formatPrice(item.tax) : '0,00'}</Text>
                             <Text style={styles.colTotal}>$ {formatPrice(item.qty * item.unitPrice)}</Text>
                         </View>
@@ -263,7 +281,8 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
                     <View style={{ flex: 1, paddingRight: 20 }}>
                         <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, fontWeight: 'bold' }}>Términos y condiciones: https://artessana.vercel.app/</Text>
                         <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 5 }}>Términos de pago: {data.paymentTerms || 'pago inmediato'}</Text>
-                        {data.notes && <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 10 }}>Notas: {data.notes}</Text>}
+                        {data.discountReason && <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 10, fontWeight: 'bold' }}>Motivo del descuento: {data.discountReason}</Text>}
+                        {data.notes && <Text style={{ fontSize: 9, color: '#475569', lineHeight: 1.5, marginTop: 5 }}>Notas: {data.notes}</Text>}
                     </View>
                     {nequiQrUrl && (
                         <View style={{ width: 120, alignItems: 'center' }}>
