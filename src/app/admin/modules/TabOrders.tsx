@@ -183,14 +183,11 @@ export default function TabOrders({ products = [], settings }: { products?: any[
     const newItems = [...selectedOrder.items];
     const item = { ...newItems[itemIdx], [field]: value };
     
-    // Recalculate price based on discount
+    // Recalculate price based on discount (always percentage)
     if (item.originalPrice !== undefined) {
         const dValue = item.discountValue || 0;
-        if (item.discountType === 'percentage') {
-            item.price = item.originalPrice * (1 - (dValue / 100));
-        } else {
-            item.price = Math.max(0, item.originalPrice - dValue);
-        }
+        item.price = item.originalPrice * (1 - (dValue / 100));
+        item.discountType = 'percentage';
     }
     
     newItems[itemIdx] = item;
@@ -648,16 +645,9 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                             }}
                                             style={{ width: '55px', padding: '2px 18px 2px 6px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.75rem', outline: 'none' }}
                                         />
-                                        <button 
-                                            onClick={() => {
-                                                const items = [...selectedOrder.items!];
-                                                if (items[i].originalPrice === undefined) items[i].originalPrice = items[i].price;
-                                                updateItemDiscount(selectedOrder.id, i, 'discountType', item.discountType === 'percentage' ? 'amount' : 'percentage');
-                                            }}
-                                            style={{ position: 'absolute', right: '2px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b', padding: '2px' }}
-                                        >
-                                            {item.discountType === 'percentage' ? <span style={{fontSize: '10px'}}>%</span> : <span style={{fontSize: '10px'}}>$</span>}
-                                        </button>
+                                        <div style={{ position: 'absolute', right: '4px', color: '#64748b', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                                            <span style={{fontSize: '10px'}}>%</span>
+                                        </div>
                                     </div>
 
                                     <div style={{ textAlign: 'right', flex: 1 }}>

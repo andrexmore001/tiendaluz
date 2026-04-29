@@ -13,8 +13,7 @@ import {
     History,
     RefreshCw,
     RotateCcw,
-    Percent,
-    DollarSign
+    Percent
 } from 'lucide-react';
 import { Product } from '@/types/product';
 import styles from '../admin.module.css';
@@ -265,7 +264,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 unitPrice: selectedItem.price,
                 originalPrice: selectedItem.price,
                 discountValue: 0,
-                discountType: 'percentage', // percentage or amount
+                discountType: 'percentage',
                 originalProduct: selectedItem.originalProduct,
                 variantId: selectedItem.variantId
             }]
@@ -306,16 +305,12 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         const item = items[idx];
         const newItem = { ...item, [field]: value };
 
-        // Recalculate unitPrice based on discount
+        // Recalculate unitPrice based on discount (always percentage)
         let discountedPrice = item.originalPrice;
         const dValue = newItem.discountValue || 0;
-        if (newItem.discountType === 'percentage') {
-            discountedPrice = item.originalPrice * (1 - (dValue / 100));
-        } else {
-            discountedPrice = Math.max(0, item.originalPrice - dValue);
-        }
+        discountedPrice = item.originalPrice * (1 - (dValue / 100));
 
-        items[idx] = { ...newItem, unitPrice: discountedPrice };
+        items[idx] = { ...newItem, unitPrice: discountedPrice, discountType: 'percentage' };
         setQuoteData({ ...quoteData, items });
     };
 
@@ -486,16 +481,12 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                                 type="number"
                                                 value={item.discountValue}
                                                 onChange={e => updateItemDiscount(idx, 'discountValue', parseFloat(e.target.value) || 0)}
-                                                style={{ width: '60px', padding: '4px 20px 4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
+                                                style={{ width: '60px', padding: '4px 24px 4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}
                                                 placeholder="0"
                                             />
-                                            <button 
-                                                onClick={() => updateItemDiscount(idx, 'discountType', item.discountType === 'percentage' ? 'amount' : 'percentage')}
-                                                style={{ position: 'absolute', right: '4px', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#64748b' }}
-                                                title={item.discountType === 'percentage' ? 'Cambiar a valor fijo' : 'Cambiar a porcentaje'}
-                                            >
-                                                {item.discountType === 'percentage' ? <Percent size={12} /> : <DollarSign size={12} />}
-                                            </button>
+                                            <div style={{ position: 'absolute', right: '6px', color: '#64748b', display: 'flex', alignItems: 'center' }}>
+                                                <Percent size={12} />
+                                            </div>
                                         </div>
                                     </div>
                                     <div style={{ textAlign: 'right', minWidth: '100px' }}>
