@@ -308,10 +308,11 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
 
         // Recalculate unitPrice based on discount
         let discountedPrice = item.originalPrice;
+        const dValue = newItem.discountValue || 0;
         if (newItem.discountType === 'percentage') {
-            discountedPrice = item.originalPrice * (1 - (newItem.discountValue / 100));
+            discountedPrice = item.originalPrice * (1 - (dValue / 100));
         } else {
-            discountedPrice = Math.max(0, item.originalPrice - newItem.discountValue);
+            discountedPrice = Math.max(0, item.originalPrice - dValue);
         }
 
         items[idx] = { ...newItem, unitPrice: discountedPrice };

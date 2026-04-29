@@ -185,10 +185,11 @@ export default function TabOrders({ products = [], settings }: { products?: any[
     
     // Recalculate price based on discount
     if (item.originalPrice !== undefined) {
+        const dValue = item.discountValue || 0;
         if (item.discountType === 'percentage') {
-            item.price = item.originalPrice * (1 - (item.discountValue / 100));
+            item.price = item.originalPrice * (1 - (dValue / 100));
         } else {
-            item.price = Math.max(0, item.originalPrice - item.discountValue);
+            item.price = Math.max(0, item.originalPrice - dValue);
         }
     }
     
