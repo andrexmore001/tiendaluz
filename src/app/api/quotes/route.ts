@@ -153,7 +153,14 @@ export async function POST(req: Request) {
             orderNumber: `ORD-${quote.quoteNumber}`,
             customerName: quote.clientName,
             total: quote.total,
-            items: items.map((i: any) => ({ name: i.description, qty: i.qty, price: i.unitPrice })),
+            items: items.map((i: any) => ({ 
+                name: i.description, 
+                qty: i.qty, 
+                price: i.unitPrice,
+                originalPrice: i.originalPrice,
+                discountValue: i.discountValue,
+                discountType: i.discountType
+            })),
             status: 'QUOTE'
         };
 

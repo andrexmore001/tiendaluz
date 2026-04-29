@@ -9,7 +9,7 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import QuotePDF from '@/components/Quotes/QuotePDF';
 
 interface OrderNote { id: string; content: string; createdAt: string; }
-interface OrderItem { name: string; qty: number; price: number; }
+interface OrderItem { name: string; qty: number; price: number; originalPrice?: number; discountValue?: number; discountType?: string; }
 interface Order {
   id: string; orderNumber: string; status: string;
   customerName: string; customerEmail?: string; customerPhone?: string;
@@ -615,7 +615,14 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                             updateItems(selectedOrder.id, newItems);
                                         }} style={{ width: '24px', height: '24px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white' }}>+</button>
                                     </div>
-                                    <span style={{ fontSize: '0.88rem', fontWeight: 'bold' }}>{formatPrice(item.price * item.qty)}</span>
+                                    <div style={{ textAlign: 'right' }}>
+                                        {item.discountValue ? (
+                                            <span style={{ display: 'block', fontSize: '0.7rem', color: '#ef4444', textDecoration: 'line-through' }}>
+                                                {formatPrice((item.originalPrice || item.price) * item.qty)}
+                                            </span>
+                                        ) : null}
+                                        <span style={{ fontSize: '0.88rem', fontWeight: 'bold' }}>{formatPrice(item.price * item.qty)}</span>
+                                    </div>
                                 </div>
                             </div>
                         ))
@@ -657,9 +664,13 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                         items: selectedOrder.quote.items.map((i: any) => ({
                                             description: i.description,
                                             qty: i.qty,
-                                            unitPrice: i.unitPrice
+                                            unitPrice: i.unitPrice,
+                                            originalPrice: i.originalPrice,
+                                            discountValue: i.discountValue,
+                                            discountType: i.discountType
                                         })),
                                         notes: selectedOrder.quote.notes || '',
+                                        discountReason: selectedOrder.quote.discountReason || '',
                                         paymentTerms: selectedOrder.quote.paymentTerms || 'pago inmediato'
                                     }}
                                     logoUrl={settings.logo}
