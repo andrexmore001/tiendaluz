@@ -146,6 +146,7 @@ model Quote {
   paymentTerms    String?
   subtotal        Float
   total           Float
+  discountReason  String?
   customerId      String?
   customer        Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
   createdAt       DateTime    @default(now())
@@ -158,8 +159,11 @@ model QuoteItem {
   id          String @id @default(cuid())
   description String
   qty         Int
-  unitPrice   Float
-  quoteId     String
+  unitPrice     Float
+  originalPrice Float?
+  discountValue Float?
+  discountType  String? // percentage or amount
+  quoteId       String
   quote       Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 }
 
