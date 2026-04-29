@@ -8,7 +8,7 @@ export async function GET() {
 
     try {
         const quotes = await prisma.quote.findMany({
-            include: { items: true },
+            include: { items: true, order: true },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -189,6 +189,9 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(request: Request) {
+    const session = await auth();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     try {
         const { searchParams } = new URL(request.url);
         const quoteNumber = searchParams.get('quoteNumber');
@@ -197,13 +200,23 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'Quote number is required' }, { status: 400 });
         }
 
-        await prisma.quoteItem.deleteMany({
-            where: { quote: { quoteNumber } }
+        // Find the quote to get its id
+        const quote = await prisma.quote.findUnique({
+            where: { quoteNumber },
+            include: { order: true }
         });
 
-        await prisma.quote.delete({
-            where: { quoteNumber }
-        });
+        if (!quote) {
+            return NextResponse.json({ error: 'Cotización no encontrada' }, { status: 404 });
+        }
+
+        // Delete linked Order in Kanban (if exists) — OrderNotes cascade via schema
+        if (quote.order) {
+            await prisma.order.delete({ where: { id: quote.order.id } });
+        }
+
+        // Delete QuoteItems and Quote (QuoteItems cascade via schema)
+        await prisma.quote.delete({ where: { quoteNumber } });
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -211,3 +224,4 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+

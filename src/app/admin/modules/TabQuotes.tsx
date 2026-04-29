@@ -56,6 +56,15 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
     const [showCustomerSuggestions, setShowCustomerSuggestions] = useState(false);
     const customerRef = useRef<HTMLDivElement>(null);
+    // Toast notifications
+    const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+    // Delete confirm modal
+    const [deleteConfirm, setDeleteConfirm] = useState<{ quoteNumber: string; hasOrder: boolean } | null>(null);
+
+    const showToast = (type: 'success' | 'error', msg: string) => {
+        setToast({ type, msg });
+        setTimeout(() => setToast(null), 3500);
+    };
 
     const fetchCustomerSuggestions = async (q: string) => {
         if (q.length < 1) { setCustomerSuggestions([]); return; }
@@ -125,28 +134,32 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             });
             if (res.ok) {
                 fetchQuotes();
+                showToast('success', '✅ Cotización guardada y pedido vinculado en el Kanban.');
+            } else {
+                showToast('error', '❌ Error al guardar la cotización.');
             }
         } catch (error) {
             console.error("Error saving quote:", error);
+            showToast('error', '❌ Error de conexión al guardar.');
         } finally {
             setIsSaving(false);
         }
     };
 
     const deleteQuote = async (quoteNumber: string) => {
-        if (!confirm(`¿Estás seguro de que deseas eliminar la cotización ${quoteNumber}? Esta acción no se puede deshacer.`)) return;
         setIsLoadingQuotes(true);
         try {
             const res = await fetch(`/api/quotes?quoteNumber=${quoteNumber}`, { method: 'DELETE' });
             if (res.ok) {
                 setPastQuotes(prev => prev.filter(q => q.quoteNumber !== quoteNumber));
-                alert('Cotización eliminada con éxito');
+                setDeleteConfirm(null);
+                showToast('success', `🗑️ Cotización ${quoteNumber} eliminada junto con su pedido en Kanban.`);
             } else {
-                alert('Error al eliminar la cotización');
+                showToast('error', '❌ Error al eliminar la cotización.');
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('Error de conexión al eliminar');
+            showToast('error', '❌ Error de conexión al eliminar.');
         } finally {
             setIsLoadingQuotes(false);
         }
@@ -200,9 +213,13 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             billingAddress: quote.billingAddress,
             shippingAddress: quote.shippingAddress,
             items: quote.items.map((item: any) => {
-                const searchItem = searchableItems.find(si => si.name === item.description.split(' (')[0]);
+                const searchItem = searchableItems.find((si: any) => si.name === item.description.split(' (')[0]);
                 return {
                     ...item,
+                    originalPrice: item.originalPrice ?? item.unitPrice,
+                    discountValue: item.discountValue ?? 0,
+                    discountType: item.discountType ?? 'percentage',
+                    unitPrice: item.unitPrice,
                     originalProduct: searchItem?.originalProduct,
                     variantId: searchItem?.variantId
                 };
@@ -318,6 +335,55 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
 
     return (
         <div className={styles.tabContent}>
+            {/* Toast Notification */}
+            {toast && (
+                <div style={{
+                    position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 9999,
+                    background: toast.type === 'success' ? '#f0fdf4' : '#fff1f2',
+                    color: toast.type === 'success' ? '#166534' : '#9f1239',
+                    border: `1px solid ${toast.type === 'success' ? '#bbf7d0' : '#fecdd3'}`,
+                    borderRadius: '12px', padding: '0.85rem 1.25rem', fontWeight: 600,
+                    fontSize: '0.9rem', boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+                    display: 'flex', alignItems: 'center', gap: '0.5rem', maxWidth: '360px',
+                    animation: 'slideInRight 0.3s ease'
+                }}>
+                    {toast.msg}
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9998,
+                    background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }} onClick={() => setDeleteConfirm(null)}>
+                    <div style={{
+                        background: 'white', borderRadius: '16px', padding: '2rem',
+                        maxWidth: '420px', width: '90%', boxShadow: '0 25px 50px rgba(0,0,0,0.2)'
+                    }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem', color: '#e11d48' }}>🗑️ Eliminar Cotización</h3>
+                        <p style={{ fontSize: '0.9rem', color: '#475569', margin: '0 0 0.5rem' }}>
+                            ¿Estás seguro de que deseas eliminar la cotización <strong>{deleteConfirm.quoteNumber}</strong>?
+                        </p>
+                        {deleteConfirm.hasOrder && (
+                            <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px', padding: '0.75rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#9a3412' }}>
+                                ⚠️ Esta cotización tiene un <strong>pedido vinculado en el Kanban</strong>. Eliminarlo también borrará el pedido de seguimiento.
+                            </div>
+                        )}
+                        <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                            <button onClick={() => setDeleteConfirm(null)}
+                                style={{ flex: 1, padding: '0.7rem', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: 'white', cursor: 'pointer', fontWeight: 600, color: '#475569' }}>
+                                Cancelar
+                            </button>
+                            <button onClick={() => deleteQuote(deleteConfirm.quoteNumber)}
+                                style={{ flex: 1, padding: '0.7rem', borderRadius: '10px', border: 'none', background: '#e11d48', color: 'white', cursor: 'pointer', fontWeight: 700 }}>
+                                Sí, Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <header className={styles.header}>
                 <div className={styles.headerTitleGroup}>
                     <h1>Generador de Cotizaciones</h1>
@@ -633,15 +699,23 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 .map((q, idx) => (
                                     <div key={idx} style={{ padding: '0.75rem', borderBottom: '1px solid #e2e8f0', transition: 'background 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className={styles.historyRow}>
                                         <div onClick={() => loadQuote(q)} style={{ cursor: 'pointer', flex: 1 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', paddingRight: '1rem' }}>
-                                                <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{q.quoteNumber}</span>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px', paddingRight: '1rem', alignItems: 'center' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                                    <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{q.quoteNumber}</span>
+                                                    {q.order && (
+                                                        <span style={{ fontSize: '0.65rem', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', borderRadius: '4px', padding: '1px 5px', fontWeight: 600 }}>🔗 En Kanban</span>
+                                                    )}
+                                                    {(q.items || []).some((i: any) => i.discountValue > 0) && (
+                                                        <span style={{ fontSize: '0.65rem', background: '#fff7ed', color: '#c2410c', border: '1px solid #fed7aa', borderRadius: '4px', padding: '1px 5px', fontWeight: 600 }}>% Desc.</span>
+                                                    )}
+                                                </div>
                                                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{q.date}</span>
                                             </div>
                                             <p style={{ fontSize: '0.8rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{q.clientName || 'Sin cliente'}</p>
                                         </div>
                                         <button 
                                             type="button" 
-                                            onClick={(e) => { e.stopPropagation(); deleteQuote(q.quoteNumber); }}
+                                            onClick={(e) => { e.stopPropagation(); setDeleteConfirm({ quoteNumber: q.quoteNumber, hasOrder: !!q.order }); }}
                                             style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '0.3rem', borderRadius: '4px' }}
                                             title="Eliminar cotización"
                                         >

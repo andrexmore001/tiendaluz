@@ -78,6 +78,13 @@ export default function TabOrders({ products = [], settings }: { products?: any[
   const [productSearch, setProductSearch] = useState('');
   const [showProductResults, setShowProductResults] = useState(false);
   const [generatingQuote, setGeneratingQuote] = useState(false);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+  const [deleteOrderConfirm, setDeleteOrderConfirm] = useState<Order | null>(null);
+
+  const showToast = (type: 'success' | 'error', msg: string) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const fetchCustomerSuggestions = async (q: string) => {
     if (q.length < 1) { setCustomerSuggestions([]); return; }
@@ -235,11 +242,18 @@ export default function TabOrders({ products = [], settings }: { products?: any[
   };
 
   const deleteOrder = async (id: string) => {
-    if (!confirm('¿Eliminar este pedido?')) return;
-    const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      setOrders(p => p.filter(o => o.id !== id));
-      if (selectedOrder?.id === id) setSelectedOrder(null);
+    try {
+      const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setOrders(p => p.filter(o => o.id !== id));
+        if (selectedOrder?.id === id) setSelectedOrder(null);
+        setDeleteOrderConfirm(null);
+        showToast('success', '🗑️ Pedido eliminado correctamente.');
+      } else {
+        showToast('error', '❌ Error al eliminar el pedido.');
+      }
+    } catch {
+      showToast('error', '❌ Error de conexión.');
     }
   };
 
@@ -293,6 +307,54 @@ export default function TabOrders({ products = [], settings }: { products?: any[
 
   return (
     <div className={styles.root}>
+      {/* Toast Notification */}
+      {toast && (
+        <div style={{
+          position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 9999,
+          background: toast.type === 'success' ? '#f0fdf4' : '#fff1f2',
+          color: toast.type === 'success' ? '#166534' : '#9f1239',
+          border: `1px solid ${toast.type === 'success' ? '#bbf7d0' : '#fecdd3'}`,
+          borderRadius: '12px', padding: '0.85rem 1.25rem', fontWeight: 600,
+          fontSize: '0.9rem', boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+          display: 'flex', alignItems: 'center', gap: '0.5rem', maxWidth: '360px',
+        }}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Delete Order Confirmation Modal */}
+      {deleteOrderConfirm && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9998,
+          background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }} onClick={() => setDeleteOrderConfirm(null)}>
+          <div style={{
+            background: 'white', borderRadius: '16px', padding: '2rem',
+            maxWidth: '420px', width: '90%', boxShadow: '0 25px 50px rgba(0,0,0,0.2)'
+          }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ margin: '0 0 0.75rem', fontSize: '1.1rem', color: '#e11d48' }}>🗑️ Eliminar Pedido</h3>
+            <p style={{ fontSize: '0.9rem', color: '#475569', margin: '0 0 0.75rem' }}>
+              ¿Eliminar el pedido <strong>{deleteOrderConfirm.orderNumber}</strong> de <strong>{deleteOrderConfirm.customerName}</strong>?
+            </p>
+            {deleteOrderConfirm.quoteId && (
+              <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px', padding: '0.75rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#9a3412' }}>
+                ⚠️ Este pedido tiene una <strong>cotización formal vinculada</strong>. Eliminarlo también borrará la cotización del módulo de Cotizaciones.
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+              <button onClick={() => setDeleteOrderConfirm(null)}
+                style={{ flex: 1, padding: '0.7rem', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: 'white', cursor: 'pointer', fontWeight: 600, color: '#475569' }}>
+                Cancelar
+              </button>
+              <button onClick={() => deleteOrder(deleteOrderConfirm.id)}
+                style={{ flex: 1, padding: '0.7rem', borderRadius: '10px', border: 'none', background: '#e11d48', color: 'white', cursor: 'pointer', fontWeight: 700 }}>
+                Sí, Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TOP BAR */}
       <div className={styles.topBar}>
         <div className={styles.topLeft}>
@@ -804,7 +866,7 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                     <AlertCircle size={15} /> Marcar Perdido
                   </button>
               )}
-              <button className={styles.deleteBtn} style={{flex: selectedOrder.status === 'LOST' ? 1 : undefined}} onClick={() => deleteOrder(selectedOrder.id)}>
+              <button className={styles.deleteBtn} style={{flex: selectedOrder.status === 'LOST' ? 1 : undefined}} onClick={() => setDeleteOrderConfirm(selectedOrder)}>
                 <Trash2 size={15} /> Eliminar
               </button>
             </div>
