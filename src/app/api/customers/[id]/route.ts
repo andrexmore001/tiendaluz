@@ -41,8 +41,31 @@ export async function PATCH(
 
     const { id } = await params;
     try {
-        const data = await req.json();
-        const customer = await prisma.customer.update({ where: { id }, data });
+        const body = await req.json();
+        const { 
+            name, 
+            companyName, 
+            nit, 
+            phone, 
+            email, 
+            billingAddress, 
+            shippingAddress, 
+            notes 
+        } = body;
+
+        const customer = await prisma.customer.update({ 
+            where: { id }, 
+            data: {
+                name,
+                companyName,
+                nit,
+                phone,
+                email,
+                billingAddress,
+                shippingAddress,
+                notes
+            } 
+        });
         return NextResponse.json(customer);
     } catch (error) {
         console.error('Error updating customer:', error);
