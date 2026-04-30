@@ -89,7 +89,10 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
     const sortedProducts = [...filteredProducts].sort((a, b) => {
         if (sortBy === 'priceAsc') return a.price - b.price;
         if (sortBy === 'priceDesc') return b.price - a.price;
-        return (new Date(b.createdAt || 0)).getTime() - (new Date(a.createdAt || 0)).getTime();
+        // Ordenar por actualización más reciente por defecto
+        const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return dateB - dateA;
     });
 
     const toggleAccordion = (id: string) => {
