@@ -215,6 +215,8 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
   };
 
   const currentUnitPrice = getTieredPrice();
+  const currentBasePrice = currentVariant?.price !== null && currentVariant?.price !== undefined ? currentVariant.price : product.price;
+  const isTierActive = currentUnitPrice < currentBasePrice;
 
     // Handle WhatsApp removed as user requested global floating button instead
     // const handleWhatsApp = () => { ... }
@@ -277,7 +279,7 @@ export default function CustomizerClient({ id }: CustomizerClientProps) {
             </div>
             <p className={styles.price}>
               ${formatPrice(currentUnitPrice)} <span className={styles.unitText}>por unidad</span>
-              {currentUnitPrice < product.price && (
+              {isTierActive && (
                 <span style={{ fontSize: '0.8rem', background: '#e0ffe0', color: '#008000', padding: '0.2rem 0.5rem', borderRadius: '4px', marginLeft: '0.5rem', fontWeight: 600 }}>¡Precio por Volumen!</span>
               )}
             </p>

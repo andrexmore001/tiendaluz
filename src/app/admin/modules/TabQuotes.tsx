@@ -304,16 +304,38 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         const item = items[idx];
         const product = item.originalProduct;
 
-        // Calculate price based on tiers if available
-        let unitPrice = product.price;
+        // 1. Obtener el precio base actual (considerando si es variante)
+        let basePrice = product.price;
+        if (item.variantId && product.variants) {
+            const variant = product.variants.find((v: any) => v.id === item.variantId);
+            if (variant && variant.price !== null && variant.price !== undefined) {
+                basePrice = variant.price;
+            }
+        }
+
+        // 2. Calcular el precio original ajustado por escalas (tiers)
+        let tieredOriginalPrice = basePrice;
         if (product.priceTiers && product.priceTiers.length > 0) {
             const tier = product.priceTiers.find((t: any) =>
                 qty >= t.minQty && (!t.maxQty || qty <= t.maxQty)
             );
-            if (tier) unitPrice = tier.unitPrice;
+            if (tier) {
+                // Aplicar el factor de descuento de la escala proporcionalmente al precio base (variante o producto)
+                const discountFactor = product.price > 0 ? (tier.unitPrice / product.price) : 1;
+                tieredOriginalPrice = Math.round(basePrice * discountFactor);
+            }
         }
 
-        items[idx] = { ...item, qty, unitPrice };
+        // 3. Re-aplicar el descuento manual existente sobre el nuevo precio original
+        const dValue = item.discountValue || 0;
+        const finalUnitPrice = tieredOriginalPrice * (1 - (dValue / 100));
+
+        items[idx] = { 
+            ...item, 
+            qty, 
+            originalPrice: tieredOriginalPrice, 
+            unitPrice: finalUnitPrice 
+        };
         setQuoteData({ ...quoteData, items });
     };
 
@@ -322,10 +344,9 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         const item = items[idx];
         const newItem = { ...item, [field]: value };
 
-        // Recalculate unitPrice based on discount (always percentage)
-        let discountedPrice = item.originalPrice;
+        // Recalcular unitPrice basado en el descuento sobre el originalPrice (que ya puede incluir tiers)
         const dValue = newItem.discountValue || 0;
-        discountedPrice = item.originalPrice * (1 - (dValue / 100));
+        const discountedPrice = item.originalPrice * (1 - (dValue / 100));
 
         items[idx] = { ...newItem, unitPrice: discountedPrice, discountType: 'percentage' };
         setQuoteData({ ...quoteData, items });

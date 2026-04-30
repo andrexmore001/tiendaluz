@@ -80,6 +80,37 @@ export default function TabOrders({ products = [], settings }: { products?: any[
   const [generatingQuote, setGeneratingQuote] = useState(false);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
   const [deleteOrderConfirm, setDeleteOrderConfirm] = useState<Order | null>(null);
+  
+  const searchableItems = React.useMemo(() => {
+    const items: any[] = [];
+    products.forEach(p => {
+        if (p.variants && p.variants.length > 0) {
+            p.variants.forEach((v: any) => {
+                const variantAttributesStr = v.attributes && v.attributes.length > 0 
+                    ? v.attributes.map((a: any) => a.attributeValue?.value).filter(Boolean).join(' - ') 
+                    : '';
+                const variantName = variantAttributesStr ? `${p.name} - ${variantAttributesStr}` : p.name;
+                items.push({
+                    id: v.id,
+                    productId: p.id,
+                    variantId: v.id,
+                    name: variantName,
+                    price: v.price ?? p.price,
+                    product: p
+                });
+            });
+        } else {
+            items.push({
+                id: p.id,
+                productId: p.id,
+                name: p.name,
+                price: p.price,
+                product: p
+            });
+        }
+    });
+    return items;
+  }, [products]);
 
   const showToast = (type: 'success' | 'error', msg: string) => {
     setToast({ type, msg });
@@ -644,21 +675,21 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                     </div>
                     {showProductResults && productSearch && (
                         <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)', marginTop: '5px', maxHeight: '200px', overflowY: 'auto' }}>
-                            {products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase())).map(p => (
-                                <div key={p.id} onClick={() => {
+                            {searchableItems.filter(item => item.name.toLowerCase().includes(productSearch.toLowerCase())).map(item => (
+                                <div key={item.id} onClick={() => {
                                     const currentItems = Array.isArray(selectedOrder.items) ? [...selectedOrder.items] : [];
-                                    const exists = currentItems.find(i => i.name === p.name);
+                                    const exists = currentItems.find(i => i.name === item.name);
                                     if (exists) {
                                         exists.qty += 1;
                                     } else {
-                                        currentItems.push({ name: p.name, qty: 1, price: p.price });
+                                        currentItems.push({ name: item.name, qty: 1, price: item.price, originalPrice: item.price });
                                     }
                                     updateItems(selectedOrder.id, currentItems);
                                     setProductSearch('');
                                     setShowProductResults(false);
                                 }} style={{ padding: '0.8rem', cursor: 'pointer', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between' }}>
-                                    <span style={{ fontSize: '0.88rem' }}>{p.name}</span>
-                                    <span style={{ fontSize: '0.88rem', fontWeight: 'bold', color: '#8B4B62' }}>{formatPrice(p.price)}</span>
+                                    <span style={{ fontSize: '0.88rem' }}>{item.name}</span>
+                                    <span style={{ fontSize: '0.88rem', fontWeight: 'bold', color: '#8B4B62' }}>{formatPrice(item.price)}</span>
                                 </div>
                             ))}
                         </div>
