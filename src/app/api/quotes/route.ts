@@ -41,8 +41,7 @@ export async function POST(req: Request) {
             clientName,
             customerCompany,
             clientNit,
-            billingAddress,
-            shippingAddress,
+            address,
             items,
             notes,
             discountReason,
@@ -74,8 +73,7 @@ export async function POST(req: Request) {
                     name: clientName.trim(),
                     companyName: customerCompany || null,
                     nit: clientNit || null,
-                    billingAddress: billingAddress || null,
-                    shippingAddress: shippingAddress || null,
+                    address: address || null,
                 }
             });
         } else {
@@ -85,8 +83,7 @@ export async function POST(req: Request) {
                 data: {
                     companyName: customerCompany || customer.companyName,
                     nit: clientNit || customer.nit,
-                    billingAddress: billingAddress || customer.billingAddress,
-                    shippingAddress: shippingAddress || customer.shippingAddress,
+                    address: address || customer.address,
                 }
             });
         }
@@ -101,8 +98,7 @@ export async function POST(req: Request) {
                 clientName,
                 customerCompany: customerCompany || null,
                 clientNit,
-                billingAddress,
-                shippingAddress,
+                address,
                 notes,
                 discountReason,
                 paymentTerms,
@@ -130,8 +126,7 @@ export async function POST(req: Request) {
                 clientName,
                 customerCompany: customerCompany || null,
                 clientNit,
-                billingAddress,
-                shippingAddress,
+                address,
                 notes,
                 discountReason,
                 paymentTerms,

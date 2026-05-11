@@ -15,8 +15,7 @@ interface Customer {
     nit?: string;
     phone?: string;
     email?: string;
-    billingAddress?: string;
-    shippingAddress?: string;
+    address?: string;
     notes?: string;
     createdAt: string;
     quotesCount: number;
@@ -37,7 +36,7 @@ const STAGE_LABELS: Record<string, string> = {
 
 const EMPTY: Customer = {
     id: '', name: '', companyName: '', nit: '', phone: '', email: '',
-    billingAddress: '', shippingAddress: '', notes: '',
+    address: '', notes: '',
     createdAt: '', quotesCount: 0, ordersCount: 0, totalValue: 0,
 };
 
@@ -272,11 +271,8 @@ export default function TabCustomers() {
                                 <div className={styles.infoGrid}>
                                     {selected.phone && <div className={styles.infoRow}><Phone size={14} /><a href={`https://wa.me/57${(selected.phone).replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">{selected.phone}</a></div>}
                                     {selected.email && <div className={styles.infoRow}><Mail size={14} /><a href={`mailto:${selected.email}`}>{selected.email}</a></div>}
-                                    {selected.billingAddress && <div className={styles.infoRow}><MapPin size={14} /><span>{selected.billingAddress}</span></div>}
-                                    {selected.shippingAddress && selected.shippingAddress !== selected.billingAddress && (
-                                        <div className={styles.infoRow}><MapPin size={14} /><span>{selected.shippingAddress} (envío)</span></div>
-                                    )}
-                                    {!selected.phone && !selected.email && !selected.billingAddress && (
+                                    {selected.address && <div className={styles.infoRow}><MapPin size={14} /><span>{selected.address}</span></div>}
+                                    {!selected.phone && !selected.email && !selected.address && (
                                         <p className={styles.noInfo}>Sin información de contacto. <button onClick={() => openEdit(selected)}>Agregar →</button></p>
                                     )}
                                 </div>
@@ -372,12 +368,8 @@ export default function TabCustomers() {
                                 </div>
                             </div>
                             <div className={styles.field}>
-                                <label>Dirección de Facturación</label>
-                                <input placeholder="Calle 123, Ciudad" value={form.billingAddress || ''} onChange={e => setForm({ ...form, billingAddress: e.target.value })} />
-                            </div>
-                            <div className={styles.field}>
-                                <label>Dirección de Envío</label>
-                                <input placeholder="Igual que facturación o diferente" value={form.shippingAddress || ''} onChange={e => setForm({ ...form, shippingAddress: e.target.value })} />
+                                <label>Dirección</label>
+                                <input placeholder="Calle 123, Ciudad" value={form.address || ''} onChange={e => setForm({ ...form, address: e.target.value })} />
                             </div>
                             <div className={styles.field}>
                                 <label>Notas internas</label>

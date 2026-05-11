@@ -38,8 +38,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         clientName: '',
         customerCompany: '',
         clientNit: '',
-        billingAddress: '',
-        shippingAddress: '',
+        address: '',
         items: [] as any[],
         notes: '',
         discountReason: '',
@@ -82,8 +81,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             clientName: c.name,
             customerCompany: c.companyName || prev.customerCompany,
             clientNit: c.nit || prev.clientNit,
-            billingAddress: c.billingAddress || prev.billingAddress,
-            shippingAddress: c.shippingAddress || prev.shippingAddress,
+            address: c.address || prev.address,
         }));
         setCustomerSuggestions([]);
         setShowCustomerSuggestions(false);
@@ -213,8 +211,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             clientName: quote.clientName,
             customerCompany: quote.customerCompany || '',
             clientNit: quote.clientNit,
-            billingAddress: quote.billingAddress,
-            shippingAddress: quote.shippingAddress,
+            address: quote.address || '',
             items: quote.items.map((item: any) => {
                 const searchItem = searchableItems.find((si: any) => si.name === item.description.split(' (')[0]);
                 return {
@@ -244,8 +241,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             clientName: '',
             customerCompany: '',
             clientNit: '',
-            billingAddress: '',
-            shippingAddress: '',
+            address: '',
             items: [] as any[],
             notes: '',
             discountReason: '',
@@ -259,7 +255,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const hasData = quoteData.clientName || quoteData.opportunityName || quoteData.items.length > 0 || quoteData.notes || quoteData.clientNit || quoteData.billingAddress || quoteData.shippingAddress;
+    const hasData = quoteData.clientName || quoteData.opportunityName || quoteData.items.length > 0 || quoteData.notes || quoteData.clientNit || quoteData.address;
 
     const selectProduct = (item: any) => {
         setSelectedItem(item);
@@ -481,23 +477,14 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 placeholder="Ej: 900.000.000-1"
                             />
                         </div>
-                        <div className={styles.dimensionsRow}>
-                            <div className={styles.inputGroup}>
-                                <label><MapPin size={14} /> Dir. Facturación</label>
-                                <input
-                                    type="text"
-                                    value={quoteData.billingAddress}
-                                    onChange={e => setQuoteData({ ...quoteData, billingAddress: e.target.value })}
-                                />
-                            </div>
-                            <div className={styles.inputGroup}>
-                                <label><MapPin size={14} /> Dir. Envío</label>
-                                <input
-                                    type="text"
-                                    value={quoteData.shippingAddress}
-                                    onChange={e => setQuoteData({ ...quoteData, shippingAddress: e.target.value })}
-                                />
-                            </div>
+                        <div className={styles.inputGroup}>
+                            <label><MapPin size={14} /> Dirección</label>
+                            <input
+                                type="text"
+                                value={quoteData.address}
+                                onChange={e => setQuoteData({ ...quoteData, address: e.target.value })}
+                                placeholder="Ej: Calle 123 # 45-67, Bogotá"
+                            />
                         </div>
                     </div>
 
@@ -620,7 +607,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                         <div style={{ marginBottom: '2rem' }}>
                             <p style={{ fontSize: '0.8rem', color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>Cliente</p>
                             <p style={{ fontWeight: 'bold' }}>{quoteData.clientName || '---'}</p>
-                            <p style={{ fontSize: '0.9rem' }}>{quoteData.clientNit || '---'}</p>
+                            <p style={{ fontSize: '0.9rem' }}>{quoteData.address || '---'}</p>
                         </div>
 
                         <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem' }}>

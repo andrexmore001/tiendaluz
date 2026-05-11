@@ -48,8 +48,7 @@ export async function PATCH(
             nit, 
             phone, 
             email, 
-            billingAddress, 
-            shippingAddress, 
+            address, 
             notes 
         } = body;
 
@@ -61,8 +60,7 @@ export async function PATCH(
                 nit,
                 phone,
                 email,
-                billingAddress,
-                shippingAddress,
+                address,
                 notes
             } 
         });

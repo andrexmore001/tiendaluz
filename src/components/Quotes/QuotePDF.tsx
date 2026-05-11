@@ -172,8 +172,7 @@ interface QuotePDFProps {
         vendor: string;
         clientName: string;
         clientNit: string;
-        billingAddress: string;
-        shippingAddress: string;
+        address: string;
         items: QuoteItem[];
         notes?: string;
         discountReason?: string;
@@ -201,15 +200,10 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
 
                 <View style={styles.addressSection}>
                     <View style={styles.addressBlock}>
-                        <Text style={styles.addressTitle}>Dirección de facturación</Text>
+                        <Text style={styles.addressTitle}>Dirección</Text>
                         <Text style={styles.addressText}>{data.clientName}</Text>
-                        <Text style={styles.addressText}>{data.billingAddress}</Text>
+                        <Text style={styles.addressText}>{data.address}</Text>
                         <Text style={styles.addressText}>NIT: {data.clientNit}</Text>
-                    </View>
-                    <View style={styles.addressBlock}>
-                        <Text style={styles.addressTitle}>Dirección de envío</Text>
-                        <Text style={styles.addressText}>{data.clientName}</Text>
-                        <Text style={styles.addressText}>{data.shippingAddress}</Text>
                     </View>
                 </View>
 

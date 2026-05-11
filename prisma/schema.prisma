@@ -122,8 +122,7 @@ model Customer {
   nit             String?
   phone           String?
   email           String?
-  billingAddress  String?
-  shippingAddress String?
+  address         String?
   notes           String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -141,8 +140,7 @@ model Quote {
   clientName       String
   customerCompany  String?
   clientNit        String?
-  billingAddress   String
-  shippingAddress  String
+  address          String?
   notes            String?
   paymentTerms     String?
   subtotal         Float
