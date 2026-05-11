@@ -13,7 +13,8 @@ import {
     History,
     RefreshCw,
     RotateCcw,
-    Percent
+    Percent,
+    Target
 } from 'lucide-react';
 import { Product } from '@/types/product';
 import styles from '../admin.module.css';
@@ -30,6 +31,7 @@ interface TabQuotesProps {
 export default function TabQuotes({ products, onMenuClick, settings }: TabQuotesProps) {
     const [quoteData, setQuoteData] = useState({
         quoteNumber: `S${Math.floor(10000 + Math.random() * 90000)}`,
+        opportunityName: '',
         date: new Date().toLocaleDateString('es-ES'),
         expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
         vendor: 'Administrador Artesana',
@@ -204,6 +206,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
     const loadQuote = (quote: any) => {
         setQuoteData({
             quoteNumber: quote.quoteNumber,
+            opportunityName: quote.opportunityName || '',
             date: quote.date,
             expiryDate: quote.expiryDate,
             vendor: quote.vendor,
@@ -234,6 +237,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         if (!confirm('¿Estás seguro de que deseas limpiar todos los campos de la cotización actual?')) return;
         setQuoteData({
             quoteNumber: `S${Math.floor(10000 + Math.random() * 90000)}`,
+            opportunityName: '',
             date: new Date().toLocaleDateString('es-ES'),
             expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-ES'),
             vendor: 'Administrador Artesana',
@@ -255,7 +259,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const hasData = quoteData.clientName || quoteData.items.length > 0 || quoteData.notes || quoteData.clientNit || quoteData.billingAddress || quoteData.shippingAddress;
+    const hasData = quoteData.clientName || quoteData.opportunityName || quoteData.items.length > 0 || quoteData.notes || quoteData.clientNit || quoteData.billingAddress || quoteData.shippingAddress;
 
     const selectProduct = (item: any) => {
         setSelectedItem(item);
@@ -417,6 +421,15 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                 <div className={styles.quoteForm}>
                     <div className={styles.formGroup}>
                         <h3 className={styles.formGroupTitle}>Datos del Cliente</h3>
+                        <div className={styles.inputGroup}>
+                            <label><Target size={14} /> Nombre de la Oportunidad</label>
+                            <input
+                                type="text"
+                                value={quoteData.opportunityName}
+                                onChange={e => setQuoteData({ ...quoteData, opportunityName: e.target.value })}
+                                placeholder="Ej: Pedido corporativo Navidad 2024"
+                            />
+                        </div>
                         <div className={styles.inputGroup} ref={customerRef} style={{ position: 'relative' }}>
                             <label><User size={14} /> Nombre del Contacto *</label>
                             <input

@@ -11,7 +11,7 @@ import QuotePDF from '@/components/Quotes/QuotePDF';
 interface OrderNote { id: string; content: string; createdAt: string; }
 interface OrderItem { name: string; qty: number; price: number; originalPrice?: number; discountValue?: number; discountType?: string; }
 interface Order {
-  id: string; orderNumber: string; status: string;
+  id: string; orderNumber: string; opportunityName?: string; status: string;
   customerName: string; customerEmail?: string; customerPhone?: string;
   total: number; items?: OrderItem[]; notes: OrderNote[];
   createdAt: string; updatedAt: string; customerId?: string;
@@ -66,7 +66,7 @@ export default function TabOrders({ products = [], settings }: { products?: any[
   const [editingTotal, setEditingTotal] = useState(false);
   const [editedTotal, setEditedTotal] = useState(0);
   const [showItems, setShowItems] = useState(false);
-  const [newOrder, setNewOrder] = useState({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD', source: 'whatsapp' });
+  const [newOrder, setNewOrder] = useState({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', opportunityName: '', total: 0, status: 'LEAD', source: 'whatsapp' });
   const [customerHistory, setCustomerHistory] = useState<{quotes: any[], orders: any[]}|null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [customerSuggestions, setCustomerSuggestions] = useState<any[]>([]);
@@ -268,7 +268,7 @@ export default function TabOrders({ products = [], settings }: { products?: any[
       const o = await res.json();
       setOrders(p => [o, ...p]);
       setShowNewModal(false);
-      setNewOrder({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', total: 0, status: 'LEAD', source: 'whatsapp' });
+      setNewOrder({ customerName: '', customerCompany: '', customerPhone: '', customerEmail: '', opportunityName: '', total: 0, status: 'LEAD', source: 'whatsapp' });
     }
   };
 
@@ -472,6 +472,11 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                   <span className={styles.timeAgo}>{getTimeAgo(order.updatedAt)}</span>
                                 </div>
                                 <div className={styles.customerName}>{order.customerName}</div>
+                                {order.opportunityName && (
+                                  <div style={{ fontSize: '0.72rem', color: '#8B4B62', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    🎯 {order.opportunityName}
+                                  </div>
+                                )}
                                 {(isWarn || isDanger) && (
                                   <div className={isDanger ? styles.badgeDanger : styles.badgeWarn}>
                                     <AlertCircle size={11} />{days}d sin mover
@@ -588,6 +593,31 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                     >{s.emoji} {s.name}</button>
                   ))}
                 </div>
+              </section>
+              {/* Opportunity Name */}
+              <section>
+                <label className={styles.sectionLabel}>🎯 NOMBRE DE LA OPORTUNIDAD</label>
+                <input
+                  type="text"
+                  defaultValue={selectedOrder.opportunityName || ''}
+                  placeholder="Ej: Pedido corporativo Navidad 2024"
+                  onBlur={e => {
+                    const val = e.target.value.trim();
+                    if (val !== (selectedOrder.opportunityName || '')) {
+                      fetch(`/api/orders/${selectedOrder.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ opportunityName: val || null })
+                      }).then(r => r.ok ? r.json() : null).then(updated => {
+                        if (updated) {
+                          setOrders(p => p.map(o => o.id === selectedOrder.id ? { ...o, opportunityName: updated.opportunityName } : o));
+                          setSelectedOrder(prev => prev ? { ...prev, opportunityName: updated.opportunityName } : prev);
+                        }
+                      });
+                    }
+                  }}
+                  style={{ width: '100%', padding: '0.6rem 0.75rem', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box' }}
+                />
               </section>
               {/* Total */}
               <section>
@@ -952,6 +982,14 @@ export default function TabOrders({ products = [], settings }: { products?: any[
           <div className={styles.modal} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}><h2>Nuevo Pedido</h2><button onClick={() => setShowNewModal(false)}><X size={20} /></button></div>
             <form onSubmit={createOrder} className={styles.modalForm}>
+              <div className={styles.field}>
+                <label>🎯 Nombre de la Oportunidad</label>
+                <input
+                  placeholder="Ej: Pedido corporativo Navidad 2024"
+                  value={newOrder.opportunityName}
+                  onChange={e => setNewOrder({ ...newOrder, opportunityName: e.target.value })}
+                />
+              </div>
               <div className={styles.field} style={{ position: 'relative' }}>
                 <label>Nombre *</label>
                 <input 

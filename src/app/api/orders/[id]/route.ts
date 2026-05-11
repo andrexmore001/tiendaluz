@@ -13,7 +13,7 @@ export async function PATCH(
 
     try {
         const data = await request.json();
-        const { status, customerName, customerEmail, customerPhone, total, lostReason, source, items } = data;
+        const { status, customerName, customerEmail, customerPhone, total, lostReason, source, items, opportunityName } = data;
 
         const currentOrder = await prisma.order.findUnique({
             where: { id }
@@ -27,6 +27,7 @@ export async function PATCH(
             where: { id },
             data: {
                 status: status ?? undefined,
+                opportunityName: opportunityName !== undefined ? (opportunityName || null) : undefined,
                 customerName: customerName ?? undefined,
                 customerEmail: customerEmail ?? undefined,
                 customerPhone: customerPhone ?? undefined,

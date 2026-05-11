@@ -22,6 +22,7 @@ export async function GET() {
                 const order = await prisma.order.create({
                     data: {
                         orderNumber: `ORD-${quote.quoteNumber}`,
+                        opportunityName: quote.opportunityName || null,
                         status: 'QUOTE',
                         customerName: quote.clientName,
                         total: quote.total,
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
 
     try {
         const data = await request.json();
-        const { customerName, customerCompany, customerEmail, customerPhone, total, status, items, quoteId, source } = data;
+        const { customerName, customerCompany, customerEmail, customerPhone, total, status, items, quoteId, source, opportunityName } = data;
 
         // Generate unique order number (e.g. ART-2024-0001)
         const date = new Date();
@@ -123,6 +124,7 @@ export async function POST(request: Request) {
         const order = await prisma.order.create({
             data: {
                 orderNumber,
+                opportunityName: opportunityName || null,
                 status: status || 'LEAD',
                 customerName: customerName.trim(),
                 customerCompany: customerCompany || null,

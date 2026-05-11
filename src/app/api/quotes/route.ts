@@ -34,6 +34,7 @@ export async function POST(req: Request) {
         const body = await req.json();
         const {
             quoteNumber,
+            opportunityName,
             date,
             expiryDate,
             vendor,
@@ -93,6 +94,7 @@ export async function POST(req: Request) {
         const quote = await prisma.quote.upsert({
             where: { quoteNumber },
             update: {
+                opportunityName: opportunityName || null,
                 date: parsedDate,
                 expiryDate: parsedExpiryDate,
                 vendor,
@@ -121,6 +123,7 @@ export async function POST(req: Request) {
             },
             create: {
                 quoteNumber,
+                opportunityName: opportunityName || null,
                 date: parsedDate,
                 expiryDate: parsedExpiryDate,
                 vendor,
@@ -151,6 +154,7 @@ export async function POST(req: Request) {
         // Ensure Order exists for this Quote
         const orderData = {
             orderNumber: `ORD-${quote.quoteNumber}`,
+            opportunityName: quote.opportunityName || null,
             customerName: quote.clientName,
             total: quote.total,
             items: items.map((i: any) => ({ 
@@ -168,6 +172,7 @@ export async function POST(req: Request) {
             where: { quoteId: quote.id },
             update: {
                 total: orderData.total,
+                opportunityName: orderData.opportunityName,
                 customerName: orderData.customerName,
                 customerCompany: customerCompany || null,
                 customerId: customer.id,
