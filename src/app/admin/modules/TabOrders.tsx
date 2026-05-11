@@ -468,7 +468,12 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                 onClick={() => { setSelectedOrder(order); setShowItems(false); setEditingTotal(false); fetchCustomerHistory(order.customerId); }}
                               >
                                 <div className={styles.cardTop}>
-                                  <span className={styles.orderNum}>{order.orderNumber}</span>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                    <span className={styles.orderNum}>{order.orderNumber}</span>
+                                    <span style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>
+                                      {new Date(order.createdAt).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                    </span>
+                                  </div>
                                   <span className={styles.timeAgo}>{getTimeAgo(order.updatedAt)}</span>
                                 </div>
                                 <div className={styles.customerName}>{order.customerName}</div>
