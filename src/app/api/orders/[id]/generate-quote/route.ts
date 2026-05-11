@@ -46,8 +46,7 @@ export async function POST(
                 clientName: order.customerName,
                 customerCompany: order.customerCompany,
                 vendor: 'Admin', // Default
-                billingAddress: '',
-                shippingAddress: '',
+                address: '',
                 subtotal,
                 total: subtotal,
                 customerId: order.customerId,

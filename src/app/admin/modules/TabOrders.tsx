@@ -822,8 +822,7 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                         vendor: selectedOrder.quote.vendor,
                                         clientName: selectedOrder.quote.clientName,
                                         clientNit: selectedOrder.quote.clientNit || '',
-                                        billingAddress: selectedOrder.quote.billingAddress,
-                                        shippingAddress: selectedOrder.quote.shippingAddress,
+                                        address: selectedOrder.quote.address,
                                         items: selectedOrder.quote.items.map((i: any) => ({
                                             description: i.description,
                                             qty: i.qty,

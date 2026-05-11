@@ -39,8 +39,7 @@ export async function POST() {
                     data: {
                         name: first.clientName.trim(),
                         nit: first.clientNit || null,
-                        billingAddress: first.billingAddress || null,
-                        shippingAddress: first.shippingAddress || null,
+                        address: first.address || null,
                     }
                 });
                 created++;
