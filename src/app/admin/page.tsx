@@ -15,7 +15,9 @@ import {
     User,
     ChevronLeft,
     ChevronRight,
-    Search
+    Search,
+    ArrowRightLeft,
+    Users
 } from 'lucide-react';
 import { useSettings } from '@/context/SettingsContext';
 import { useSession, signOut } from 'next-auth/react';
@@ -40,6 +42,8 @@ const ModalAttribute = dynamic(() => import('./modules/ModalAttribute'));
 const ModalTextConfig = dynamic(() => import('./modules/ModalTextConfig'));
 const TabSuppliers = dynamic(() => import('./modules/TabSuppliers'));
 const ModalSupplier = dynamic(() => import('./modules/ModalSupplier'));
+const TabOrders = dynamic(() => import('./modules/TabOrders'));
+const TabCustomers = dynamic(() => import('./modules/TabCustomers'));
 
 export default function AdminPage() {
     const router = useRouter();
@@ -104,12 +108,14 @@ export default function AdminPage() {
 
     const [formData, setFormData] = useState({
         name: '', price: 0, costPrice: 0, supplierId: '', collectionId: collections[0]?.id || 'Todas', description: '',
-        image: '', displayMode: '3d' as '3d' | 'photos' | 'both',
-        images: [] as any[], width: 4, height: 2, depth: 4,
-        materialId: '', baseColor: '#F9F1E7', modelUrl: '',
+        image: '',
+        images: [] as any[], width: 0, height: 0, depth: 0,
+        materialId: '', baseColor: '#F9F1E7',
         priceTiers: [] as any[],
         variants: [] as any[],
         combineVariantsForTiers: false,
+        isVisible: true,
+        isRotationEnabled: true,
         hasRibbon: false,
         ribbonText: '',
         ribbonColor: '#D4AF37'
@@ -119,7 +125,7 @@ export default function AdminPage() {
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [currentStep, setCurrentStep] = useState(1);
     const unreadCount = messages.filter(m => !m.read).length;
-    const totalSteps = formData.displayMode === 'photos' ? 2 : 3;
+    const totalSteps = 2;
 
     // Fix currentStep if it exceeds totalSteps
     useEffect(() => { if (currentStep > totalSteps) setCurrentStep(totalSteps); }, [totalSteps, currentStep]);
@@ -173,10 +179,12 @@ export default function AdminPage() {
         setFormData({
             ...formData,
             name: '', price: 0, costPrice: 0, supplierId: '', collectionId: collections[0]?.id || 'Todas', description: '',
-            image: '', displayMode: '3d', images: [], priceTiers: [], modelUrl: '',
+            image: '', images: [], priceTiers: [],
             materialId: materials[0]?.id || '',
             variants: [],
             combineVariantsForTiers: false,
+            isVisible: true,
+            isRotationEnabled: true,
             hasRibbon: false,
             ribbonText: '',
             ribbonColor: '#D4AF37'
@@ -191,14 +199,15 @@ export default function AdminPage() {
 
         setFormData({
             name: p.name, price: p.price, costPrice: p.costPrice || 0, supplierId: p.supplierId || '', collectionId: categoryIdToEdit, description: p.description,
-            image: p.image || '', displayMode: p.displayMode || '3d',
+            image: p.image || '',
             images: Array.isArray(p.images) ? p.images.map(img => typeof img === 'string' ? { url: img, textConfig: { x: 50, y: 50, rotation: 0, scale: 1 } } : img) : [],
-            width: p.dimensions?.width || 4, height: p.dimensions?.height || 2, depth: p.dimensions?.depth || 4,
+            width: p.dimensions?.width || 0, height: p.dimensions?.height || 0, depth: p.dimensions?.depth || 0,
             materialId: p.materialId || 'carton-kraft', baseColor: p.baseColor || '#F9F1E7',
-            modelUrl: p.modelUrl || '',
             priceTiers: p.priceTiers || [],
             variants: p.variants || [],
             combineVariantsForTiers: p.combineVariantsForTiers || false,
+            isVisible: p.isVisible !== false,
+            isRotationEnabled: (p as any).isRotationEnabled !== false,
             hasRibbon: (p as any).hasRibbon || false,
             ribbonText: (p as any).ribbonText || '',
             ribbonColor: (p as any).ribbonColor || '#D4AF37'
@@ -393,6 +402,8 @@ export default function AdminPage() {
                     <button className={activeTab === 'materials' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('materials'); setMobileMenuOpen(false); }}><Palette size={20} /><span>Materiales</span></button>
                     <button className={activeTab === 'suppliers' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('suppliers'); setMobileMenuOpen(false); }}><Truck size={20} /><span>Proveedores</span></button>
                     <button className={activeTab === 'attributes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('attributes'); setMobileMenuOpen(false); }}><Layers size={20} /><span>Atributos</span></button>
+                    <button className={activeTab === 'customers' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('customers'); setMobileMenuOpen(false); }}><Users size={20} /><span>Clientes</span></button>
+                    <button className={activeTab === 'orders' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('orders'); setMobileMenuOpen(false); }}><ArrowRightLeft size={20} /><span>Pedidos (Kanban)</span></button>
                     <button className={activeTab === 'quotes' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('quotes'); setMobileMenuOpen(false); }}><FileText size={20} /><span>Cotizaciones</span></button>
                     <button className={activeTab === 'messages' ? styles.navItemActive : styles.navItem} onClick={() => { setActiveTab('messages'); setMobileMenuOpen(false); }}>
                         <div className={styles.navIconWrapper}>
@@ -425,6 +436,8 @@ export default function AdminPage() {
                 {activeTab === 'materials' && <TabMaterials materials={materials} onAdd={() => { setEditingMaterial(null); setMaterialFormData({ name: '', textureUrl: '' }); setShowMaterialForm(true); }} onEdit={m => { setEditingMaterial(m); setMaterialFormData({ name: m.name, textureUrl: m.textureUrl }); setShowMaterialForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteMaterial(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'suppliers' && <TabSuppliers suppliers={suppliers} onAdd={() => { setEditingSupplier(null); setSupplierFormData({ name: '', contact: '' }); setShowSupplierForm(true); }} onEdit={s => { setEditingSupplier(s); setSupplierFormData({ name: s.name, contact: s.contact || '' }); setShowSupplierForm(true); }} onDelete={id => { if (confirm('¿Eliminar?')) { deleteSupplier(id); showToast("Eliminado"); } }} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'attributes' && <TabAttributes attributes={attributes} onAdd={() => { setEditingAttribute(null); setAttributeFormData({ name: '', values: [] }); setShowAttributeForm(true); }} onEdit={attr => { setEditingAttribute(attr); setAttributeFormData({ name: attr.name, values: attr.values.map((v:any) => v.value) }); setShowAttributeForm(true); }} onDelete={id => { if(confirm('¿Seguro que deseas eliminar este atributo? (Esto no afectará los productos ya migrados, pero evitará que el atributo se ponga en nuevos productos)')) deleteAttribute(id) }} onMenuClick={() => setMobileMenuOpen(true)} />}
+                {activeTab === 'customers' && <TabCustomers />}
+                {activeTab === 'orders' && <TabOrders products={products} settings={settings} />}
                 {activeTab === 'account' && <TabAccount session={session} isSaving={isSaving} onSave={handleAccountSave} onMenuClick={() => setMobileMenuOpen(true)} />}
                 {activeTab === 'quotes' && <TabQuotes products={products} onMenuClick={() => setMobileMenuOpen(true)} settings={settings} />}
                 {activeTab === 'messages' && <TabMessages onMenuClick={() => setMobileMenuOpen(true)} />}

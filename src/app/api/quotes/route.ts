@@ -8,7 +8,7 @@ export async function GET() {
 
     try {
         const quotes = await prisma.quote.findMany({
-            include: { items: true },
+            include: { items: true, order: true },
             orderBy: { createdAt: 'desc' }
         });
 
@@ -34,21 +34,22 @@ export async function POST(req: Request) {
         const body = await req.json();
         const {
             quoteNumber,
+            opportunityName,
             date,
             expiryDate,
             vendor,
             clientName,
+            customerCompany,
             clientNit,
-            billingAddress,
-            shippingAddress,
+            address,
             items,
             notes,
+            discountReason,
             paymentTerms,
             subtotal,
             total
         } = body;
 
-        // Helper to parse DD/MM/YYYY to Date object
         const parseDate = (dateStr: string) => {
             if (!dateStr) return null;
             if (dateStr.includes('/')) {
@@ -61,50 +62,122 @@ export async function POST(req: Request) {
         const parsedDate = parseDate(date) || new Date();
         const parsedExpiryDate = parseDate(expiryDate);
 
-        // Upsert by quoteNumber to prevent duplicates or allow updates
+        // Find or create customer
+        let customer = await prisma.customer.findFirst({
+            where: { name: { equals: clientName.trim(), mode: 'insensitive' } }
+        });
+
+        if (!customer) {
+            customer = await prisma.customer.create({
+                data: {
+                    name: clientName.trim(),
+                    companyName: customerCompany || null,
+                    nit: clientNit || null,
+                    address: address || null,
+                }
+            });
+        } else {
+            // Update customer details if they are provided and customer is missing them
+            await prisma.customer.update({
+                where: { id: customer.id },
+                data: {
+                    companyName: customerCompany || customer.companyName,
+                    nit: clientNit || customer.nit,
+                    address: address || customer.address,
+                }
+            });
+        }
+
         const quote = await prisma.quote.upsert({
             where: { quoteNumber },
             update: {
+                opportunityName: opportunityName || null,
                 date: parsedDate,
                 expiryDate: parsedExpiryDate,
                 vendor,
                 clientName,
+                customerCompany: customerCompany || null,
                 clientNit,
-                billingAddress,
-                shippingAddress,
+                address,
                 notes,
+                discountReason,
                 paymentTerms,
                 subtotal,
                 total,
+                customerId: customer.id,
                 items: {
                     deleteMany: {},
                     create: items.map((item: any) => ({
                         description: item.description,
                         qty: item.qty,
-                        unitPrice: item.unitPrice
+                        unitPrice: item.unitPrice,
+                        originalPrice: item.originalPrice,
+                        discountValue: item.discountValue,
+                        discountType: item.discountType
                     }))
                 }
             },
             create: {
                 quoteNumber,
+                opportunityName: opportunityName || null,
                 date: parsedDate,
                 expiryDate: parsedExpiryDate,
                 vendor,
                 clientName,
+                customerCompany: customerCompany || null,
                 clientNit,
-                billingAddress,
-                shippingAddress,
+                address,
                 notes,
+                discountReason,
                 paymentTerms,
                 subtotal,
                 total,
+                customerId: customer.id,
                 items: {
                     create: items.map((item: any) => ({
                         description: item.description,
                         qty: item.qty,
-                        unitPrice: item.unitPrice
+                        unitPrice: item.unitPrice,
+                        originalPrice: item.originalPrice,
+                        discountValue: item.discountValue,
+                        discountType: item.discountType
                     }))
                 }
+            }
+        });
+
+        // Ensure Order exists for this Quote
+        const orderData = {
+            orderNumber: `ORD-${quote.quoteNumber}`,
+            opportunityName: quote.opportunityName || null,
+            customerName: quote.clientName,
+            total: quote.total,
+            items: items.map((i: any) => ({ 
+                name: i.description, 
+                qty: i.qty, 
+                price: i.unitPrice,
+                originalPrice: i.originalPrice,
+                discountValue: i.discountValue,
+                discountType: i.discountType
+            })),
+            status: 'QUOTE'
+        };
+
+        await prisma.order.upsert({
+            where: { quoteId: quote.id },
+            update: {
+                total: orderData.total,
+                opportunityName: orderData.opportunityName,
+                customerName: orderData.customerName,
+                customerCompany: customerCompany || null,
+                customerId: customer.id,
+                items: orderData.items
+            },
+            create: {
+                ...orderData,
+                customerCompany: customerCompany || null,
+                quoteId: quote.id,
+                customerId: customer.id
             }
         });
 
@@ -116,6 +189,9 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(request: Request) {
+    const session = await auth();
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     try {
         const { searchParams } = new URL(request.url);
         const quoteNumber = searchParams.get('quoteNumber');
@@ -124,16 +200,23 @@ export async function DELETE(request: Request) {
             return NextResponse.json({ error: 'Quote number is required' }, { status: 400 });
         }
 
-        // QuoteItem delete cascade is typically handled by Prisma if configured,
-        // but to be safe, we can delete items first or rely on onDelete: Cascade.
-        // Let's delete items first explicitly to avoid relation errors just in case.
-        await prisma.quoteItem.deleteMany({
-            where: { quote: { quoteNumber } }
+        // Find the quote to get its id
+        const quote = await prisma.quote.findUnique({
+            where: { quoteNumber },
+            include: { order: true }
         });
 
-        await prisma.quote.delete({
-            where: { quoteNumber }
-        });
+        if (!quote) {
+            return NextResponse.json({ error: 'Cotización no encontrada' }, { status: 404 });
+        }
+
+        // Delete linked Order in Kanban (if exists) — OrderNotes cascade via schema
+        if (quote.order) {
+            await prisma.order.delete({ where: { id: quote.order.id } });
+        }
+
+        // Delete QuoteItems and Quote (QuoteItems cascade via schema)
+        await prisma.quote.delete({ where: { quoteNumber } });
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -141,3 +224,4 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+

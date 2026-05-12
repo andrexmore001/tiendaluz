@@ -10,13 +10,14 @@ import { formatPrice } from '@/lib/format';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight, Filter, X } from 'lucide-react';
 import styles from './productos.module.css';
+import { getRotatedImage } from '@/lib/imageRotation';
 
 interface ProductosClientProps {
     categorySlug?: string;
 }
 
 export default function ProductosClient({ categorySlug }: ProductosClientProps = {}) {
-    const { products, collections, materials } = useSettings();
+    const { products, collections, materials, settings } = useSettings();
     const { addToCart, getProductQuantity, updateQuantity, cartItems, openCart, getEffectivePrice } = useCart();
     
     const searchParams = useSearchParams();
@@ -88,7 +89,10 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
     const sortedProducts = [...filteredProducts].sort((a, b) => {
         if (sortBy === 'priceAsc') return a.price - b.price;
         if (sortBy === 'priceDesc') return b.price - a.price;
-        return (new Date(b.createdAt || 0)).getTime() - (new Date(a.createdAt || 0)).getTime();
+        // Ordenar por actualización más reciente por defecto
+        const dateA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+        const dateB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+        return dateB - dateA;
     });
 
     const toggleAccordion = (id: string) => {
@@ -197,8 +201,10 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
 
                                 const hasConfigurableVariants = product.variants && product.variants.some((v: any) => v.attributes && v.attributes.length > 0);
                                 const hasCustomGallery = product.images && product.images.some((img: any) => img && typeof img === 'object' && img.isCustomizable);
-                                const is3D = (product.displayMode === '3d' || product.displayMode === 'both' || !product.displayMode) && !!product.modelUrl;
-                                const requiresCustomization = hasConfigurableVariants || hasCustomGallery || is3D;
+                                const requiresCustomization = hasConfigurableVariants || hasCustomGallery;
+
+                                // Calculate rotated image
+                                const activeImage = getRotatedImage(product, settings?.rotationInterval || 3);
 
                                 return (
                                     <div key={product.id} className={styles.card} style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
@@ -209,7 +215,7 @@ export default function ProductosClient({ categorySlug }: ProductosClientProps =
                                         )}
                                         <Link href={`/personalizar/${product.slug || product.id}`} style={{ display: 'block', textDecoration: 'none', color: 'inherit', flex: 1 }}>
                                             <div className={styles.imageBox}>
-                                                <img src={getOptimizedUrl(product.image, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />
+                                                <img src={getOptimizedUrl(activeImage, 600) || '/placeholder.png'} alt={product.name} loading="lazy" />
                                             </div>
                                             <div className={styles.info}>
                                                 {product.collectionId && (

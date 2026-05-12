@@ -330,6 +330,35 @@ const TabSettings: React.FC<TabSettingsProps> = ({
                                 </div>
                             </div>
                         </div>
+
+                        <div className={styles.inputGroup} style={{ marginTop: '1.5rem', padding: '1.5rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                            <div>
+                                <label style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b', marginBottom: '0.25rem', display: 'block' }}>Rotación Dinámica de Imágenes</label>
+                                <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1rem' }}>Cambia la imagen principal del catálogo automáticamente para mostrar variantes.</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.5rem', display: 'block' }}>Intervalo de cambio (Horas)</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                            <input
+                                                type="range"
+                                                min="1"
+                                                max="24"
+                                                step="1"
+                                                value={localSettings.rotationInterval || 3}
+                                                onChange={(e) => onChange('rotationInterval', parseInt(e.target.value))}
+                                                style={{ flex: 1 }}
+                                            />
+                                            <span style={{ minWidth: '40px', fontWeight: '600', color: 'var(--primary)', fontSize: '1rem' }}>
+                                                {localSettings.rotationInterval || 3}h
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div style={{ flex: 1, fontSize: '0.75rem', color: '#94a3b8', borderLeft: '1px solid #e2e8f0', paddingLeft: '1.5rem' }}>
+                                        <p style={{ margin: 0 }}>Tip: 3-6 horas es ideal para mantener el sitio fresco sin confundir al cliente.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
 

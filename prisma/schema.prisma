@@ -22,6 +22,7 @@ model Setting {
   address         String   @default("Calle Falsa 123, Bogotá")
   instagram       String   @default("https://instagram.com/artesana")
   facebook        String   @default("https://facebook.com/artesana")
+  rotationInterval Int      @default(3)
   heroTitle       String?
   heroSubtitle    String?
   heroImages      Json?
@@ -46,16 +47,15 @@ model Product {
   collection   Collection? @relation(fields: [collectionId], references: [id])
   description String
   image       String?
-  displayMode String      @default("3d")
-  width       Float       @default(4)
-  height      Float       @default(2)
-  depth       Float       @default(4)
+  width       Float       @default(0)
+  height      Float       @default(0)
+  depth       Float       @default(0)
   materialId  String
   baseColor   String      @default("#F9F1E7")
-  modelUrl    String?
   images      Json?
   slug        String?     @unique
   isVisible   Boolean     @default(true)
+  isRotationEnabled Boolean @default(true)
   combineVariantsForTiers Boolean @default(false)
   costPrice   Float?
   hasRibbon   Boolean     @default(false)
@@ -115,31 +115,54 @@ model User {
   password String
 }
 
-model Quote {
-  id              String      @id @default(cuid())
-  quoteNumber     String      @unique
-  date            DateTime    @default(now())
-  expiryDate      DateTime?
-  vendor          String
-  clientName      String
-  clientNit       String
-  billingAddress  String
-  shippingAddress String
+model Customer {
+  id              String   @id @default(cuid())
+  name            String
+  companyName     String?
+  nit             String?
+  phone           String?
+  email           String?
+  address         String?
   notes           String?
-  paymentTerms    String?
-  subtotal        Float
-  total           Float
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  items           QuoteItem[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  quotes          Quote[]
+  orders          Order[]
+}
+
+model Quote {
+  id               String      @id @default(cuid())
+  quoteNumber      String      @unique
+  opportunityName  String?     // Nombre de la oportunidad comercial
+  date             DateTime    @default(now())
+  expiryDate       DateTime?
+  vendor           String
+  clientName       String
+  customerCompany  String?
+  clientNit        String?
+  address          String?
+  notes            String?
+  paymentTerms     String?
+  subtotal         Float
+  total            Float
+  discountReason   String?
+  customerId       String?
+  customer         Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  items            QuoteItem[]
+  order            Order?
 }
 
 model QuoteItem {
   id          String @id @default(cuid())
   description String
   qty         Int
-  unitPrice   Float
-  quoteId     String
+  unitPrice     Float
+  originalPrice Float?
+  discountValue Float?
+  discountType  String? // percentage or amount
+  quoteId       String
   quote       Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 }
 
@@ -185,4 +208,34 @@ model VariantAttributeValue {
   attributeValue   AttributeValue  @relation(fields: [attributeValueId], references: [id], onDelete: Cascade)
 
   @@id([variantId, attributeValueId])
+}
+
+model Order {
+  id               String      @id @default(cuid())
+  orderNumber      String      @unique
+  opportunityName  String?     // Nombre de la oportunidad comercial
+  status           String      @default("LEAD") // LEAD, QUOTE, PROCESS, READY, DELIVERED, CANCELLED
+  customerName     String
+  customerCompany  String?
+  customerEmail    String?
+  customerPhone    String?
+  total            Float       @default(0)
+  items            Json?       // Lista de productos o descripción libre
+  notes            OrderNote[]
+  quoteId          String?     @unique
+  quote            Quote?      @relation(fields: [quoteId], references: [id])
+  customerId       String?
+  customer         Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  lostReason       String?
+  source           String?     @default("whatsapp")
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+}
+
+model OrderNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
