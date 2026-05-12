@@ -41,6 +41,7 @@ export async function POST(req: Request) {
             clientName,
             customerCompany,
             clientNit,
+            clientPhone,
             address,
             items,
             notes,
@@ -73,6 +74,7 @@ export async function POST(req: Request) {
                     name: clientName.trim(),
                     companyName: customerCompany || null,
                     nit: clientNit || null,
+                    phone: clientPhone || null,
                     address: address || null,
                 }
             });
@@ -83,6 +85,7 @@ export async function POST(req: Request) {
                 data: {
                     companyName: customerCompany || customer.companyName,
                     nit: clientNit || customer.nit,
+                    phone: clientPhone || customer.phone,
                     address: address || customer.address,
                 }
             });
@@ -170,12 +173,14 @@ export async function POST(req: Request) {
                 opportunityName: orderData.opportunityName,
                 customerName: orderData.customerName,
                 customerCompany: customerCompany || null,
+                customerPhone: clientPhone || null,
                 customerId: customer.id,
                 items: orderData.items
             },
             create: {
                 ...orderData,
                 customerCompany: customerCompany || null,
+                customerPhone: clientPhone || null,
                 quoteId: quote.id,
                 customerId: customer.id
             }

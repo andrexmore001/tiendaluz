@@ -15,7 +15,8 @@ import {
     RotateCcw,
     Building2,
     Percent,
-    Target
+    Target,
+    Phone
 } from 'lucide-react';
 import { Product } from '@/types/product';
 import styles from '../admin.module.css';
@@ -39,6 +40,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
         clientName: '',
         customerCompany: '',
         clientNit: '',
+        clientPhone: '',
         address: '',
         items: [] as any[],
         notes: '',
@@ -212,6 +214,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             clientName: quote.clientName,
             customerCompany: quote.customerCompany || '',
             clientNit: quote.clientNit,
+            clientPhone: quote.order?.customerPhone || '',
             address: quote.address || '',
             items: quote.items.map((item: any) => {
                 const searchItem = searchableItems.find((si: any) => si.name === item.description.split(' (')[0]);
@@ -242,6 +245,7 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
             clientName: '',
             customerCompany: '',
             clientNit: '',
+            clientPhone: '',
             address: '',
             items: [] as any[],
             notes: '',
@@ -476,6 +480,15 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 value={quoteData.clientNit}
                                 onChange={e => setQuoteData({ ...quoteData, clientNit: e.target.value })}
                                 placeholder="Ej: 900.000.000-1"
+                            />
+                        </div>
+                        <div className={styles.inputGroup}>
+                            <label><Phone size={14} /> Teléfono del Cliente</label>
+                            <input
+                                type="tel"
+                                value={quoteData.clientPhone}
+                                onChange={e => setQuoteData({ ...quoteData, clientPhone: e.target.value })}
+                                placeholder="Ej: +57 300 000 0000"
                             />
                         </div>
                         <div className={styles.inputGroup}>
