@@ -12,7 +12,8 @@ import {
     Hash,
     History,
     RefreshCw,
-    RotateCcw
+    RotateCcw,
+    Building2
 } from 'lucide-react';
 import { Product } from '@/types/product';
 import styles from '../admin.module.css';
@@ -294,6 +295,35 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                 placeholder="Ej: 900.000.000-1"
                             />
                         </div>
+                        <div className={styles.inputGroup}>
+                            <label><Building2 size={14} /> Vendedor / Asesor</label>
+                            <input
+                                type="text"
+                                value={quoteData.vendor}
+                                onChange={e => setQuoteData({ ...quoteData, vendor: e.target.value })}
+                                placeholder="Ej: Administrador Artesana"
+                            />
+                        </div>
+                        <div className={styles.dimensionsRow}>
+                            <div className={styles.inputGroup}>
+                                <label><Calendar size={14} /> Fecha de Cotización</label>
+                                <input
+                                    type="text"
+                                    value={quoteData.date}
+                                    onChange={e => setQuoteData({ ...quoteData, date: e.target.value })}
+                                    placeholder="DD/MM/AAAA"
+                                />
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label><Calendar size={14} /> Fecha de Vencimiento</label>
+                                <input
+                                    type="text"
+                                    value={quoteData.expiryDate}
+                                    onChange={e => setQuoteData({ ...quoteData, expiryDate: e.target.value })}
+                                    placeholder="DD/MM/AAAA"
+                                />
+                            </div>
+                        </div>
                         <div className={styles.dimensionsRow}>
                             <div className={styles.inputGroup}>
                                 <label><MapPin size={14} /> Dir. Facturación</label>
@@ -518,7 +548,14 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                                 <span style={{ fontWeight: 'bold', fontSize: '0.85rem' }}>{q.quoteNumber}</span>
                                                 <span style={{ fontSize: '0.8rem', color: '#64748b' }}>{q.date}</span>
                                             </div>
-                                            <p style={{ fontSize: '0.8rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{q.clientName || 'Sin cliente'}</p>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingRight: '1rem' }}>
+                                                <p style={{ fontSize: '0.8rem', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', margin: 0 }}>{q.clientName || 'Sin cliente'}</p>
+                                                {q.total != null && (
+                                                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#8B4B62', whiteSpace: 'nowrap' }}>
+                                                        ${formatPrice(q.total)}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         <button 
                                             type="button" 
