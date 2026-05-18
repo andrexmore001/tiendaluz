@@ -672,9 +672,9 @@ export default function TabQuotes({ products, onMenuClick, settings }: TabQuotes
                                         data={quoteData} 
                                         companyInfo={{
                                             name: settings.title || 'Artesana',
-                                            address: settings.address || '',
-                                            phone: settings.phone || '',
-                                            email: settings.email || ''
+                                            address: settings.contact?.address || '',
+                                            phone: settings.contact?.phone || '',
+                                            email: settings.contact?.email || ''
                                         }}
                                         logoUrl={settings.logo} 
                                         nequiQrUrl={settings.nequiQr} 
