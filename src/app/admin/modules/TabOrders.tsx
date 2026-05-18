@@ -16,6 +16,8 @@ interface Order {
   total: number; items?: OrderItem[]; notes: OrderNote[];
   createdAt: string; updatedAt: string; customerId?: string;
   source?: string;
+  paymentStatus?: string;
+  paymentAmount?: number;
   quote?: any;
   quoteId?: string;
 }
@@ -74,6 +76,7 @@ export default function TabOrders({ products = [], settings }: { products?: any[
   const [showLostPrompt, setShowLostPrompt] = useState(false);
   const [lostReason, setLostReason] = useState('');
   const [dateFilter, setDateFilter] = useState('all');
+  const [paymentFilter, setPaymentFilter] = useState('ALL');
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
   const [productSearch, setProductSearch] = useState('');
   const [showProductResults, setShowProductResults] = useState(false);
@@ -194,6 +197,19 @@ export default function TabOrders({ products = [], settings }: { products?: any[
       method: 'PATCH', 
       headers: { 'Content-Type': 'application/json' }, 
       body: JSON.stringify({ source }) 
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setOrders(p => p.map(o => o.id === id ? updated : o));
+      if (selectedOrder?.id === id) setSelectedOrder(updated);
+    }
+  };
+
+  const updatePayment = async (id: string, paymentStatus: string, paymentAmount?: number) => {
+    const res = await fetch(`/api/orders/${id}`, { 
+      method: 'PATCH', 
+      headers: { 'Content-Type': 'application/json' }, 
+      body: JSON.stringify({ paymentStatus, paymentAmount: paymentAmount ?? 0 }) 
     });
     if (res.ok) {
       const updated = await res.json();
@@ -325,7 +341,7 @@ export default function TabOrders({ products = [], settings }: { products?: any[
         }
     }
 
-    return matchSearch && matchInactive && isNotLost && matchDate;
+    return matchSearch && matchInactive && isNotLost && matchDate && (paymentFilter === 'ALL' || o.paymentStatus === paymentFilter);
   });
 
   const byStage = (stageId: string) => filtered.filter(o => o.status === stageId);
@@ -415,6 +431,16 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                   <input type="date" value={customDateRange.end} onChange={e => setCustomDateRange(prev => ({...prev, end: e.target.value}))} style={{ padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' }} />
               </div>
           )}
+          <select 
+              value={paymentFilter} 
+              onChange={e => setPaymentFilter(e.target.value)}
+              style={{ padding: '0.4rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', background: 'white' }}
+          >
+              <option value="ALL">💰 Todos los Pagos</option>
+              <option value="PENDING">🔴 Pendiente</option>
+              <option value="PARTIAL">🟡 Abonado</option>
+              <option value="COMPLETED">🟢 Pagado</option>
+          </select>
           <button className={filterInactive ? styles.filterBtnActive : styles.filterBtn} onClick={() => setFilterInactive(p => !p)}>
             <AlertCircle size={15} />Inactivos
           </button>
@@ -477,6 +503,11 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                                   <span className={styles.timeAgo}>{getTimeAgo(order.updatedAt)}</span>
                                 </div>
                                 <div className={styles.customerName}>{order.customerName}</div>
+                                <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                                    {(!order.paymentStatus || order.paymentStatus === 'PENDING') && <span style={{ fontSize: '0.65rem', background: '#fee2e2', color: '#991b1b', padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold' }}>🔴 Pendiente</span>}
+                                    {order.paymentStatus === 'PARTIAL' && <span style={{ fontSize: '0.65rem', background: '#fef08a', color: '#854d0e', padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold' }}>🟡 Abono: ${formatPrice(order.paymentAmount || 0)}</span>}
+                                    {order.paymentStatus === 'COMPLETED' && <span style={{ fontSize: '0.65rem', background: '#dcfce3', color: '#166534', padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold' }}>🟢 Pagado</span>}
+                                </div>
                                 {order.opportunityName && (
                                   <div style={{ fontSize: '0.72rem', color: '#8B4B62', fontWeight: 600, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                     🎯 {order.opportunityName}
@@ -639,6 +670,38 @@ export default function TabOrders({ products = [], settings }: { products?: any[
                       <button className={styles.editBtn} onClick={() => { setEditedTotal(selectedOrder.total); setEditingTotal(true); }}><Edit2 size={14} /></button>
                     </>
                   )}
+                </div>
+              </section>
+              {/* Payment Status */}
+              <section>
+                <label className={styles.sectionLabel}>ESTADO DE PAGO</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <select 
+                        value={selectedOrder.paymentStatus || 'PENDING'} 
+                        onChange={e => updatePayment(selectedOrder.id, e.target.value, selectedOrder.paymentAmount)}
+                        style={{ padding: '0.6rem', borderRadius: '10px', border: '1.5px solid #e2e8f0', background: '#f8fafc', fontSize: '0.88rem', outline: 'none' }}
+                    >
+                        <option value="PENDING">🔴 Pendiente de pago</option>
+                        <option value="PARTIAL">🟡 Abonado para iniciar</option>
+                        <option value="COMPLETED">🟢 Pagó completado o pago Recibido</option>
+                    </select>
+                    {selectedOrder.paymentStatus === 'PARTIAL' && (
+                        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.88rem', color: '#475569', fontWeight: 'bold' }}>Valor Abonado: $</span>
+                            <input 
+                                type="number"
+                                placeholder="Monto del abono"
+                                defaultValue={selectedOrder.paymentAmount || 0}
+                                onBlur={e => {
+                                    const val = parseFloat(e.target.value) || 0;
+                                    if (val !== selectedOrder.paymentAmount) {
+                                        updatePayment(selectedOrder.id, 'PARTIAL', val);
+                                    }
+                                }}
+                                style={{ flex: 1, padding: '0.6rem', borderRadius: '10px', border: '1.5px solid #D4AF37', background: 'white', fontSize: '0.88rem', outline: 'none' }}
+                            />
+                        </div>
+                    )}
                 </div>
               </section>
               {/* Source */}
