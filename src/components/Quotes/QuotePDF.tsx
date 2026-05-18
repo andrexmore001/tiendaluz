@@ -172,17 +172,24 @@ interface QuotePDFProps {
         vendor: string;
         clientName: string;
         clientNit: string;
+        clientPhone?: string;
         address: string;
         items: QuoteItem[];
         notes?: string;
         discountReason?: string;
         paymentTerms?: string;
     };
+    companyInfo?: {
+        name: string;
+        address: string;
+        phone: string;
+        email: string;
+    };
     logoUrl?: string;
     nequiQrUrl?: string;
 }
 
-const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
+const QuotePDF: React.FC<QuotePDFProps> = ({ data, companyInfo, logoUrl, nequiQrUrl }) => {
     const subtotal = data.items.reduce((acc, item) => acc + (item.qty * item.unitPrice), 0);
     const total = subtotal; // Simplified for now
 
@@ -199,11 +206,21 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, logoUrl, nequiQrUrl }) => {
                 <Text style={styles.motto}>No es lo que das, es lo que transmites</Text>
 
                 <View style={styles.addressSection}>
+                    {companyInfo && (
+                        <View style={styles.addressBlock}>
+                            <Text style={styles.addressTitle}>De</Text>
+                            <Text style={[styles.addressText, { fontWeight: 'bold', fontSize: 10 }]}>{companyInfo.name}</Text>
+                            <Text style={styles.addressText}>{companyInfo.address}</Text>
+                            <Text style={styles.addressText}>{companyInfo.phone}</Text>
+                            <Text style={styles.addressText}>{companyInfo.email}</Text>
+                        </View>
+                    )}
                     <View style={styles.addressBlock}>
-                        <Text style={styles.addressTitle}>Dirección</Text>
-                        <Text style={styles.addressText}>{data.clientName}</Text>
-                        <Text style={styles.addressText}>{data.address}</Text>
-                        <Text style={styles.addressText}>NIT: {data.clientNit}</Text>
+                        <Text style={styles.addressTitle}>Cotizado a</Text>
+                        <Text style={[styles.addressText, { fontWeight: 'bold', fontSize: 10 }]}>{data.clientName}</Text>
+                        {data.address ? <Text style={styles.addressText}>{data.address}</Text> : null}
+                        {data.clientPhone ? <Text style={styles.addressText}>{data.clientPhone}</Text> : null}
+                        {data.clientNit ? <Text style={styles.addressText}>NIT: {data.clientNit}</Text> : null}
                     </View>
                 </View>
 
