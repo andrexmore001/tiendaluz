@@ -203,14 +203,6 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, companyInfo, logoUrl, nequiQr
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                         <Text style={styles.cityText}>Bogotá, Colombia</Text>
-                        {companyInfo && (
-                            <View style={{ marginTop: 5, alignItems: 'flex-end' }}>
-                                <Text style={{ fontSize: 9, fontWeight: 'bold', color: '#1e293b' }}>{companyInfo.name}</Text>
-                                <Text style={{ fontSize: 8, color: '#475569', marginTop: 1 }}>{companyInfo.address}</Text>
-                                <Text style={{ fontSize: 8, color: '#475569', marginTop: 1 }}>{companyInfo.phone}</Text>
-                                <Text style={{ fontSize: 8, color: '#475569', marginTop: 1 }}>{companyInfo.email}</Text>
-                            </View>
-                        )}
                     </View>
                 </View>
 
@@ -218,7 +210,7 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, companyInfo, logoUrl, nequiQr
 
                 <View style={styles.addressSection}>
                     <View style={styles.addressBlock}>
-                        <Text style={styles.addressTitle}>*Cliente*</Text>
+                        <Text style={styles.addressTitle}>Cliente</Text>
                         <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Nombre:</Text> {data.clientName || '---'}</Text>
                         {data.clientNit ? <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Identificación:</Text> {data.clientNit}</Text> : null}
                         {data.clientPhone ? <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Teléfono:</Text> {data.clientPhone}</Text> : null}
@@ -226,11 +218,17 @@ const QuotePDF: React.FC<QuotePDFProps> = ({ data, companyInfo, logoUrl, nequiQr
                         <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Ciudad:</Text> Bogotá</Text>
                     </View>
                     <View style={styles.addressBlock}>
-                        <Text style={styles.addressTitle}>*Empresa* (si aplica)</Text>
-                        <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Nombre:</Text> {data.customerCompany || '---'}</Text>
-                        {data.clientNit ? <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>NIT:</Text> {data.clientNit}</Text> : null}
-                        {data.clientPhone ? <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Teléfono:</Text> {data.clientPhone}</Text> : null}
-                        {data.address ? <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Dirección:</Text> {data.address}</Text> : null}
+                        <Text style={styles.addressTitle}>Empresa</Text>
+                        {companyInfo ? (
+                            <>
+                                <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Nombre:</Text> {companyInfo.name}</Text>
+                                <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Teléfono:</Text> {companyInfo.phone}</Text>
+                                <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Dirección:</Text> {companyInfo.address}</Text>
+                                <Text style={styles.addressText}><Text style={{ fontWeight: 'bold' }}>Correo:</Text> {companyInfo.email}</Text>
+                            </>
+                        ) : (
+                            <Text style={styles.addressText}>---</Text>
+                        )}
                     </View>
                 </View>
 
